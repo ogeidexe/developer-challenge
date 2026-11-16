@@ -1,0 +1,129 @@
+# Security checks — see docs/security/SECURITY-PIPELINE.md for what blocks a merge and why.
+name: security
+
+on:
+  pull_request:
+  push:
+    branches: [main, teste-pleno]
+  schedule:
+    - cron: "17 6 * * 1" # weekly: new CVEs appear without any code change
+  workflow_dispatch:
+
+# least privilege by default; jobs that need more ask for it explicitly
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend-dependencies:
+    name: npm audit (frontend)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      # --ignore-scripts: no install script of any (transitive) package runs in CI
+      - run: npm ci --ignore-scripts
+      # BLOCKING: high/critical in what ships to the browser
+      - name: Runtime dependencies (high+ blocks)
+        run: npm audit --omit=dev --audit-level=high
+      # BLOCKING: critical anywhere, dev tooling included
+      - name: All dependencies (critical blocks)
+        run: npm audit --audit-level=critical
+
+  dependency-review:
+    name: Dependency review (PR)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      # BLOCKING: a PR may not ADD a dependency with a known high/critical advisory (Maven and npm)
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+  secrets:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # scan the whole history, not only the last commit
+      # BLOCKING. --redact keeps any finding out of the job log.
+      - name: gitleaks
+        run: >
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.18.4
+          detect --source=/repo --redact --no-banner --exit-code 1
+
+  codeql:
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: java-kotlin
+            build-mode: none # source-only extraction: no JDK build needed
+          - language: javascript-typescript
+            build-mode: none
+    steps:
+      - uses: actions/checkout@v5
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          queries: security-extended
+      # results go to the Security tab; a branch-protection rule on "Code scanning results" makes high+ blocking
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:${{ matrix.language }}
+
+  backend:
+    name: Backend tests + dependency check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+      # BLOCKING: includes the security regression tests (JwtValidationTest, LoginAttemptLimiterTest,
+      # RequestSizeLimitFilterTest, InputHardeningTest, SecurityIntegrationTest — Testcontainers uses the runner's Docker)
+      - run: chmod +x mvnw # the wrapper may be committed from Windows without the executable bit
+      - name: Tests
+        run: ./mvnw -B verify
+        env:
+          JWT_SECRET: ci-only-${{ github.run_id }}-not-a-real-secret-0123456789
+      # BLOCKING on CVSS >= 9 (critical). Needs an NVD API key (repository secret NVD_API_KEY); skipped without one,
+      # because an anonymous NVD download takes far longer than a CI job should.
+      - name: OWASP Dependency-Check
+        if: env.NVD_API_KEY != ''
+        run: >
+          ./mvnw -B org.owasp:dependency-check-maven:12.1.0:check
+          -DnvdApiKey="$NVD_API_KEY" -DfailBuildOnCVSS=9 -Dformats=HTML,JSON
+
+  dockerfile:
+    name: Dockerfile lint (hadolint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      # BLOCKING on errors only (warnings are reported, not blocking)
+      - run: docker run --rm -i hadolint/hadolint:v2.12.0 hadolint --failure-threshold error - < backend/Dockerfile
