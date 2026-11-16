@@ -152,7 +152,7 @@ jobs:
   # Proves README §5.3: `docker compose up --build` brings up db + backend + frontend with no manual step
   # (also builds both Docker images). Smoke test goes through the frontend's nginx /api proxy.
   compose:
-    name: docker compose up + smoke test
+    name: docker compose up + smoke test + E2E (real API)
     runs-on: ubuntu-latest
     needs: [backend, frontend]
     steps:
@@ -173,6 +173,26 @@ jobs:
           curl -fsS http://localhost:8080/api/auth/me -H "Authorization: Bearer $token" | grep -q 'admin1@kingspan.test'
           curl -fsS "http://localhost:8080/api/requests?page=0&size=5" -H "Authorization: Bearer $token" | grep -q '"totalElements"'
           echo "compose smoke test passed"
+      # the real frontend ↔ backend integration: Cypress drives the browser against the compose stack
+      # (nginx → Spring → PostgreSQL), unlike the frontend-e2e job, which uses the in-memory fake backend
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: E2E against the real API
+        working-directory: frontend
+        run: npm run test:e2e:api
+      - name: Upload screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-api-screenshots
+          path: frontend/cypress/screenshots/
+          if-no-files-found: ignore
       - name: Logs on failure
         if: failure()
         run: docker compose logs --no-color --tail 200

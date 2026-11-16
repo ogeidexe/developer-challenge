@@ -890,3 +890,22 @@ One block per agent turn, one row per changed file:
 | `docs/RFs/RNF-08-seed.md` | created | +56 | -0 |
 | `docs/RFs/RNF-09-documentacao.md` | created | +39 | -0 |
 | `docs/analysis/REQUIREMENTS.md` | modified | +2 | -0 |
+
+---
+### Turn 2026-11-16 13:36:23 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: c99dd3c4-4ace-51b9-af8d-8c02e07a6ced
+- **Prompt**: now plug front and backend
+- **Summary**: Plug frontend to the real backend: dev:api mode (Vite proxy to Spring), Cypress suite against the docker compose stack, run in CI
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `.github/workflows/ci.yml` | modified | +21 | -1 |
+| `frontend/cypress.api.config.ts` | created | +19 | -0 |
+| `frontend/cypress/e2e-api/01-seed-and-reads.cy.ts` | created | +77 | -0 |
+| `frontend/cypress/e2e-api/02-approval-flow.cy.ts` | created | +110 | -0 |
+| `frontend/cypress/e2e-api/03-budget-and-versions.cy.ts` | created | +33 | -0 |
+| `frontend/cypress/support/api.ts` | created | +18 | -0 |
+| `frontend/cypress/tsconfig.json` | modified | +1 | -1 |
+| `frontend/package.json` | modified | +2 | -0 |
+| `frontend/vite.config.ts` | modified | +10 | -2 |

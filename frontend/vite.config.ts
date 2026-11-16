@@ -6,7 +6,10 @@ export default defineConfig(({ command, mode }) => {
   const isDevServer = command === 'serve' // `npm run dev` and the Cypress runner
   // SEC-F04 — compile-time flags (literal true/false), so a disabled feature is dead code and is removed from
   // the bundle together with what only it imports (the fake backend and its seed, the demo credentials).
-  const useMockBackend = env.VITE_MOCK_BACKEND === 'true' || (env.VITE_MOCK_BACKEND !== 'false' && isDevServer)
+  // `vite --mode api` (npm run dev:api) = dev server against the real backend, without an env file
+  const useRealApi = mode === 'api'
+  const useMockBackend =
+    env.VITE_MOCK_BACKEND === 'true' || (env.VITE_MOCK_BACKEND !== 'false' && isDevServer && !useRealApi)
   const showDemoLogin =
     env.VITE_DEMO_LOGIN === 'true' || (env.VITE_DEMO_LOGIN !== 'false' && (isDevServer || useMockBackend))
 
@@ -19,7 +22,12 @@ export default defineConfig(({ command, mode }) => {
     server: {
       port: 5173,
       proxy: {
-        '/api': { target: 'http://localhost:3000', changeOrigin: true, rewrite: (p) => p.replace(/^\/api/, '') },
+        // same rewrite as the nginx image: /api/x -> <backend>/x (API_PROXY_TARGET overrides the backend URL)
+        '/api': {
+          target: env.API_PROXY_TARGET || 'http://localhost:3000',
+          changeOrigin: true,
+          rewrite: (p) => p.replace(/^\/api/, ''),
+        },
       },
     },
   }
