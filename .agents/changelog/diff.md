@@ -928,3 +928,18 @@ One block per agent turn, one row per changed file:
 | `frontend/cypress.api.config.ts` | modified | +1 | -0 |
 | `frontend/cypress/support/api.ts` | modified | +3 | -18 |
 | `frontend/cypress/support/commands.ts` | modified | +17 | -2 |
+
+---
+### Turn 2026-11-16 14:32:49 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: c99dd3c4-4ace-51b9-af8d-8c02e07a6ced
+- **Prompt**: cover the tests described on RFs folder that is not covered yet also verify again wich ones arent made, looking onto doc definition
+- **Summary**: Add backend integration tests for the RF/RNF coverage gaps: admin services, inbox and dashboard, request rules, HTTP contract, demo seed
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `backend/src/test/java/com/example/purchase/AdminServicesIntegrationTest.java` | created | +145 | -0 |
+| `backend/src/test/java/com/example/purchase/DemoSeedIntegrationTest.java` | created | +118 | -0 |
+| `backend/src/test/java/com/example/purchase/HttpContractIntegrationTest.java` | created | +188 | -0 |
+| `backend/src/test/java/com/example/purchase/InboxAndDashboardIntegrationTest.java` | created | +194 | -0 |
+| `backend/src/test/java/com/example/purchase/RequestRulesIntegrationTest.java` | created | +196 | -0 |
