@@ -843,3 +843,14 @@ One block per agent turn, one row per changed file:
 | `SOLUTION.md` | created | +196 | -0 |
 | `backend/README.md` | modified | +6 | -8 |
 | `docker-compose.yml` | modified | +3 | -1 |
+
+---
+### Turn 2026-11-16 12:29:23 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: Fix backend Docker build: skip Checkstyle in the image build (config not in build context; lint runs in CI)
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `backend/Dockerfile` | modified | +2 | -1 |
