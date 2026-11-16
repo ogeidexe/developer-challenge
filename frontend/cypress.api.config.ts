@@ -8,6 +8,7 @@ export default defineConfig({
     baseUrl: process.env.CYPRESS_BASE_URL || 'http://localhost:8080',
     specPattern: 'cypress/e2e-api/**/*.cy.ts',
     supportFile: 'cypress/support/api.ts',
+    env: { REAL_API: true }, // makes `apiAs` call the real API instead of the in-page fake backend
     viewportWidth: 1440,
     viewportHeight: 900,
     defaultCommandTimeout: 10000,

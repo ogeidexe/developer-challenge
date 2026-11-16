@@ -909,3 +909,22 @@ One block per agent turn, one row per changed file:
 | `frontend/cypress/tsconfig.json` | modified | +1 | -1 |
 | `frontend/package.json` | modified | +2 | -0 |
 | `frontend/vite.config.ts` | modified | +10 | -2 |
+
+---
+### Turn 2026-11-16 13:42:31 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: c99dd3c4-4ace-51b9-af8d-8c02e07a6ced
+- **Prompt**: <task-noti***> <task-id>baf87qg4y</task-id> <tool-use-id>toolu_01P4ysqRWHXzipXr83kzjrWv</tool-use-id> <output-file>/tmp/claude-0/-home-user-developer-challenge/c99dd3c4-4ace-51b9-af8d-8c02e07a6ced/tasks/baf87qg4y.output</output-file> <status>completed</status> <summary>Background command "sleep 270; echo done" completed (exit code 0)</summary> </task-noti***>
+- **Summary**: Fix real-API Cypress suite: apiAs switches to real HTTP via REAL_API env instead of a command overwrite that Cypress ignored
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `SOLUTION.md` | modified | +9 | -7 |
+| `docs/RFs/RF-10-caixa-de-aprovacao.md` | modified | +2 | -2 |
+| `docs/RFs/RF-12-dashboard.md` | modified | +2 | -2 |
+| `docs/RFs/RF-13-interface-web.md` | modified | +7 | -4 |
+| `docs/RFs/RNF-06-testes.md` | modified | +2 | -2 |
+| `frontend/README.md` | modified | +26 | -1 |
+| `frontend/cypress.api.config.ts` | modified | +1 | -0 |
+| `frontend/cypress/support/api.ts` | modified | +3 | -18 |
+| `frontend/cypress/support/commands.ts` | modified | +17 | -2 |

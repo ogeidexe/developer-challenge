@@ -41,7 +41,7 @@ declare global {
       confirmPopover(okText: string | RegExp): Chainable<void>
       /** The currently visible antd modal. */
       modal(): Chainable<JQuery<HTMLElement>>
-      /** Calls the fake API as another user (a "second browser") — e.g. to provoke a 409. */
+      /** Calls the API as another user (a "second browser") — e.g. to provoke a 409. Fake or real backend. */
       apiAs(email: string, method: string, path: string, body?: unknown): Chainable<{ status: number; json: ApiJson }>
       /** Finds a request id by title, as seen by `email`. */
       requestIdByTitle(email: string, title: string): Chainable<string>
@@ -88,7 +88,22 @@ Cypress.Commands.add('toast', (text: string | RegExp) => {
 })
 
 Cypress.Commands.add('apiAs', (email: string, method: string, path: string, body?: unknown) => {
-  // the hook lives in the app page — load it first when the test has not visited anything yet
+  // Real-API suite (cypress.api.config.ts sets REAL_API): plain HTTP through the frontend's /api proxy.
+  if (Cypress.env('REAL_API')) {
+    return cy
+      .request({ method: 'POST', url: '/api/auth/login', body: { email, password: PASSWORD }, log: false })
+      .then((login) =>
+        cy.request({
+          method,
+          url: `/api${path}`,
+          body: body as Cypress.RequestBody,
+          headers: { Authorization: `Bearer ${login.body.token}` },
+          failOnStatusCode: false,
+        }),
+      )
+      .then((res) => ({ status: res.status, json: res.body }))
+  }
+  // Fake-backend suite: the hook lives in the app page — load it first when the test has not visited anything yet
   cy.window().then((win) => {
     if (!('__mockBackend' in win)) cy.visit('/login')
   })
