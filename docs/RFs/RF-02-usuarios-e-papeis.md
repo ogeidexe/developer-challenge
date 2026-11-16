@@ -2,7 +2,7 @@
 
 | Origem | IDs relacionados | Status |
 |---|---|---|
-| README §1.1, §2.1, §3.1 | FR-005, FR-044, FR-045, SEC-004 | ✅ implementado · ⚠ sem teste de back-end |
+| README §1.1, §2.1, §3.1 | FR-005, FR-044, FR-045, SEC-004 | ✅ implementado e testado |
 
 ## Descrição
 
@@ -48,6 +48,9 @@ Só o `ADMIN` lista, cria e edita usuários de qualquer papel e nível. **Qualqu
 
 | Critério | Teste |
 |---|---|
-| CA-02.4 | `T/SecurityIntegrationTest#emailUniquenessIsCaseInsensitiveInTheDatabase` (no banco) |
-| CA-02.1, CA-02.2, CA-02.5 | `E2E/07-admin.cy.ts` (contra o backend simulado) |
-| CA-02.3, CA-02.6 | ⚠ **lacuna**: nenhum teste de back-end para `UserAdminService`/`PATCH /users` |
+| CA-02.1 | `T/AdminServicesIntegrationTest#onlyAdminManagesUsersCostCentersAndBudgets`; `T/HttpContractIntegrationTest#authenticationRoleAndVisibilityFailuresUseTheirStatusAndCode` (403 via HTTP); `E2E/07-admin.cy.ts` |
+| CA-02.2 | `T/AdminServicesIntegrationTest#approverNeedsALevelAndOnlyAdminIsGlobal` |
+| CA-02.3 | `T/AdminServicesIntegrationTest#promotingAUserChangesTheRoleUsedFromTheNextRequest`; `T/HttpContractIntegrationTest#aRoleChangeAppliesToAnAlreadyIssuedToken` (token já emitido) |
+| CA-02.4 | `T/AdminServicesIntegrationTest#anExistingEmailInAnotherCaseIsAConflict`; `T/SecurityIntegrationTest#emailUniquenessIsCaseInsensitiveInTheDatabase` (no banco) |
+| CA-02.5 | `T/AdminServicesIntegrationTest#aDuplicateCostCenterCodeIsAConflict` |
+| CA-02.6 | `T/AdminServicesIntegrationTest#editingAUserWithAStaleLockVersionIsAConflict` |

@@ -41,7 +41,7 @@ qualquer papel, inclusive `ADMIN`.
 | Critério | Teste |
 |---|---|
 | CA-07.1 | `T/domain/ApprovalPoliciesTest#nobodyApprovesTheirOwnRequest`; `T/WorkflowIntegrationTest#segregationOfDuties` |
-| CA-07.2 | ⚠ **lacuna**: a verificação não depende do papel, mas não há teste com um `ADMIN` dono |
+| CA-07.2 | `T/InboxAndDashboardIntegrationTest#anAdminOwnedRequestAtTheAdminStepGoesToTheOtherAdminOnly` |
 | CA-07.3 | `T/domain/ApprovalPoliciesTest#theSamePersonCannotApproveTwoStepsOfTheSameVersion`; `T/WorkflowIntegrationTest#segregationOfDuties` |
 | CA-07.4 | `T/domain/ApprovalPoliciesTest#aNewVersionStartsClean`; `T/WorkflowIntegrationTest#returnEditResubmitCreatesV2AndKeepsV1Immutable` |
-| CA-07.5 | `T/domain/AccessPolicyTest#anApproverWhoAlreadyDecidedAStepGetsNoDecisionButtons`; `E2E/06-inbox.cy.ts` ("segregation of duties…") |
+| CA-07.5 | `T/InboxAndDashboardIntegrationTest#segregationRemovesARequestFromTheInboxOfWhoAlreadyApproved`; `T/domain/AccessPolicyTest#anApproverWhoAlreadyDecidedAStepGetsNoDecisionButtons`; `E2E/06-inbox.cy.ts` |

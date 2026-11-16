@@ -54,8 +54,8 @@ total é sempre calculado pelo back-end**. Só o dono edita, e só em `DRAFT` ou
 | Critério | Teste |
 |---|---|
 | CA-03.1 | `T/SecurityIntegrationTest#theClientCannotChooseTheTotal`; `T/domain/MoneyAndCalendarTest#totalsAreExactWithoutFloatingPoint` |
-| CA-03.2 | `T/domain/MoneyAndCalendarTest#rejectsInvalidAmounts`, `#neededByMustBeStrictlyAfterTheBusinessToday`; `E2E/04-request-form.cy.ts` |
-| CA-03.3 | `T/domain/AccessPolicyTest#allowedActionsPerCaller` (ações oferecidas por estado e por chamador) · ⚠ **lacuna**: sem teste de back-end do `422` em `PUT` |
+| CA-03.2 | `T/domain/MoneyAndCalendarTest#rejectsInvalidAmounts`, `#neededByMustBeStrictlyAfterTheBusinessToday`; `T/HttpContractIntegrationTest#validationErrorsListEachInvalidField` (`errors[]` por campo); `E2E/04-request-form.cy.ts` |
+| CA-03.3 | `T/RequestRulesIntegrationTest#editingOutsideTheEditableStatesIsAnInvalidTransition`; `T/domain/AccessPolicyTest#allowedActionsPerCaller` |
 | CA-03.4 | `T/SecurityIntegrationTest#anotherRequesterCannotReadEditSubmitOrCancelSomeoneElsesRequest` |
 | CA-03.5 | `T/SecurityIntegrationTest#anApproverWhoCanSeeARequestStillCannotEditIt` |
 | CA-03.6 | `T/WorkflowIntegrationTest#staleLockVersionIs409AndChangesNothing` |

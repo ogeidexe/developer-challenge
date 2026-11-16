@@ -78,4 +78,4 @@ e toda ação exige o `lockVersion` atual.
 | CA-06.5 | `T/domain/ApprovalPoliciesTest#atLeastTenCharactersOnRejectAndReturn`, `#optionalOnApprove`; `T/WorkflowIntegrationTest#rejectNeedsAMeaningfulCommentAndClosesTheChain` |
 | CA-06.6 | `T/WorkflowIntegrationTest#staleLockVersionIs409AndChangesNothing`; `E2E/05-request-detail.cy.ts` ("409: someone acted first") |
 | CA-06.7, CA-06.8 | `T/WorkflowIntegrationTest#fullThreeStepFlowReachesApprovedAndConsumesTheBudget`, `#rejectNeedsAMeaningfulCommentAndClosesTheChain` |
-| RN-06.6 | ⚠ **lacuna**: sem teste específico de "sem aprovador elegível" |
+| RN-06.6 | `T/InboxAndDashboardIntegrationTest#aStepWithoutAnEligibleApproverStaysPendingWithoutError` |

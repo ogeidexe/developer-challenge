@@ -2,7 +2,7 @@
 
 | Origem | IDs relacionados | Status |
 |---|---|---|
-| README §2.3 (regra 5), §3.1 | FR-019…FR-021, FR-048, FR-049, BR-006…BR-009, DATA-001, DATA-002 | ✅ implementado · ⚠ `PUT` de orçamento sem teste de back-end |
+| README §2.3 (regra 5), §3.1 | FR-019…FR-021, FR-048, FR-049, BR-006…BR-009, DATA-001, DATA-002 | ✅ implementado e testado |
 
 ## Descrição
 
@@ -53,5 +53,5 @@ no **mês de competência**, na mesma transação da mudança de estado. O saldo
 | CA-08.2 | `T/WorkflowIntegrationTest#budgetExceededKeepsTheRequestPendingAndOnlyAuditsTheAttempt`; `E2E/05-request-detail.cy.ts` |
 | CA-08.3 | `T/WorkflowIntegrationTest#monthWithoutBudgetHasZeroBalance` |
 | CA-08.4 | `T/domain/MoneyAndCalendarTest#competenceMonthUsesSaoPauloNotUtc` |
-| CA-08.5 | `E2E/07-admin.cy.ts` (contra o backend simulado) · ⚠ **lacuna**: sem teste de back-end para `PUT` de orçamento |
+| CA-08.5 | `T/AdminServicesIntegrationTest#aBudgetBelowTheConsumedAmountIsRefused` (também formato do mês e mês sem orçamento); `E2E/07-admin.cy.ts` |
 | CA-08.6 | `T/ConcurrencyIntegrationTest#finalApprovalsOfDifferentRequestsNeverOverdrawTheBudget` |

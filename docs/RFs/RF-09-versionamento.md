@@ -52,4 +52,4 @@ anterior fica **imutável e consultável**, e a cadeia é recalculada do zero.
 | CA-09.1, CA-09.2, CA-09.3 | `T/WorkflowIntegrationTest#returnEditResubmitCreatesV2AndKeepsV1Immutable`; `E2E/05-request-detail.cy.ts` ("return → edit → resubmit creates v2") |
 | CA-09.3 | `T/domain/ApprovalPoliciesTest#aNewVersionStartsClean` |
 | CA-09.4 | `T/WorkflowIntegrationTest#historyAndSnapshotsAreImmutableInTheDatabase` |
-| CA-09.5 | ⚠ **lacuna**: sem teste de uma v2 com cadeia diferente da v1 |
+| CA-09.5 | `T/RequestRulesIntegrationTest#aResubmittedVersionGetsAChainBuiltFromItsOwnTotal` |

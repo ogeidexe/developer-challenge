@@ -943,3 +943,31 @@ One block per agent turn, one row per changed file:
 | `backend/src/test/java/com/example/purchase/HttpContractIntegrationTest.java` | created | +188 | -0 |
 | `backend/src/test/java/com/example/purchase/InboxAndDashboardIntegrationTest.java` | created | +194 | -0 |
 | `backend/src/test/java/com/example/purchase/RequestRulesIntegrationTest.java` | created | +196 | -0 |
+
+---
+### Turn 2026-11-16 14:38:56 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: c99dd3c4-4ace-51b9-af8d-8c02e07a6ced
+- **Prompt**: <task-noti***> <task-id>bx4530qrh</task-id> <tool-use-id>toolu_01UDXFVSVmZLTn4FZifG2qRx</tool-use-id> <output-file>/tmp/claude-0/-home-user-developer-challenge/c99dd3c4-4ace-51b9-af8d-8c02e07a6ced/tasks/bx4530qrh.output</output-file> <status>completed</status> <summary>Background command "sleep 240; echo done" completed (exit code 0)</summary> </task-noti***>
+- **Summary**: Update docs/RFs test tables: former gaps now point to the new backend tests; RNF-06 numbers and remaining gaps
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `docs/RFs/README.md` | modified | +12 | -12 |
+| `docs/RFs/RF-01-autenticacao.md` | modified | +1 | -1 |
+| `docs/RFs/RF-02-usuarios-e-papeis.md` | modified | +7 | -4 |
+| `docs/RFs/RF-03-criacao-e-edicao.md` | modified | +2 | -2 |
+| `docs/RFs/RF-04-listagem-e-visibilidade.md` | modified | +4 | -2 |
+| `docs/RFs/RF-06-transicoes.md` | modified | +1 | -1 |
+| `docs/RFs/RF-07-segregacao-de-funcoes.md` | modified | +2 | -2 |
+| `docs/RFs/RF-08-orcamento.md` | modified | +2 | -2 |
+| `docs/RFs/RF-09-versionamento.md` | modified | +1 | -1 |
+| `docs/RFs/RF-10-caixa-de-aprovacao.md` | modified | +6 | -4 |
+| `docs/RFs/RF-11-historico-e-auditoria.md` | modified | +3 | -3 |
+| `docs/RFs/RF-12-dashboard.md` | modified | +5 | -4 |
+| `docs/RFs/RNF-01-arquitetura.md` | modified | +3 | -2 |
+| `docs/RFs/RNF-03-idempotencia.md` | modified | +3 | -1 |
+| `docs/RFs/RNF-04-logs-e-request-id.md` | modified | +4 | -2 |
+| `docs/RFs/RNF-06-testes.md` | modified | +22 | -12 |
+| `docs/RFs/RNF-07-execucao-e-ci.md` | modified | +1 | -0 |
+| `docs/RFs/RNF-08-seed.md` | modified | +10 | -0 |

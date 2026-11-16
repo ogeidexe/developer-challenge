@@ -2,7 +2,7 @@
 
 | Origem | IDs relacionados | Status |
 |---|---|---|
-| README §2.4, §3.1 | FR-025, FR-061 | ✅ implementado · ⚠ sem teste de back-end |
+| README §2.4, §3.1 | FR-025, FR-061 | ✅ implementado e testado |
 
 ## Descrição
 
@@ -44,6 +44,8 @@ aplicando centro de custo, nível e segregação de funções.
 
 | Critério | Teste |
 |---|---|
-| CA-10.1…CA-10.4 | `E2E/06-inbox.cy.ts` (backend simulado); CA-10.1 e CA-10.2 também contra a API real em `frontend/cypress/e2e-api/01-seed-and-reads.cy.ts` |
-| Regras de base | `T/domain/ApprovalPoliciesTest`, `T/domain/AccessPolicyTest` (as regras que a caixa reutiliza) |
-| Todos | ⚠ **lacuna**: nenhum teste de back-end (JUnit) chama `InboxService`; só o E2E contra a API real |
+| CA-10.1, CA-10.2, CA-10.3 | `T/InboxAndDashboardIntegrationTest#eachApproverSeesOnlyTheCurrentStepsTheyMayDecideInTheirCenter`; `E2E/06-inbox.cy.ts`; API real em `frontend/cypress/e2e-api/01-seed-and-reads.cy.ts` |
+| CA-10.4 | `T/InboxAndDashboardIntegrationTest#segregationRemovesARequestFromTheInboxOfWhoAlreadyApproved` |
+| CA-10.5 | `T/InboxAndDashboardIntegrationTest#anAdminOwnedRequestAtTheAdminStepGoesToTheOtherAdminOnly` |
+| CA-10.6 | `T/InboxAndDashboardIntegrationTest#aStepWithoutAnEligibleApproverStaysPendingWithoutError` |
+| RN-10.6, RN-10.7 | `T/InboxAndDashboardIntegrationTest#theCostCenterFilterNarrowsTheInboxAndASolicitanteHasNone` |

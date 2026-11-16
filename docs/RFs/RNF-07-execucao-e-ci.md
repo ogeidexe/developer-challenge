@@ -46,3 +46,4 @@ que altere os hooks do Git.
 
 - CA-R07.1, CA-R07.2: job `compose` do `ci.yml`
 - CA-R07.3: badges no topo do [`SOLUTION.md`](../../SOLUTION.md)
+- CA-R07.4: verificado por inspeção (nenhuma dependência como husky/lefthook no `package.json`) e pela auditoria dos avaliadores

@@ -66,5 +66,5 @@ públicas, exige o token no cabeçalho `Authorization: Bearer <token>`. O cadast
 | CA-01.3 | `T/SecurityIntegrationTest#publicSignUpAlwaysCreatesASolicitante`; `E2E/01-login.cy.ts` |
 | CA-01.4 | `T/SecurityIntegrationTest#repeatedWrongPasswordsLockTheAccountEvenForTheRightPassword`; `T/security/LoginAttemptLimiterTest` |
 | CA-01.5 | `T/security/JwtValidationTest` (10 casos) |
-| CA-01.6 | ⚠ **lacuna**: sem teste de back-end para `GET /auth/me` |
+| CA-01.6 | `T/HttpContractIntegrationTest#meReturnsTheCallerAndNoPasswordField` (HTTP real) |
 | CA-01.7 | `T/SecurityIntegrationTest#passwordsLongerThanBcryptCanHashAreRejectedNotTruncatedOrA500`; `T/application/InputHardeningTest#passwordsAreLimitedTo72BytesNot72Characters` |

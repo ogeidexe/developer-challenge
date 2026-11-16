@@ -53,4 +53,14 @@ Cenários prontos para demonstração:
 ## Implementação
 
 - `B/config/DemoSeed.java`
+
+## Testes
+
+| Critério | Teste |
+|---|---|
+| CA-R08.1, RN-R08.2, RN-R08.3, RN-R08.6 | `T/DemoSeedIntegrationTest#createsTheDocumentedCast` (inclui login de todos com a senha documentada) |
+| CA-R08.2 | `T/DemoSeedIntegrationTest#leavesCcTi01AlmostExhaustedThroughARealApproval` |
+| RN-R08.4 | `T/DemoSeedIntegrationTest#createsRequestsInEveryStateThroughTheServices` |
+| CA-R08.3, RN-R08.5 | `T/DemoSeedIntegrationTest#runningTheSeedAgainDuplicatesNothing` |
+
 - Smoke test do CI faz login com `admin1@kingspan.test` (job `compose` em `.github/workflows/ci.yml`)

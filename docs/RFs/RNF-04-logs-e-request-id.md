@@ -2,7 +2,7 @@
 
 | Origem | IDs relacionados | Status |
 |---|---|---|
-| README §2.5, §5.1 | NFR-007, INF-005, INF-006 | ✅ atendido · ⚠ sem teste automatizado |
+| README §2.5, §5.1 | NFR-007, INF-005, INF-006 | ✅ atendido e testado |
 
 ## Requisito
 
@@ -37,4 +37,6 @@ Logs estruturados em JSON com o `X-Request-Id`, que é gerado quando não vem na
 ## Testes
 
 - CA-R04.4: o job `compose` do CI (`.github/workflows/ci.yml`) verifica `/health` = `UP` com a stack completa
-- CA-R04.1…CA-R04.3: ⚠ **lacuna**: nenhum teste automatizado do `RequestIdFilter`
+- CA-R04.1, CA-R04.3, CA-R04.4: `T/HttpContractIntegrationTest#everyResponseCarriesARequestId` (HTTP real)
+- CA-R04.2: `T/HttpContractIntegrationTest#errorsAreProblemJsonWithCodeAndTheRequestId`; gravação no evento: `T/HttpContractIntegrationTest#theRequestIdOfEachCallIsStoredOnItsHistoryEvent`
+- Formato JSON dos logs (RN-R04.3): verificado por inspeção, sem teste automatizado

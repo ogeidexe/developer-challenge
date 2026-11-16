@@ -39,5 +39,6 @@ sem subir servidor nem banco. Banco relacional, datas em UTC e erros num formato
 
 ## Testes
 
-- `T/domain/*` (5 classes, JUnit puro): `RequestStateMachineTest`, `ApprovalChainBuilderTest`, `ApprovalPoliciesTest`, `AccessPolicyTest`, `MoneyAndCalendarTest`
-- CA-R01.1 é verificado por inspeção (não há teste de arquitetura automatizado, como ArchUnit)
+- CA-R01.2: `T/domain/*` (5 classes, JUnit puro, sem Spring nem banco): `RequestStateMachineTest`, `ApprovalChainBuilderTest`, `ApprovalPoliciesTest`, `AccessPolicyTest`, `MoneyAndCalendarTest`
+- CA-R01.3, CA-R01.4: `T/HttpContractIntegrationTest#errorsAreProblemJsonWithCodeAndTheRequestId`, `#authenticationRoleAndVisibilityFailuresUseTheirStatusAndCode`, `#validationErrorsListEachInvalidField` (HTTP real)
+- CA-R01.1 é verificado por inspeção (não há teste de arquitetura automatizado, como ArchUnit); um `500` real não tem teste dedicado

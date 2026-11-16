@@ -45,4 +45,6 @@ resposta** sem criar outra solicitação. Validade mínima: 24 h.
 | Critério | Teste |
 |---|---|
 | CA-R03.1, CA-R03.2 | `T/WorkflowIntegrationTest#idempotentCreateReplaysTheStoredResponse` |
-| CA-R03.3, CA-R03.4, RN-R03.7 | ⚠ **lacuna**: sem teste de chave por usuário, normalização de payload ou corrida com a mesma chave |
+| CA-R03.3 | `T/RequestRulesIntegrationTest#anIdempotencyKeyBelongsToOneUser` |
+| CA-R03.4 | `T/RequestRulesIntegrationTest#equivalentPayloadsReplayInsteadOfConflicting` |
+| RN-R03.7 | ⚠ **lacuna**: sem teste de corrida com a mesma chave |

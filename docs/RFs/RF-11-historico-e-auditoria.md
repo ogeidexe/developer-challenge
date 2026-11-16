@@ -2,7 +2,7 @@
 
 | Origem | IDs relacionados | Status |
 |---|---|---|
-| README §2.5, §3.1 | FR-026, FR-027, FR-060, BR-011, DATA-004 | ✅ implementado · ⚠ `X-Request-Id` no evento sem teste |
+| README §2.5, §3.1 | FR-026, FR-027, FR-060, BR-011, DATA-004 | ✅ implementado e testado |
 
 ## Descrição
 
@@ -46,5 +46,5 @@ consultável por solicitação em `GET /requests/:id/history`.
 |---|---|
 | CA-11.2 | `T/WorkflowIntegrationTest#budgetExceededKeepsTheRequestPendingAndOnlyAuditsTheAttempt` |
 | CA-11.4 | `T/WorkflowIntegrationTest#historyAndSnapshotsAreImmutableInTheDatabase`; `T/SecurityIntegrationTest#decidedApprovalStepsCannotBeRewrittenOrDeleted` (etapas) |
-| CA-11.1, CA-11.5 | `E2E/05-request-detail.cy.ts` (linha do tempo, contra o backend simulado) · ⚠ sem asserção de back-end sobre a lista completa |
-| CA-11.3 | ⚠ **lacuna**: nenhum teste verifica o `X-Request-Id` gravado no evento |
+| CA-11.1, CA-11.5, RN-11.5 | `T/RequestRulesIntegrationTest#historyListsEveryActionInOrderWithActorRoleStepVersionAndComment`; `E2E/05-request-detail.cy.ts` |
+| CA-11.3 | `T/HttpContractIntegrationTest#theRequestIdOfEachCallIsStoredOnItsHistoryEvent` (HTTP real) |

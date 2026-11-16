@@ -2,7 +2,7 @@
 
 | Origem | IDs relacionados | Status |
 |---|---|---|
-| README §2.2, §3.2 | FR-010…FR-012, FR-050, FR-052, BR-013, NFR-019, NFR-023 | ✅ implementado · ⚠ filtros sem teste de back-end |
+| README §2.2, §3.2 | FR-010…FR-012, FR-050, FR-052, BR-013, NFR-019, NFR-023 | ✅ implementado e testado |
 
 ## Descrição
 
@@ -55,4 +55,6 @@
 | CA-04.2 | `T/SecurityIntegrationTest#anApproverOfAnotherCostCenterSeesNothingAndCannotDecide`; `T/domain/AccessPolicyTest#approversSeeTheirCenterAdminSeesEverythingElse` |
 | CA-04.5 | `T/SecurityIntegrationTest#searchWildcardsMatchLiterally`; `T/application/InputHardeningTest#searchWildcardsAreEscapedAndMatchLiterally` |
 | CA-04.7 | `T/domain/AccessPolicyTest#allowedActionsPerCaller` |
-| CA-04.3, CA-04.4, CA-04.6 | `E2E/03-request-list.cy.ts` (contra o backend simulado) · ⚠ **lacuna**: sem teste de back-end para ordenação, limite de página e filtros |
+| CA-04.3 | `T/RequestRulesIntegrationTest#sortingAcceptsOnlyTheWhitelistedFields`; `T/HttpContractIntegrationTest#errorsAreProblemJsonWithCodeAndTheRequestId` (400 via HTTP) |
+| CA-04.4 | `T/RequestRulesIntegrationTest#pageSizeIsClampedAndTheEnvelopeIsComplete` |
+| CA-04.6 | `T/RequestRulesIntegrationTest#filtersCombineInsideTheCallersVisibility`; `E2E/03-request-list.cy.ts` |
