@@ -19,15 +19,42 @@ export function InboxPage() {
   })
 
   const columns: ColumnsType<InboxItemDto> = [
-    { title: 'Número', key: 'n', width: 130, render: (_, r) => <Typography.Text strong>{r.requestNumber}{r.currentVersion > 1 ? ` · v${r.currentVersion}` : ''}</Typography.Text> },
+    {
+      title: 'Número',
+      key: 'n',
+      width: 130,
+      render: (_, r) => (
+        <Typography.Text strong>
+          {r.requestNumber}
+          {r.currentVersion > 1 ? ` · v${r.currentVersion}` : ''}
+        </Typography.Text>
+      ),
+    },
     { title: 'Título', dataIndex: 'title', ellipsis: true },
     { title: 'Categoria', key: 'cat', render: (_, r) => CATEGORY_LABEL[r.category] },
-    { title: 'Etapa atual', key: 'step', render: (_, r) => <Tag color="geekblue" bordered={false}>{stepLabel(r.currentStep.level)}</Tag> },
+    {
+      title: 'Etapa atual',
+      key: 'step',
+      render: (_, r) => (
+        <Tag color="geekblue" bordered={false}>
+          {stepLabel(r.currentStep.level)}
+        </Tag>
+      ),
+    },
     { title: 'Total', key: 'total', align: 'right', render: (_, r) => moneyBRL(r.total) },
     { title: 'Solicitante', key: 'owner', render: (_, r) => r.owner.name },
     { title: 'Centro', key: 'cc', render: (_, r) => r.costCenter.code },
     { title: 'Submetida em', key: 'sub', render: (_, r) => fmtDateTime(r.submittedAt) },
-    { title: '', key: 'open', width: 90, render: (_, r) => <Button size="small" type="primary" onClick={() => navigate(`/requests/${r.id}`)}>Analisar</Button> },
+    {
+      title: '',
+      key: 'open',
+      width: 90,
+      render: (_, r) => (
+        <Button size="small" type="primary" onClick={() => navigate(`/requests/${r.id}`)}>
+          Analisar
+        </Button>
+      ),
+    },
   ]
 
   return (
@@ -38,13 +65,20 @@ export function InboxPage() {
       />
       <Card>
         <Table<InboxItemDto>
-          rowKey="id" loading={isFetching} dataSource={data?.data ?? []} columns={columns} scroll={{ x: 960 }}
+          rowKey="id"
+          loading={isFetching}
+          dataSource={data?.data ?? []}
+          columns={columns}
+          scroll={{ x: 960 }}
           locale={{ emptyText: 'Nada aguardando a sua aprovação' }}
           rowClassName={() => 'clickable-row'}
           onRow={(r) => ({ onClick: () => navigate(`/requests/${r.id}`) })}
           pagination={{
-            current: (data?.page ?? 0) + 1, pageSize: PAGE_SIZE, total: data?.totalElements ?? 0,
-            showSizeChanger: false, showTotal: (t) => `${t} registros`,
+            current: (data?.page ?? 0) + 1,
+            pageSize: PAGE_SIZE,
+            total: data?.totalElements ?? 0,
+            showSizeChanger: false,
+            showTotal: (t) => `${t} registros`,
             onChange: (p) => setParams(p > 1 ? { page: String(p - 1) } : {}, { replace: true }),
           }}
         />

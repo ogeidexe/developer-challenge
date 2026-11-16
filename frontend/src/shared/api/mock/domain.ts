@@ -25,7 +25,9 @@ export function brl(cents: number): string {
 function spParts(d: Date) {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'America/Sao_Paulo',
-    year: 'numeric', month: '2-digit', day: '2-digit',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
   }).formatToParts(d)
   const get = (t: string) => parts.find((p) => p.type === t)!.value
   return { y: get('year'), m: get('month'), d: get('day') }
@@ -64,7 +66,11 @@ function canonical(v: unknown): string {
   if (Array.isArray(v)) return `[${v.map(canonical).join(',')}]`
   if (v && typeof v === 'object') {
     const o = v as Record<string, unknown>
-    return `{${Object.keys(o).sort().filter((k) => o[k] !== undefined).map((k) => `${JSON.stringify(k)}:${canonical(o[k])}`).join(',')}}`
+    return `{${Object.keys(o)
+      .sort()
+      .filter((k) => o[k] !== undefined)
+      .map((k) => `${JSON.stringify(k)}:${canonical(o[k])}`)
+      .join(',')}}`
   }
   return JSON.stringify(v ?? null)
 }

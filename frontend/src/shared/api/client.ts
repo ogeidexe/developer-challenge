@@ -2,8 +2,20 @@
 import { USE_MOCK_BACKEND as USE_MOCK } from '../config'
 import { notifyAuthExpired, problemFrom } from './errors'
 import type {
-  BudgetDto, CostCenterDto, DashboardSummaryDto, HealthDto, InboxItemDto, LoginResponse, Page, RequestDetailDto,
-  RequestEventDto, RequestItemInput, RequestStatus, RequestSummaryDto, RequestVersionDto, UserDto,
+  BudgetDto,
+  CostCenterDto,
+  DashboardSummaryDto,
+  HealthDto,
+  InboxItemDto,
+  LoginResponse,
+  Page,
+  RequestDetailDto,
+  RequestEventDto,
+  RequestItemInput,
+  RequestStatus,
+  RequestSummaryDto,
+  RequestVersionDto,
+  UserDto,
 } from './types'
 
 // The fake backend is loaded lazily: when USE_MOCK is false at build time (production default — SEC-F04) the
@@ -14,7 +26,8 @@ const loadMock = () => import('./mock/backend')
 // Exposed only when the page runs inside Cypress and the mock backend is active.
 if (USE_MOCK && typeof window !== 'undefined' && 'Cypress' in window) {
   ;(window as unknown as { __mockBackend: unknown }).__mockBackend = {
-    handle: (req: Parameters<Awaited<ReturnType<typeof loadMock>>['mockHandle']>[0]) => loadMock().then((m) => m.mockHandle(req)),
+    handle: (req: Parameters<Awaited<ReturnType<typeof loadMock>>['mockHandle']>[0]) =>
+      loadMock().then((m) => m.mockHandle(req)),
   }
 }
 
@@ -61,15 +74,20 @@ async function request<T>(method: string, path: string, opts: ReqOptions = {}): 
   if (USE_MOCK) {
     const { mockHandle } = await loadMock()
     const { status, json } = await mockHandle({
-      method, path, query: new URLSearchParams(qs(opts.query).slice(1)),
-      body: opts.body, headers,
+      method,
+      path,
+      query: new URLSearchParams(qs(opts.query).slice(1)),
+      body: opts.body,
+      headers,
     })
     if (status >= 400) fail(status, json)
     return json as T
   }
 
   const res = await fetch(`/api${path}${qs(opts.query)}`, {
-    method, headers, body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
+    method,
+    headers,
+    body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
   })
   const text = await res.text()
   const data = text ? JSON.parse(text) : {}
@@ -79,9 +97,17 @@ async function request<T>(method: string, path: string, opts: ReqOptions = {}): 
 
 // `type` (not `interface`) so it is assignable to the Record index signature of ReqOptions.query.
 export type ListRequestsQuery = {
-  page?: number; size?: number; sort?: string
-  status?: RequestStatus; category?: string; costCenterId?: string
-  createdFrom?: string; createdTo?: string; minAmount?: string; maxAmount?: string; q?: string
+  page?: number
+  size?: number
+  sort?: string
+  status?: RequestStatus
+  category?: string
+  costCenterId?: string
+  createdFrom?: string
+  createdTo?: string
+  minAmount?: string
+  maxAmount?: string
+  q?: string
 }
 
 export const api = {
@@ -94,12 +120,19 @@ export const api = {
 
   listUsers: (query: { page?: number; size?: number; role?: string; costCenterId?: string; q?: string } = {}) =>
     request<Page<UserDto>>('GET', '/users', { query }),
-  createUser: (b: { email: string; password: string; name: string; role: string; approverLevel?: string | null; costCenterId?: string | null }) =>
-    request<UserDto>('POST', '/users', { body: b }),
+  createUser: (b: {
+    email: string
+    password: string
+    name: string
+    role: string
+    approverLevel?: string | null
+    costCenterId?: string | null
+  }) => request<UserDto>('POST', '/users', { body: b }),
   updateUser: (id: string, b: Record<string, unknown>) => request<UserDto>('PATCH', `/users/${id}`, { body: b }),
 
   listCostCenters: () => request<CostCenterDto[]>('GET', '/cost-centers'),
-  createCostCenter: (code: string, name: string) => request<CostCenterDto>('POST', '/cost-centers', { body: { code, name } }),
+  createCostCenter: (code: string, name: string) =>
+    request<CostCenterDto>('POST', '/cost-centers', { body: { code, name } }),
   getBudget: (ccId: string, ym: string) => request<BudgetDto>('GET', `/cost-centers/${ccId}/budgets/${ym}`),
   setBudget: (ccId: string, ym: string, amount: string) =>
     request<BudgetDto>('PUT', `/cost-centers/${ccId}/budgets/${ym}`, { body: { amount } }),
@@ -108,18 +141,21 @@ export const api = {
   createRequest: (payload: unknown, idempotencyKey: string) =>
     request<RequestDetailDto>('POST', '/requests', { body: payload, headers: { 'Idempotency-Key': idempotencyKey } }),
   getRequest: (id: string) => request<RequestDetailDto>('GET', `/requests/${id}`),
-  updateRequest: (id: string, payload: unknown) => request<RequestDetailDto>('PUT', `/requests/${id}`, { body: payload }),
+  updateRequest: (id: string, payload: unknown) =>
+    request<RequestDetailDto>('PUT', `/requests/${id}`, { body: payload }),
   listVersions: (id: string) => request<RequestVersionDto[]>('GET', `/requests/${id}/versions`),
   getVersion: (id: string, n: number) => request<RequestVersionDto>('GET', `/requests/${id}/versions/${n}`),
   history: (id: string) => request<RequestEventDto[]>('GET', `/requests/${id}/history`),
-  submit: (id: string, lockVersion: number) => request<RequestDetailDto>('POST', `/requests/${id}/submit`, { body: { lockVersion } }),
+  submit: (id: string, lockVersion: number) =>
+    request<RequestDetailDto>('POST', `/requests/${id}/submit`, { body: { lockVersion } }),
   approve: (id: string, lockVersion: number, comment?: string) =>
     request<RequestDetailDto>('POST', `/requests/${id}/approve`, { body: { lockVersion, comment } }),
   reject: (id: string, lockVersion: number, comment: string) =>
     request<RequestDetailDto>('POST', `/requests/${id}/reject`, { body: { lockVersion, comment } }),
   requestChanges: (id: string, lockVersion: number, comment: string) =>
     request<RequestDetailDto>('POST', `/requests/${id}/request-changes`, { body: { lockVersion, comment } }),
-  cancel: (id: string, lockVersion: number) => request<RequestDetailDto>('POST', `/requests/${id}/cancel`, { body: { lockVersion } }),
+  cancel: (id: string, lockVersion: number) =>
+    request<RequestDetailDto>('POST', `/requests/${id}/cancel`, { body: { lockVersion } }),
 
   inbox: (query: { page?: number; size?: number; sort?: string; costCenterId?: string } = {}) =>
     request<Page<InboxItemDto>>('GET', '/approvals/inbox', { query }),

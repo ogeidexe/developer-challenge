@@ -18,7 +18,7 @@ describe('Navigation, guards and error pages', () => {
     cy.location('pathname').should('eq', '/')
   })
 
-  it('a request outside the user\'s visibility answers 404 — even for ADMIN on someone else\'s draft (ADR-012)', () => {
+  it("a request outside the user's visibility answers 404 — even for ADMIN on someone else's draft (ADR-012)", () => {
     cy.requestIdByTitle(USERS.solicTi, 'Monitores para o time de suporte').then((id) => {
       cy.login(USERS.admin1)
       cy.visit(`/requests/${id}`)

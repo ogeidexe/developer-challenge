@@ -15,7 +15,7 @@ describe('Request form screen (create / edit)', () => {
     cy.location('pathname').should('eq', '/requests/new')
   })
 
-  it('defaults the cost center to the requester\'s own', () => {
+  it("defaults the cost center to the requester's own", () => {
     cy.visit('/requests/new')
     cy.get('#request_costCenterId').closest('.ant-select').should('contain', 'CC-TI-01')
   })

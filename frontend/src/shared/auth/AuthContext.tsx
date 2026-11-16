@@ -4,7 +4,10 @@ import { api } from '../api/client'
 import { onAuthExpired } from '../api/errors'
 import type { UserDto } from '../api/types'
 
-interface AuthState { token: string; user: UserDto }
+interface AuthState {
+  token: string
+  user: UserDto
+}
 
 interface AuthCtx {
   user: UserDto | null
@@ -71,13 +74,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   // README §2.7: 401 → login, then back to the original route
-  useEffect(() => onAuthExpired(() => {
-    saveSession(null)
-    setState(null)
-    const { pathname, search } = locationRef.current
-    const from = pathname.startsWith('/login') ? '/' : pathname + search
-    navigate(`/login?returnUrl=${encodeURIComponent(from)}`, { replace: true })
-  }), [navigate])
+  useEffect(
+    () =>
+      onAuthExpired(() => {
+        saveSession(null)
+        setState(null)
+        const { pathname, search } = locationRef.current
+        const from = pathname.startsWith('/login') ? '/' : pathname + search
+        navigate(`/login?returnUrl=${encodeURIComponent(from)}`, { replace: true })
+      }),
+    [navigate],
+  )
 
   const value = useMemo<AuthCtx>(() => {
     const start = (token: string, user: UserDto) => {

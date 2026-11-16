@@ -6,13 +6,22 @@ import { ApiError } from './api/errors'
 
 // ---------------- labels ----------------
 export const STATUS_LABEL: Record<RequestStatus, string> = {
-  DRAFT: 'Rascunho', PENDING_APPROVAL: 'Em aprovação', CHANGES_REQUESTED: 'Devolvida p/ ajuste',
-  APPROVED: 'Aprovada', REJECTED: 'Rejeitada', CANCELLED: 'Cancelada',
+  DRAFT: 'Rascunho',
+  PENDING_APPROVAL: 'Em aprovação',
+  CHANGES_REQUESTED: 'Devolvida p/ ajuste',
+  APPROVED: 'Aprovada',
+  REJECTED: 'Rejeitada',
+  CANCELLED: 'Cancelada',
 }
 export const STATUSES = Object.keys(STATUS_LABEL) as RequestStatus[]
 
 export const CATEGORY_LABEL: Record<Category, string> = {
-  EQUIPMENT: 'Equipamento', SERVICES: 'Serviço', SUPPLIES: 'Suprimentos', TRAVEL: 'Viagem', SOFTWARE: 'Software', OTHER: 'Outro',
+  EQUIPMENT: 'Equipamento',
+  SERVICES: 'Serviço',
+  SUPPLIES: 'Suprimentos',
+  TRAVEL: 'Viagem',
+  SOFTWARE: 'Software',
+  OTHER: 'Outro',
 }
 export const CATEGORIES = Object.keys(CATEGORY_LABEL) as Category[]
 export const categoryOptions = CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABEL[c] }))
@@ -23,11 +32,19 @@ export const roleLabel = (r: string) => (r === 'ADMIN' ? 'Admin' : r === 'APROVA
 
 // ---------------- tags ----------------
 const STATUS_COLOR: Record<RequestStatus, string> = {
-  DRAFT: 'default', PENDING_APPROVAL: 'processing', CHANGES_REQUESTED: 'warning',
-  APPROVED: 'success', REJECTED: 'error', CANCELLED: 'default',
+  DRAFT: 'default',
+  PENDING_APPROVAL: 'processing',
+  CHANGES_REQUESTED: 'warning',
+  APPROVED: 'success',
+  REJECTED: 'error',
+  CANCELLED: 'default',
 }
 export function StatusTag({ status }: { status: RequestStatus }) {
-  return <Tag color={STATUS_COLOR[status]} bordered={false}>{STATUS_LABEL[status]}</Tag>
+  return (
+    <Tag color={STATUS_COLOR[status]} bordered={false}>
+      {STATUS_LABEL[status]}
+    </Tag>
+  )
 }
 
 const STEP_STATUS: Record<StepStatus, { label: string; color: string; antd: StepProps['status'] }> = {
@@ -39,7 +56,11 @@ const STEP_STATUS: Record<StepStatus, { label: string; color: string; antd: Step
   SKIPPED: { label: 'Não alcançada', color: 'default', antd: 'wait' },
 }
 export function StepTag({ status }: { status: StepStatus }) {
-  return <Tag color={STEP_STATUS[status].color} bordered={false}>{STEP_STATUS[status].label}</Tag>
+  return (
+    <Tag color={STEP_STATUS[status].color} bordered={false}>
+      {STEP_STATUS[status].label}
+    </Tag>
+  )
 }
 /** Maps a step to antd <Steps> status; the current pending step is "process". */
 export const stepAntdStatus = (status: StepStatus, isCurrent: boolean): StepProps['status'] =>
@@ -83,7 +104,9 @@ export function PageHeader({ title, subtitle, extra }: { title: ReactNode; subti
   return (
     <Flex justify="space-between" align="flex-start" gap={16} wrap style={{ marginBottom: 16 }}>
       <div>
-        <Typography.Title level={3} style={{ margin: 0 }}>{title}</Typography.Title>
+        <Typography.Title level={3} style={{ margin: 0 }}>
+          {title}
+        </Typography.Title>
         {subtitle && <Typography.Text type="secondary">{subtitle}</Typography.Text>}
       </div>
       {extra}

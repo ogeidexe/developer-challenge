@@ -30,7 +30,7 @@ describe('Dashboard screen', () => {
     cy.get('.ant-table').should('not.contain', 'CC-ADM-02')
   })
 
-  it('APROVADOR: requests of the own cost center, without other people\'s drafts', () => {
+  it("APROVADOR: requests of the own cost center, without other people's drafts", () => {
     cy.login(USERS.aprov1Adm)
     stat('Rascunho').should('have.text', '0')
     stat('Em aprovação').should('have.text', '2')

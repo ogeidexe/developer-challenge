@@ -776,3 +776,40 @@ One block per agent turn, one row per changed file:
 | `frontend/package.json` | modified | +10 | -1 |
 | `frontend/src/shared/api/mock/backend.ts` | modified | +12 | -8 |
 | `frontend/src/shared/auth/safeReturnUrl.ts` | modified | +1 | -0 |
+
+---
+### Turn 2026-11-16 12:24:49 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: Frontend: apply Prettier formatting to the whole codebase (layout only, no logic change)
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `frontend/cypress/e2e-runner.mjs` | modified | +5 | -2 |
+| `frontend/cypress/e2e/02-dashboard.cy.ts` | modified | +1 | -1 |
+| `frontend/cypress/e2e/03-request-list.cy.ts` | modified | +4 | -2 |
+| `frontend/cypress/e2e/04-request-form.cy.ts` | modified | +1 | -1 |
+| `frontend/cypress/e2e/05-request-detail.cy.ts` | modified | +11 | -4 |
+| `frontend/cypress/e2e/07-admin.cy.ts` | modified | +3 | -1 |
+| `frontend/cypress/e2e/08-navigation.cy.ts` | modified | +1 | -1 |
+| `frontend/cypress/support/commands.ts` | modified | +17 | -6 |
+| `frontend/src/App.tsx` | modified | +80 | -15 |
+| `frontend/src/features/admin/AdminPage.tsx` | modified | +206 | -45 |
+| `frontend/src/features/approvals/InboxPage.tsx` | modified | +40 | -6 |
+| `frontend/src/features/auth/LoginPage.tsx` | modified | +68 | -16 |
+| `frontend/src/features/dashboard/DashboardPage.tsx` | modified | +32 | -10 |
+| `frontend/src/features/requests/RequestDetailPage.tsx` | modified | +285 | -72 |
+| `frontend/src/features/requests/RequestFormPage.tsx` | modified | +158 | -36 |
+| `frontend/src/features/requests/RequestListPage.tsx` | modified | +149 | -37 |
+| `frontend/src/index.css` | modified | +6 | -2 |
+| `frontend/src/shared/api/client.ts` | modified | +51 | -15 |
+| `frontend/src/shared/api/errors.ts` | modified | +3 | -1 |
+| `frontend/src/shared/api/mock/backend.ts` | modified | +580 | -143 |
+| `frontend/src/shared/api/mock/data.ts` | modified | +352 | -93 |
+| `frontend/src/shared/api/mock/domain.ts` | modified | +8 | -2 |
+| `frontend/src/shared/api/types.ts` | modified | +30 | -8 |
+| `frontend/src/shared/auth/AuthContext.tsx` | modified | +15 | -8 |
+| `frontend/src/shared/auth/safeReturnUrl.ts` | modified | +2 | -1 |
+| `frontend/src/shared/ui.tsx` | modified | +31 | -8 |
+| `frontend/vite.config.ts` | modified | +2 | -1 |

@@ -13,7 +13,7 @@ describe('Request list screen', () => {
     cy.contains('Notebooks para o time de TI')
   })
 
-  it('never lists another user\'s draft', () => {
+  it("never lists another user's draft", () => {
     cy.visit('/requests')
     cy.get('.ant-table').should('not.contain', 'Monitores para o time de suporte')
   })
@@ -22,7 +22,9 @@ describe('Request list screen', () => {
     cy.visit('/requests')
     cy.antSelectByPlaceholder('Status', 'Em aprovação')
     cy.location('search').should('contain', 'status=PENDING_APPROVAL')
-    rows().should('have.length', 4).each((row) => cy.wrap(row).should('contain', 'Em aprovação'))
+    rows()
+      .should('have.length', 4)
+      .each((row) => cy.wrap(row).should('contain', 'Em aprovação'))
     cy.reload()
     rows().should('have.length', 4)
     cy.get('.ant-select-selection-item').should('contain', 'Em aprovação')

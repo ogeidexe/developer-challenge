@@ -28,9 +28,12 @@ try {
     console.error(result.message)
   } else {
     const { totalTests, totalPassed, totalFailed, totalPending, totalSkipped } = result
-    console.log(`\nE2E: ${totalTests} tests · ${totalPassed} passed · ${totalFailed} failed · ${totalPending} pending · ${totalSkipped} skipped`)
+    console.log(
+      `\nE2E: ${totalTests} tests · ${totalPassed} passed · ${totalFailed} failed · ${totalPending} pending · ${totalSkipped} skipped`,
+    )
     for (const run of result.runs) {
-      for (const t of run.tests.filter((x) => x.state === 'failed')) console.log(`  ✖ ${run.spec.relative} › ${t.title.join(' › ')}`)
+      for (const t of run.tests.filter((x) => x.state === 'failed'))
+        console.log(`  ✖ ${run.spec.relative} › ${t.title.join(' › ')}`)
     }
     exitCode = totalFailed === 0 && totalTests > 0 ? 0 : 1 // zero tests found is a failure, not a pass
   }

@@ -2,7 +2,13 @@ import { useState, type ReactNode } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { Avatar, Button, Dropdown, Flex, Layout, Menu, Result, Tag, Typography, theme, type MenuProps } from 'antd'
 import {
-  AuditOutlined, DashboardOutlined, FileTextOutlined, LogoutOutlined, ReloadOutlined, SettingOutlined, UserOutlined,
+  AuditOutlined,
+  DashboardOutlined,
+  FileTextOutlined,
+  LogoutOutlined,
+  ReloadOutlined,
+  SettingOutlined,
+  UserOutlined,
 } from '@ant-design/icons'
 import { useAuth } from './shared/auth/AuthContext'
 import { roleLabel } from './shared/ui'
@@ -21,7 +27,8 @@ const { Header, Sider, Content } = Layout
 function RequireAuth({ children }: { children: ReactNode }) {
   const { user } = useAuth()
   const location = useLocation()
-  if (!user) return <Navigate to={`/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`} replace />
+  if (!user)
+    return <Navigate to={`/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`} replace />
   return <>{children}</>
 }
 
@@ -31,8 +38,16 @@ function RequireRole({ roles, children }: { roles: Role[]; children: ReactNode }
   const navigate = useNavigate()
   if (user && !roles.includes(user.role)) {
     return (
-      <Result status="403" title="Acesso negado" subTitle="Seu papel não permite acessar esta página."
-        extra={<Button type="primary" onClick={() => navigate('/')}>Ir para o dashboard</Button>} />
+      <Result
+        status="403"
+        title="Acesso negado"
+        subTitle="Seu papel não permite acessar esta página."
+        extra={
+          <Button type="primary" onClick={() => navigate('/')}>
+            Ir para o dashboard
+          </Button>
+        }
+      />
     )
   }
   return <>{children}</>
@@ -40,7 +55,17 @@ function RequireRole({ roles, children }: { roles: Role[]; children: ReactNode }
 
 function NotFound() {
   const navigate = useNavigate()
-  return <Result status="404" title="Página não encontrada" extra={<Button type="primary" onClick={() => navigate('/')}>Voltar ao início</Button>} />
+  return (
+    <Result
+      status="404"
+      title="Página não encontrada"
+      extra={
+        <Button type="primary" onClick={() => navigate('/')}>
+          Voltar ao início
+        </Button>
+      }
+    />
+  )
 }
 
 function Shell() {
@@ -55,7 +80,9 @@ function Shell() {
   const menuItems: MenuProps['items'] = [
     { key: '/', icon: <DashboardOutlined />, label: 'Dashboard' },
     { key: '/requests', icon: <FileTextOutlined />, label: 'Solicitações' },
-    ...(user.role !== 'SOLICITANTE' ? [{ key: '/approvals', icon: <AuditOutlined />, label: 'Caixa de aprovação' }] : []),
+    ...(user.role !== 'SOLICITANTE'
+      ? [{ key: '/approvals', icon: <AuditOutlined />, label: 'Caixa de aprovação' }]
+      : []),
     ...(user.role === 'ADMIN' ? [{ key: '/admin', icon: <SettingOutlined />, label: 'Administração' }] : []),
   ]
   const userMenu: MenuProps['items'] = [
@@ -68,23 +95,39 @@ function Shell() {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} breakpoint="lg" width={232}>
-        <Flex align="center" justify="center" style={{ height: 64, color: '#fff', fontWeight: 700, letterSpacing: 0.3 }}>
+        <Flex
+          align="center"
+          justify="center"
+          style={{ height: 64, color: '#fff', fontWeight: 700, letterSpacing: 0.3 }}
+        >
           {collapsed ? 'KS' : 'Kingspan · Compras'}
         </Flex>
-        <Menu theme="dark" mode="inline" selectedKeys={[section]} items={menuItems} onClick={({ key }) => navigate(key)} />
+        <Menu
+          theme="dark"
+          mode="inline"
+          selectedKeys={[section]}
+          items={menuItems}
+          onClick={({ key }) => navigate(key)}
+        />
       </Sider>
       <Layout>
         <Header style={{ borderBottom: `1px solid ${token.colorBorderSecondary}` }}>
           <Flex justify="space-between" align="center" style={{ height: '100%' }}>
-            <Typography.Text type="secondary">Solicitações de compra{USE_MOCK_BACKEND ? ' · backend simulado em memória' : ''}</Typography.Text>
+            <Typography.Text type="secondary">
+              Solicitações de compra{USE_MOCK_BACKEND ? ' · backend simulado em memória' : ''}
+            </Typography.Text>
             <Dropdown
               trigger={['click']}
               menu={{
                 items: userMenu,
                 onClick: ({ key }) => {
                   if (key === 'logout') logout()
-                  if (key === 'reset' && USE_MOCK_BACKEND) { // seed ids change on reset → sign in again
-                    void import('./shared/api/mock/backend').then((m) => { m.resetMock(); logout() })
+                  if (key === 'reset' && USE_MOCK_BACKEND) {
+                    // seed ids change on reset → sign in again
+                    void import('./shared/api/mock/backend').then((m) => {
+                      m.resetMock()
+                      logout()
+                    })
                   }
                 },
               }}
@@ -94,7 +137,8 @@ function Shell() {
                   <Avatar size="small" icon={<UserOutlined />} style={{ background: token.colorPrimary }} />
                   <span>{user.name}</span>
                   <Tag bordered={false} color="blue">
-                    {roleLabel(user.role)}{user.approverLevel ? ` · ${user.approverLevel === 'NIVEL_1' ? 'N1' : 'N2'}` : ''}
+                    {roleLabel(user.role)}
+                    {user.approverLevel ? ` · ${user.approverLevel === 'NIVEL_1' ? 'N1' : 'N2'}` : ''}
                   </Tag>
                 </Flex>
               </Button>
@@ -109,8 +153,22 @@ function Shell() {
               <Route path="requests/new" element={<RequestFormPage />} />
               <Route path="requests/:id" element={<RequestDetailPage />} />
               <Route path="requests/:id/edit" element={<RequestFormPage />} />
-              <Route path="approvals" element={<RequireRole roles={['APROVADOR', 'ADMIN']}><InboxPage /></RequireRole>} />
-              <Route path="admin" element={<RequireRole roles={['ADMIN']}><AdminPage /></RequireRole>} />
+              <Route
+                path="approvals"
+                element={
+                  <RequireRole roles={['APROVADOR', 'ADMIN']}>
+                    <InboxPage />
+                  </RequireRole>
+                }
+              />
+              <Route
+                path="admin"
+                element={
+                  <RequireRole roles={['ADMIN']}>
+                    <AdminPage />
+                  </RequireRole>
+                }
+              />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
@@ -124,7 +182,14 @@ export function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route path="*" element={<RequireAuth><Shell /></RequireAuth>} />
+      <Route
+        path="*"
+        element={
+          <RequireAuth>
+            <Shell />
+          </RequireAuth>
+        }
+      />
     </Routes>
   )
 }

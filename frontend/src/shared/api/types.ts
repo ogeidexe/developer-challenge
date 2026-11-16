@@ -2,8 +2,7 @@
 export type Role = 'SOLICITANTE' | 'APROVADOR' | 'ADMIN'
 export type ApproverLevel = 'NIVEL_1' | 'NIVEL_2'
 export type StepLevel = 'NIVEL_1' | 'NIVEL_2' | 'ADMIN'
-export type RequestStatus =
-  | 'DRAFT' | 'PENDING_APPROVAL' | 'CHANGES_REQUESTED' | 'APPROVED' | 'REJECTED' | 'CANCELLED'
+export type RequestStatus = 'DRAFT' | 'PENDING_APPROVAL' | 'CHANGES_REQUESTED' | 'APPROVED' | 'REJECTED' | 'CANCELLED'
 export type Category = 'EQUIPMENT' | 'SERVICES' | 'SUPPLIES' | 'TRAVEL' | 'SOFTWARE' | 'OTHER'
 // A-31: the deciding step records the outcome; later steps of a closed version become SKIPPED.
 export type StepStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'RETURNED' | 'CANCELLED' | 'SKIPPED'
@@ -21,7 +20,11 @@ export interface UserDto {
   lockVersion?: number
 }
 
-export interface RefDto { id: string; name?: string; code?: string }
+export interface RefDto {
+  id: string
+  name?: string
+  code?: string
+}
 
 export interface LoginResponse {
   token: string
@@ -30,7 +33,12 @@ export interface LoginResponse {
   user: UserDto
 }
 
-export interface CostCenterDto { id: string; code: string; name: string; active: boolean }
+export interface CostCenterDto {
+  id: string
+  code: string
+  name: string
+  active: boolean
+}
 
 export interface BudgetDto {
   costCenterId: string
@@ -40,7 +48,11 @@ export interface BudgetDto {
   available: string
 }
 
-export interface RequestItemInput { description: string; quantity: number; unitPrice: string }
+export interface RequestItemInput {
+  description: string
+  quantity: number
+  unitPrice: string
+}
 
 export interface ItemDto {
   position: number
@@ -115,7 +127,9 @@ export interface RequestEventDto {
   occurredAt: string
 }
 
-export interface InboxItemDto extends RequestSummaryDto { currentStep: ApprovalStepDto }
+export interface InboxItemDto extends RequestSummaryDto {
+  currentStep: ApprovalStepDto
+}
 
 export interface Page<T> {
   data: T[]
@@ -139,9 +153,17 @@ export interface DashboardSummaryDto {
   averageApprovalTimeDays: number | null
 }
 
-export interface HealthDto { status: 'UP' | 'DOWN'; db: 'UP' | 'DOWN'; timestamp: string }
+export interface HealthDto {
+  status: 'UP' | 'DOWN'
+  db: 'UP' | 'DOWN'
+  timestamp: string
+}
 
-export interface FieldError { field: string; message: string; code: string }
+export interface FieldError {
+  field: string
+  message: string
+  code: string
+}
 
 export interface ProblemDetail {
   type: string

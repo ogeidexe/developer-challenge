@@ -7,7 +7,8 @@ export function safeReturnUrl(raw: string | null | undefined): string {
   // must be a path ("/x"), never protocol-relative ("//host"), never with a backslash ("/\host" is "//host" to
   // browsers), never with control characters (browsers strip tabs/newlines: "/\t/host" becomes "//host")
   // eslint-disable-next-line no-control-regex -- matching control characters is the point of this check
-  if (!raw.startsWith('/') || raw.startsWith('//') || raw.includes('\\') || /[\u0000-\u001f\u007f]/.test(raw)) return '/'
+  if (!raw.startsWith('/') || raw.startsWith('//') || raw.includes('\\') || /[\u0000-\u001f\u007f]/.test(raw))
+    return '/'
   try {
     const url = new URL(raw, window.location.origin)
     if (url.origin !== window.location.origin) return '/'

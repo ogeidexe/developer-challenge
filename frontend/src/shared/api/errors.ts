@@ -27,7 +27,9 @@ export class ApiError extends Error {
 }
 
 const AUTH_EXPIRED_EVENT = 'kp:auth-expired'
-export function notifyAuthExpired(): void { window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT)) }
+export function notifyAuthExpired(): void {
+  window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
+}
 export function onAuthExpired(fn: () => void): () => void {
   window.addEventListener(AUTH_EXPIRED_EVENT, fn)
   return () => window.removeEventListener(AUTH_EXPIRED_EVENT, fn)

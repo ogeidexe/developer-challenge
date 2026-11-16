@@ -7,7 +7,8 @@ export default defineConfig(({ command, mode }) => {
   // SEC-F04 — compile-time flags (literal true/false), so a disabled feature is dead code and is removed from
   // the bundle together with what only it imports (the fake backend and its seed, the demo credentials).
   const useMockBackend = env.VITE_MOCK_BACKEND === 'true' || (env.VITE_MOCK_BACKEND !== 'false' && isDevServer)
-  const showDemoLogin = env.VITE_DEMO_LOGIN === 'true' || (env.VITE_DEMO_LOGIN !== 'false' && (isDevServer || useMockBackend))
+  const showDemoLogin =
+    env.VITE_DEMO_LOGIN === 'true' || (env.VITE_DEMO_LOGIN !== 'false' && (isDevServer || useMockBackend))
 
   return {
     plugins: [react()],

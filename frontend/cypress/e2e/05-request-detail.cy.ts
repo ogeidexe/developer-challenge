@@ -45,9 +45,12 @@ describe('Request detail screen — approval workflow', () => {
 
   it('builds the chain from value AND category: SOFTWARE under R$ 1.000 ends with ADMIN', () => {
     cy.apiAs(USERS.solicTi, 'POST', '/requests', {
-      title: 'Licença editor E2E', category: 'SOFTWARE',
+      title: 'Licença editor E2E',
+      category: 'SOFTWARE',
       items: [{ description: 'Licença anual', quantity: 1, unitPrice: '500.00' }],
-    }).then(({ json }) => cy.apiAs(USERS.solicTi, 'POST', `/requests/${json.id}/submit`, { lockVersion: json.lockVersion }))
+    }).then(({ json }) =>
+      cy.apiAs(USERS.solicTi, 'POST', `/requests/${json.id}/submit`, { lockVersion: json.lockVersion }),
+    )
     cy.login(USERS.solicTi)
     cy.openRequest('Licença editor E2E')
     stepTitles().should('have.length', 2)
@@ -129,8 +132,12 @@ describe('Request detail screen — approval workflow', () => {
     cy.contains('button', 'Aprovar')
     // a second admin approves the same step "in another browser"
     cy.requestIdByTitle(USERS.admin2, 'Notebooks para o time de TI').then((id) =>
-      cy.apiAs(USERS.admin2, 'GET', `/requests/${id}`).then(({ json }) =>
-        cy.apiAs(USERS.admin2, 'POST', `/requests/${id}/approve`, { lockVersion: json.lockVersion })))
+      cy
+        .apiAs(USERS.admin2, 'GET', `/requests/${id}`)
+        .then(({ json }) =>
+          cy.apiAs(USERS.admin2, 'POST', `/requests/${id}/approve`, { lockVersion: json.lockVersion }),
+        ),
+    )
     decide('Aprovar', 'Aprovar') // our screen still holds the old lockVersion
     cy.contains('.ant-alert-warning', 'Alguém agiu antes de você (409)')
     cy.contains('.ant-tag', 'Aprovada')

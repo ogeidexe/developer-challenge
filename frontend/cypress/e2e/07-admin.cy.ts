@@ -30,7 +30,9 @@ describe('Administration screen', () => {
       cy.antSelect('#user_approverLevel', 'Nível 1')
       cy.modal().contains('button', 'Salvar').click()
       cy.toast('Usuário criado.')
-      cy.contains('.ant-table-row', 'novo.aprovador@kingspan.test').should('contain', 'Aprovador').and('contain', 'CC-TI-01')
+      cy.contains('.ant-table-row', 'novo.aprovador@kingspan.test')
+        .should('contain', 'Aprovador')
+        .and('contain', 'CC-TI-01')
     })
 
     it('creates a cost center and refuses a duplicate code', () => {

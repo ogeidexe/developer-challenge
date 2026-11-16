@@ -20,7 +20,11 @@ export const USERS = {
 type ApiJson = any
 
 type MockHandle = (req: {
-  method: string; path: string; query: URLSearchParams; body?: unknown; headers: Record<string, string>
+  method: string
+  path: string
+  query: URLSearchParams
+  body?: unknown
+  headers: Record<string, string>
 }) => Promise<{ status: number; json: ApiJson }>
 
 declare global {
@@ -59,14 +63,18 @@ Cypress.Commands.add('login', (email: string, password = PASSWORD) => {
 
 Cypress.Commands.add('antSelect', (selector: string, option: string | RegExp) => {
   cy.get(selector).closest('.ant-select').click()
-  cy.get('.ant-select-dropdown:not(.ant-select-dropdown-hidden)').last()
-    .contains('.ant-select-item-option', option).click()
+  cy.get('.ant-select-dropdown:not(.ant-select-dropdown-hidden)')
+    .last()
+    .contains('.ant-select-item-option', option)
+    .click()
 })
 
 Cypress.Commands.add('antSelectByPlaceholder', (placeholder: string, option: string | RegExp) => {
   cy.contains('.ant-select-selection-placeholder', placeholder).closest('.ant-select').click()
-  cy.get('.ant-select-dropdown:not(.ant-select-dropdown-hidden)').last()
-    .contains('.ant-select-item-option', option).click()
+  cy.get('.ant-select-dropdown:not(.ant-select-dropdown-hidden)')
+    .last()
+    .contains('.ant-select-item-option', option)
+    .click()
 })
 
 Cypress.Commands.add('confirmPopover', (okText: string | RegExp) => {
@@ -90,7 +98,10 @@ Cypress.Commands.add('apiAs', (email: string, method: string, path: string, body
     const call = (m: string, p: string, b?: unknown, token?: string) => {
       const [pathname, qs = ''] = p.split('?')
       return handle({
-        method: m, path: pathname, query: new win.URLSearchParams(qs), body: b,
+        method: m,
+        path: pathname,
+        query: new win.URLSearchParams(qs),
+        body: b,
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       })
     }
