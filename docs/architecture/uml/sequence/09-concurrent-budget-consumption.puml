@@ -1,0 +1,27 @@
+@startuml SEQ-09-ConcurrentBudgetConsumption
+' Final approvals of DIFFERENT requests competing for the same balance.
+' Balance never goes negative; requests that don't fit get 422 BUDGET_EXCEEDED.
+actor A1 as "Aprovador 1"
+actor A2 as "Aprovador 2"
+participant "TransitionService (via TransitionFacade)" as TS
+participant "BudgetRepository" as BR
+database DB as "PostgreSQL"
+
+== Balance: R$10.000,00; Request X = R$7.000; Request Y = R$7.000 ==
+A1 -> TS : approve(X final, lock=3)
+A2 -> TS : approve(Y final, lock=5)
+
+TS -> BR : consume(cc, ym, 700000)   [X]
+BR -> DB : UPDATE budgets SET consumed_cents = consumed_cents + 700000\nWHERE ... AND consumed_cents + 700000 <= amount_cents\n-- row lock granted to X's tx --
+== X commits first ==
+TS -> DB : COMMIT (X)  => consumed = R$7.000
+TS --> A1 : 200 (X APPROVED)
+
+== Y's UPDATE now re-evaluates on the committed value ==
+TS -> BR : consume(cc, ym, 700000)   [Y — blocked until X commits, then proceeds]
+BR -> DB : same conditional UPDATE: 700000 + 700000 <= 1000000 ? NO\n-- 0 rows affected --
+BR --> TS : throw BUDGET_EXCEEDED
+TS -> DB : ROLLBACK transition tx; NEW short tx:\nINSERT request_events (APPROVAL_FAILED_BUDGET for Y); COMMIT
+TS --> A2 : 422 BUDGET_EXCEEDED ('available R$3.000,00')
+note over DB : Final state: consumed = R$7.000 >= 0 — never negative.\nOrder of arrival decides winners; if Y's tx had committed first, X would get 422.
+@enduml

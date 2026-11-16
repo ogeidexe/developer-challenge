@@ -1,0 +1,33 @@
+@startuml SEQ-02-SubmitRequest
+' POST /requests/{id}/submit — freeze v1, stamp competence month, build the chain.
+' Order: 404 visibility → 403 owner → 409 lock claim (first write) → 422 state.
+actor Dono
+participant "RequestController" as C
+participant "TransitionFacade" as F
+participant "TransitionService\n(@Transactional)" as TS
+participant "RequestAccess / RequestLock" as ACC
+participant "RequestStateMachine" as SM
+participant "ApprovalChainBuilder" as CB
+participant "BusinessCalendar" as CAL
+participant "repositories" as R
+
+Dono -> C : POST /requests/{id}/submit {lockVersion}
+C -> F : submit(actor, id, lockVersion)
+F -> TS : submit(...)
+TS -> ACC : loadVisible(actor, id)          ' 404 (foreign DRAFT included, ADR-012)
+TS -> ACC : requireOwner                    ' 403 NOT_REQUEST_OWNER
+TS -> ACC : claim(request, lockVersion)
+ACC -> R : UPDATE purchase_requests SET lock_version = lock_version + 1\nWHERE id = :id AND lock_version = :expected   ' FIRST WRITE; 0 rows → 409
+TS -> SM : next(DRAFT | CHANGES_REQUESTED, SUBMIT)   ' 422 INVALID_TRANSITION otherwise
+TS -> R : items of the working copy (none → 422)
+TS -> CAL : competenceMonth(now)            ' America/Sao_Paulo, e.g. "2026-11"
+TS -> R : INSERT request_versions (v1, frozen cost center, total, competence month)\n+ version_items
+TS -> CB : build(total, category)
+CB --> TS : e.g. [NIVEL_1, NIVEL_2, ADMIN]
+TS -> R : INSERT approval_steps (PENDING, sequence 1..n)
+TS -> R : status = PENDING_APPROVAL, current_version = 1
+TS -> R : INSERT request_events (SUBMITTED)
+TS -> TS : flush + clear → re-read for the response
+TS --> Dono : 200 RequestDetail (steps, allowedActions, new lockVersion)
+note over TS,R : one transaction — any failure rolls everything back,\nincluding the lock bump
+@enduml

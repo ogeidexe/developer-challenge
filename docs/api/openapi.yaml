@@ -1,0 +1,764 @@
+openapi: 3.1.0
+info:
+  title: Purchase Request System API
+  version: 1.0.0
+  description: |
+    REST API for the purchase-request module with cost-center budgets, sequential multi-step
+    approval, segregation of duties, request versioning, optimistic concurrency and idempotency
+    (Kingspan developer challenge, branch teste-pleno).
+    Conventions: RFC 9457 problem+json errors, integer-cents money serialized as decimal strings
+    (2 fraction digits, BRL), ISO 8601 dates with offset, pagination envelope
+    {data,page,size,totalElements,totalPages}.
+servers:
+  - url: /api
+    description: same-origin via nginx proxy (compose)
+  - url: http://localhost:3000
+    description: local backend
+tags:
+  - name: Auth
+  - name: Users
+  - name: Cost Centers
+  - name: Requests
+  - name: Versions
+  - name: Transitions
+  - name: Approvals
+  - name: Dashboard
+  - name: System
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      operationId: registerUser
+      summary: Public registration (always creates SOLICITANTE)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/UserDto' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { description: Email already registered }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /auth/login:
+    post:
+      tags: [Auth]
+      operationId: login
+      summary: Authenticate and obtain a 15-minute JWT
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/LoginResponse' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { description: Invalid credentials }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '429':
+          description: >-
+            Too many failed logins for this account or from this client address (SEC-F01). Refused even with the
+            right password until the window ends.
+          headers:
+            Retry-After: { description: Seconds until the next attempt is accepted, schema: { type: integer } }
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/ProblemDetail' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /auth/me:
+    get:
+      tags: [Auth]
+      operationId: getMe
+      summary: Current authenticated user
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/UserDto' } } } }
+        '401': { description: Missing/invalid/expired token }
+  /users:
+    get:
+      tags: [Users]
+      operationId: listUsers
+      summary: List users (ADMIN)
+      parameters:
+        - { $ref: '#/components/parameters/PageParam' }
+        - { $ref: '#/components/parameters/SizeParam' }
+        - { $ref: '#/components/parameters/SortParam' }
+        - { name: role, in: query, schema: { $ref: '#/components/schemas/UserRole' } }
+        - { name: costCenterId, in: query, schema: { type: string, format: uuid } }
+        - { name: q, in: query, schema: { type: string }, description: 'substring on name/email' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/UserPage' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { description: Unauthorized }
+        '403': { description: ADMIN only }
+    post:
+      tags: [Users]
+      operationId: createUser
+      summary: Create a user of any role/level (ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateUserRequest' }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/UserDto' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { description: ADMIN only }
+        '409': { description: Email already registered }
+  /users/{id}:
+    patch:
+      tags: [Users]
+      operationId: updateUser
+      summary: Edit role/level/cost center/active (ADMIN)
+      parameters:
+        - { $ref: '#/components/parameters/UserIdParam' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateUserRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/UserDto' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { description: ADMIN only }
+        '404': { description: Not found }
+        '409': { description: Stale lock }
+  /cost-centers:
+    get:
+      tags: [Cost Centers]
+      operationId: listCostCenters
+      summary: List cost centers (public — the sign-up form needs it)
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/CostCenterDto' } }
+    post:
+      tags: [Cost Centers]
+      operationId: createCostCenter
+      summary: Create a cost center (ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateCostCenterRequest' }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/CostCenterDto' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { description: ADMIN only }
+        '409': { description: Code already used }
+  /cost-centers/{id}/budgets/{yyyy-mm}:
+    get:
+      tags: [Cost Centers]
+      operationId: getBudget
+      summary: Monthly budget of a cost center (missing month => zero balance view)
+      parameters:
+        - { $ref: '#/components/parameters/CostCenterIdParam' }
+        - { $ref: '#/components/parameters/YearMonthParam' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/BudgetDto' } } } }
+        '400': { description: Invalid month format }
+        '401': { description: Unauthorized }
+        '404': { description: Cost center not found }
+    put:
+      tags: [Cost Centers]
+      operationId: setBudget
+      summary: Define monthly budget (ADMIN); below consumed => 422 BUDGET_BELOW_CONSUMED
+      parameters:
+        - { $ref: '#/components/parameters/CostCenterIdParam' }
+        - { $ref: '#/components/parameters/YearMonthParam' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SetBudgetRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/BudgetDto' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { description: ADMIN only }
+        '404': { description: Cost center not found }
+        '422': { description: BUDGET_BELOW_CONSUMED }
+  /requests:
+    get:
+      tags: [Requests]
+      operationId: listRequests
+      summary: Paginated, filtered, sorted list (role-scoped visibility)
+      parameters:
+        - { $ref: '#/components/parameters/PageParam' }
+        - { $ref: '#/components/parameters/SizeParam' }
+        - { $ref: '#/components/parameters/SortParam' }
+        - { name: status, in: query, schema: { type: string, enum: [DRAFT, PENDING_APPROVAL, CHANGES_REQUESTED, APPROVED, REJECTED, CANCELLED] } }
+        - { name: category, in: query, schema: { $ref: '#/components/schemas/RequestCategory' } }
+        - { name: costCenterId, in: query, schema: { type: array, items: { type: string, format: uuid } }, explode: false }
+        - { name: createdFrom, in: query, schema: { type: string, format: date } }
+        - { name: createdTo, in: query, schema: { type: string, format: date } }
+        - { name: minAmount, in: query, schema: { $ref: '#/components/schemas/Money' } }
+        - { name: maxAmount, in: query, schema: { $ref: '#/components/schemas/Money' } }
+        - { name: q, in: query, schema: { type: string }, description: 'substring on title' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/RequestSummaryPage' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { description: Unauthorized }
+    post:
+      tags: [Requests]
+      operationId: createRequest
+      summary: Create a request in DRAFT (idempotency-key supported)
+      parameters:
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string, maxLength: 255 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRequestRequest' }
+      responses:
+        '201':
+          description: Created — or the stored response of the first call with this Idempotency-Key
+          headers:
+            Idempotent-Replayed: { description: '"true" when this is a replay of a stored response', schema: { type: string, enum: ['true', 'false'] } }
+          content: { application/json: { schema: { $ref: '#/components/schemas/RequestDetailDto' } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { description: Unauthorized }
+        '409': { description: Idempotency-Key reused with different payload }
+  /requests/{id}:
+    get:
+      tags: [Requests]
+      operationId: getRequestById
+      summary: Detail of current version with steps, allowedActions, lockVersion
+      parameters:
+        - { $ref: '#/components/parameters/RequestIdParam' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/RequestDetailDto' } } } }
+        '401': { description: Unauthorized }
+        '404': { description: Not found or not visible }
+    put:
+      tags: [Requests]
+      operationId: updateRequest
+      summary: Edit working copy (owner, DRAFT/CHANGES_REQUESTED)
+      parameters:
+        - { $ref: '#/components/parameters/RequestIdParam' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateRequestRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/RequestDetailDto' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { description: Unauthorized }
+        '403': { description: Not the owner }
+        '404': { description: Not found or not visible }
+        '409': { description: Stale lockVersion }
+        '422': { description: INVALID_TRANSITION }
+  /requests/{id}/versions:
+    get:
+      tags: [Versions]
+      operationId: listRequestVersions
+      summary: List all versions of a request
+      parameters:
+        - { $ref: '#/components/parameters/RequestIdParam' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/RequestVersionDto' } }
+        '401': { description: Unauthorized }
+        '404': { description: Not found or not visible }
+  /requests/{id}/versions/{n}:
+    get:
+      tags: [Versions]
+      operationId: getRequestVersion
+      summary: One specific version (immutable snapshot + its steps)
+      parameters:
+        - { $ref: '#/components/parameters/RequestIdParam' }
+        - { $ref: '#/components/parameters/VersionNumberParam' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/RequestVersionDto' } } } }
+        '401': { description: Unauthorized }
+        '404': { description: Not found or not visible }
+  /requests/{id}/history:
+    get:
+      tags: [Requests]
+      operationId: getRequestHistory
+      summary: Append-only event timeline
+      parameters:
+        - { $ref: '#/components/parameters/RequestIdParam' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/RequestEventDto' } }
+        '401': { description: Unauthorized }
+        '404': { description: Not found or not visible }
+  /requests/{id}/submit:
+    post:
+      tags: [Transitions]
+      operationId: submitRequest
+      summary: Submit or resubmit (resubmission creates a new version)
+      parameters:
+        - { $ref: '#/components/parameters/RequestIdParam' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransitionRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/RequestDetailDto' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { description: Unauthorized }
+        '403': { description: Not the owner }
+        '404': { description: Not found or not visible }
+        '409': { description: Stale lockVersion }
+        '422': { description: INVALID_TRANSITION }
+  /requests/{id}/approve:
+    post:
+      tags: [Transitions]
+      operationId: approveRequest
+      summary: Approve the current step (final step consumes budget)
+      parameters:
+        - { $ref: '#/components/parameters/RequestIdParam' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransitionRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/RequestDetailDto' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { description: Unauthorized }
+        '403': { description: Role cannot approve }
+        '404': { description: Not found or not visible }
+        '409': { description: Stale lockVersion }
+        '422': { description: 'Business rule — see code enum' }
+  /requests/{id}/reject:
+    post:
+      tags: [Transitions]
+      operationId: rejectRequest
+      summary: Reject (comment mandatory, >= 10 chars)
+      parameters:
+        - { $ref: '#/components/parameters/RequestIdParam' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransitionRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/RequestDetailDto' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { description: Unauthorized }
+        '403': { description: Role cannot approve }
+        '404': { description: Not found or not visible }
+        '409': { description: Stale lockVersion }
+        '422': { description: 'Business rule — COMMENT_REQUIRED et al.' }
+  /requests/{id}/request-changes:
+    post:
+      tags: [Transitions]
+      operationId: requestChanges
+      summary: Return for adjustment (comment mandatory, >= 10 chars)
+      parameters:
+        - { $ref: '#/components/parameters/RequestIdParam' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransitionRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/RequestDetailDto' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { description: Unauthorized }
+        '403': { description: Role cannot approve }
+        '404': { description: Not found or not visible }
+        '409': { description: Stale lockVersion }
+        '422': { description: 'Business rule — COMMENT_REQUIRED et al.' }
+  /requests/{id}/cancel:
+    post:
+      tags: [Transitions]
+      operationId: cancelRequest
+      summary: Cancel (owner or ADMIN) from a non-final state
+      parameters:
+        - { $ref: '#/components/parameters/RequestIdParam' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransitionRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/RequestDetailDto' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { description: Unauthorized }
+        '403': { description: Neither owner nor ADMIN }
+        '404': { description: Not found or not visible }
+        '409': { description: Stale lockVersion }
+        '422': { description: INVALID_TRANSITION (final states) }
+  /approvals/inbox:
+    get:
+      tags: [Approvals]
+      operationId: getApprovalInbox
+      summary: Requests whose current step the caller can approve now
+      parameters:
+        - { $ref: '#/components/parameters/PageParam' }
+        - { $ref: '#/components/parameters/SizeParam' }
+        - { $ref: '#/components/parameters/SortParam' }
+        - { name: costCenterId, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/InboxPage' } } } }
+        '401': { description: Unauthorized }
+        '403': { description: SOLICITANTE has no inbox }
+  /dashboard/summary:
+    get:
+      tags: [Dashboard]
+      operationId: getDashboardSummary
+      summary: Role-scoped totals by status + current-month budgets
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/DashboardSummaryDto' } } } }
+        '401': { description: Unauthorized }
+  /health:
+    get:
+      tags: [System]
+      operationId: getHealth
+      summary: Application and database health (Spring Boot Actuator)
+      security: []
+      responses:
+        '200': { description: Up, content: { application/json: { schema: { $ref: '#/components/schemas/HealthDto' } } } }
+        '503': { description: Down (e.g. database unreachable), same body with status DOWN }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    PageParam: { name: page, in: query, schema: { type: integer, minimum: 0, default: 0 } }
+    SizeParam: { name: size, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+    SortParam: { name: sort, in: query, schema: { type: string, example: 'createdAt,desc' }, description: '<field>,<asc|desc>; whitelist per endpoint' }
+    UserIdParam: { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    CostCenterIdParam: { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    YearMonthParam:
+      name: yyyy-mm
+      in: path
+      required: true
+      schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+      description: competence month (e.g. 2026-11)
+    RequestIdParam: { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    VersionNumberParam: { name: n, in: path, required: true, schema: { type: integer, minimum: 1 } }
+  schemas:
+    Money:
+      type: string
+      pattern: '^\d{1,13}\.\d{2}$'
+      description: decimal BRL amount serialized from integer cents (DATA-005)
+      example: '4899.90'
+    UserRole: { type: string, enum: [SOLICITANTE, APROVADOR, ADMIN] }
+    ApproverLevel: { type: string, enum: [NIVEL_1, NIVEL_2] }
+    RequestStatus: { type: string, enum: [DRAFT, PENDING_APPROVAL, CHANGES_REQUESTED, APPROVED, REJECTED, CANCELLED] }
+    RequestCategory: { type: string, enum: [EQUIPMENT, SERVICES, SUPPLIES, TRAVEL, SOFTWARE, OTHER] }
+    StepLevel: { type: string, enum: [NIVEL_1, NIVEL_2, ADMIN] }
+    StepStatus: { type: string, enum: [PENDING, APPROVED, REJECTED, RETURNED, CANCELLED, SKIPPED], description: 'REJECTED/RETURNED/CANCELLED mark the step that was current when the request was rejected, sent back or cancelled; SKIPPED marks later steps that were never reached. A closed version has no PENDING step (A-31)' }
+    AllowedAction: { type: string, enum: [EDIT, SUBMIT, CANCEL, APPROVE, REJECT, REQUEST_CHANGES] }
+    RegisterRequest:
+      type: object
+      required: [email, password, name, costCenterId]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        password: { type: string, minLength: 8, maxLength: 72, description: 'at least 1 letter and 1 digit; at most 72 UTF-8 bytes (bcrypt limit — SEC-F05)' }
+        name: { type: string, minLength: 2, maxLength: 120 }
+        costCenterId: { type: string, format: uuid }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        password: { type: string, maxLength: 128 }
+    LoginResponse:
+      type: object
+      properties:
+        token: { type: string }
+        tokenType: { type: string, example: Bearer }
+        expiresIn: { type: integer, example: 900 }
+        user: { $ref: '#/components/schemas/UserDto' }
+    UserDto:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string }
+        name: { type: string }
+        role: { $ref: '#/components/schemas/UserRole' }
+        approverLevel: { $ref: '#/components/schemas/ApproverLevel' }
+        costCenterId: { type: string, format: uuid, nullable: true }
+        active: { type: boolean }
+        createdAt: { type: string, format: date-time }
+    CreateUserRequest:
+      type: object
+      required: [email, password, name, role]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        password: { type: string, minLength: 8, maxLength: 72, description: 'at least 1 letter and 1 digit; at most 72 UTF-8 bytes (SEC-F05, SEC-F12)' }
+        name: { type: string, minLength: 2, maxLength: 120 }
+        role: { $ref: '#/components/schemas/UserRole' }
+        approverLevel: { $ref: '#/components/schemas/ApproverLevel' }
+        costCenterId: { type: string, format: uuid, nullable: true }
+    UpdateUserRequest:
+      type: object
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        role: { $ref: '#/components/schemas/UserRole' }
+        approverLevel: { $ref: '#/components/schemas/ApproverLevel' }
+        costCenterId: { type: string, format: uuid, nullable: true }
+        active: { type: boolean }
+    CostCenterDto:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string, example: CC-TI-01 }
+        name: { type: string }
+        active: { type: boolean }
+    CreateCostCenterRequest:
+      type: object
+      required: [code, name]
+      properties:
+        code: { type: string, minLength: 2, maxLength: 30 }
+        name: { type: string, minLength: 2, maxLength: 120 }
+    BudgetDto:
+      type: object
+      properties:
+        costCenterId: { type: string, format: uuid }
+        yearMonth: { type: string, example: '2026-11' }
+        amount: { $ref: '#/components/schemas/Money' }
+        consumed: { $ref: '#/components/schemas/Money' }
+        available: { $ref: '#/components/schemas/Money' }
+    SetBudgetRequest:
+      type: object
+      required: [amount]
+      properties:
+        amount: { $ref: '#/components/schemas/Money' }
+    RequestItemInput:
+      type: object
+      required: [description, quantity, unitPrice]
+      properties:
+        description: { type: string, minLength: 1, maxLength: 255 }
+        quantity: { type: integer, minimum: 1, maximum: 1000000 }
+        unitPrice: { $ref: '#/components/schemas/Money' }
+    CreateRequestRequest:
+      type: object
+      required: [title, category, items]
+      properties:
+        title: { type: string, minLength: 3, maxLength: 120 }
+        description: { type: string, maxLength: 2000 }
+        category: { $ref: '#/components/schemas/RequestCategory' }
+        costCenterId: { type: string, format: uuid, description: 'defaults to the caller cost center' }
+        neededBy: { type: string, format: date, description: 'must be a future date (America/Sao_Paulo)' }
+        items:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items: { $ref: '#/components/schemas/RequestItemInput' }
+    UpdateRequestRequest:
+      allOf:
+        - { $ref: '#/components/schemas/CreateRequestRequest' }
+        - type: object
+          required: [lockVersion]
+          properties:
+            lockVersion: { type: integer, minimum: 1 }
+    TransitionRequest:
+      type: object
+      required: [lockVersion]
+      properties:
+        lockVersion: { type: integer, minimum: 1 }
+        comment: { type: string, maxLength: 2000, description: 'optional on approve; >=10 chars enforced by CommentPolicy (422 COMMENT_REQUIRED) only for reject/request-changes' }
+    Ref:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+    RefCode:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string }
+    ItemDto:
+      type: object
+      properties:
+        position: { type: integer }
+        description: { type: string }
+        quantity: { type: integer }
+        unitPrice: { $ref: '#/components/schemas/Money' }
+        lineTotal: { $ref: '#/components/schemas/Money' }
+    ApprovalStepDto:
+      type: object
+      properties:
+        sequence: { type: integer }
+        level: { $ref: '#/components/schemas/StepLevel' }
+        status: { $ref: '#/components/schemas/StepStatus' }
+        approver: { allOf: [{ $ref: '#/components/schemas/Ref' }], nullable: true }
+        decidedAt: { type: string, format: date-time, nullable: true }
+        comment: { type: string, nullable: true }
+    RequestSummaryDto:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        requestNumber: { type: string }
+        title: { type: string }
+        category: { $ref: '#/components/schemas/RequestCategory' }
+        status: { $ref: '#/components/schemas/RequestStatus' }
+        total: { $ref: '#/components/schemas/Money' }
+        owner: { $ref: '#/components/schemas/Ref' }
+        costCenter: { $ref: '#/components/schemas/RefCode' }
+        currentVersion: { type: integer }
+        neededBy: { type: string, format: date, nullable: true }
+        createdAt: { type: string, format: date-time }
+        submittedAt: { type: string, format: date-time, nullable: true }
+    RequestDetailDto:
+      allOf:
+        - { $ref: '#/components/schemas/RequestSummaryDto' }
+        - type: object
+          properties:
+            description: { type: string, nullable: true }
+            competenceMonth: { type: string, nullable: true }
+            decidedAt: { type: string, format: date-time, nullable: true }
+            items: { type: array, items: { $ref: '#/components/schemas/ItemDto' } }
+            steps: { type: array, items: { $ref: '#/components/schemas/ApprovalStepDto' } }
+            versions: { type: array, items: { type: object, properties: { versionNumber: { type: integer }, submittedAt: { type: string, format: date-time } } } }
+            allowedActions: { type: array, items: { $ref: '#/components/schemas/AllowedAction' } }
+            lockVersion: { type: integer }
+    RequestVersionDto:
+      type: object
+      properties:
+        versionNumber: { type: integer }
+        title: { type: string }
+        description: { type: string, nullable: true }
+        category: { $ref: '#/components/schemas/RequestCategory' }
+        costCenter: { $ref: '#/components/schemas/RefCode' }
+        neededBy: { type: string, format: date, nullable: true }
+        total: { $ref: '#/components/schemas/Money' }
+        competenceMonth: { type: string }
+        submittedAt: { type: string, format: date-time }
+        submittedBy: { $ref: '#/components/schemas/Ref' }
+        items: { type: array, items: { $ref: '#/components/schemas/ItemDto' } }
+        steps: { type: array, items: { $ref: '#/components/schemas/ApprovalStepDto' } }
+    RequestEventDto:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        actor: { allOf: [{ $ref: '#/components/schemas/Ref' }], nullable: true }
+        actorRole: { $ref: '#/components/schemas/UserRole' }
+        action: { type: string, example: APPROVED }
+        fromStatus: { allOf: [{ $ref: '#/components/schemas/RequestStatus' }], nullable: true }
+        toStatus: { allOf: [{ $ref: '#/components/schemas/RequestStatus' }], nullable: true }
+        stepLevel: { allOf: [{ $ref: '#/components/schemas/StepLevel' }], nullable: true }
+        stepSequence: { type: integer, nullable: true }
+        versionNumber: { type: integer }
+        comment: { type: string, nullable: true }
+        xRequestId: { type: string }
+        occurredAt: { type: string, format: date-time }
+    InboxItemDto:
+      allOf:
+        - { $ref: '#/components/schemas/RequestSummaryDto' }
+        - type: object
+          properties:
+            currentStep: { $ref: '#/components/schemas/ApprovalStepDto' }
+    DashboardSummaryDto:
+      type: object
+      properties:
+        totals:
+          type: array
+          items:
+            type: object
+            properties:
+              status: { $ref: '#/components/schemas/RequestStatus' }
+              count: { type: integer, format: int64 }
+        budgets:
+          type: array
+          items:
+            type: object
+            properties:
+              costCenterId: { type: string, format: uuid }
+              code: { type: string }
+              name: { type: string }
+              month: { type: string }
+              amount: { $ref: '#/components/schemas/Money' }
+              consumed: { $ref: '#/components/schemas/Money' }
+              available: { $ref: '#/components/schemas/Money' }
+        averageApprovalTimeDays: { type: number, nullable: true, description: '[D] last 30 days, submission to final decision' }
+    HealthDto:
+      type: object
+      description: Actuator health format, e.g. {"status":"UP","components":{"db":{"status":"UP"},"diskSpace":{…},"ping":{…}}}
+      properties:
+        status: { type: string, enum: [UP, DOWN, OUT_OF_SERVICE, UNKNOWN] }
+        components:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              status: { type: string }
+    ProblemDetail:
+      type: object
+      description: RFC 9457 problem detail
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        code: { type: string }
+        requestId: { type: string }
+        currentLockVersion: { type: integer, nullable: true, description: 'present on 409 CONCURRENCY_CONFLICT' }
+        errors:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              message: { type: string }
+              code: { type: string }
+    PageEnvelope:
+      type: object
+      properties:
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer, format: int64 }
+        totalPages: { type: integer }
+    UserPage:
+      allOf:
+        - { $ref: '#/components/schemas/PageEnvelope' }
+        - type: object
+          properties: { data: { type: array, items: { $ref: '#/components/schemas/UserDto' } } }
+    RequestSummaryPage:
+      allOf:
+        - { $ref: '#/components/schemas/PageEnvelope' }
+        - type: object
+          properties: { data: { type: array, items: { $ref: '#/components/schemas/RequestSummaryDto' } } }
+    InboxPage:
+      allOf:
+        - { $ref: '#/components/schemas/PageEnvelope' }
+        - type: object
+          properties: { data: { type: array, items: { $ref: '#/components/schemas/InboxItemDto' } } }
+  responses:
+    ValidationError:
+      description: Invalid input with per-field errors
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetail' }
+          example:
+            type: 'https://purchase-requests.example/problems/validation-failed'
+            title: Invalid input
+            status: 400
+            code: VALIDATION_FAILED
+            detail: 'One or more fields are invalid.'
+            requestId: 'b7e1c0d2-...'
+            errors:
+              - { field: 'items[0].quantity', message: 'must be a positive integer', code: INVALID }
+    PayloadTooLarge:
+      description: Request body larger than MAX_REQUEST_BODY (default 1 MiB) — applies to every operation (SEC-F03)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetail' }
+    InternalError:
+      description: Unexpected error
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetail' }
+security:
+  - bearerAuth: []

@@ -1,0 +1,35 @@
+@startuml SEQ-01-CreateRequest
+' POST /requests — creation in DRAFT with a server-side total (README 2.2).
+' Idempotency: the key row is reserved in the SAME transaction as the create (ADR-010, A-32).
+actor Solicitante
+participant "RequestController" as C
+participant "IdempotencyService" as IDEM
+participant "PurchaseRequestService" as S
+participant "Money" as MO
+participant "repositories / JdbcClient" as R
+database "PostgreSQL" as DB
+
+Solicitante -> C : POST /requests\nIdempotency-Key: <key>\n{title, description?, category, costCenterId?, neededBy?, items[]}
+C -> C : bean validation (400 + errors[])
+C -> IDEM : create(actor, key, input)
+IDEM -> R : SELECT idempotency_keys WHERE user_id=:u AND idem_key=:k
+alt live record, same payload hash
+  IDEM --> Solicitante : replay stored 201 body (Idempotent-Replayed: true)
+else live record, different hash
+  IDEM --> Solicitante : 409 IDEMPOTENCY_PAYLOAD_MISMATCH
+else absent or expired
+  IDEM -> R : BEGIN (TransactionTemplate)\nINSERT idempotency_keys (placeholder 102)\nON CONFLICT (user_id, idem_key) DO UPDATE … WHERE expires_at < now() RETURNING user_id
+  alt 0 rows (a concurrent request owns the key)
+    IDEM -> R : ROLLBACK; SELECT winner → replay or 409
+  else key reserved
+    IDEM -> S : create(actor, input)   ' joins the transaction
+    S -> S : validate: cost center exists, neededBy in the future (400)
+    S -> MO : parse prices, quantity × unitPrice, sum (exact cents)
+    S -> R : nextval('sq_request_number'); INSERT purchase_requests + request_items
+    S -> R : INSERT request_events (REQUEST_CREATED)
+    IDEM -> R : UPDATE idempotency_keys SET response_status=201, response_body=:json
+    IDEM -> DB : COMMIT   ' request row and key row land together
+    IDEM --> Solicitante : 201 RequestDetail (lockVersion=1, allowedActions=[EDIT, SUBMIT, CANCEL])
+  end
+end
+@enduml

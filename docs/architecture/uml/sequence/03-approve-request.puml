@@ -1,0 +1,38 @@
+@startuml SEQ-03-ApproveRequest
+' POST /requests/{id}/approve — README 4.3 order: 401 → 404 → 403 → 409 → 422.
+' The lock claim is the FIRST write, so a racing approver gets 409, never 422.
+actor Aprovador
+participant "RequestController" as C
+participant "TransitionFacade\n(not transactional)" as F
+participant "TransitionService\n(@Transactional)" as TS
+participant "RequestAccess / RequestLock" as ACC
+participant "RequestStateMachine" as SM
+participant "ApprovalPolicies" as AP
+participant "repositories" as R
+participant "AuditService" as AUD
+
+Aprovador -> C : POST /requests/{id}/approve {lockVersion, comment?}
+note right of C : 401 already handled by the security filter chain
+C -> F : approve(actor, id, lockVersion, comment)
+F -> TS : decide(actor, id, APPROVE, lockVersion, comment)
+TS -> ACC : loadVisible                     ' 404
+TS -> ACC : requireApproverRole             ' 403 FORBIDDEN for SOLICITANTE
+TS -> ACC : claim → UPDATE … WHERE lock_version = :expected   ' 409 when stale
+TS -> SM : require(PENDING_APPROVAL, APPROVE)   ' 422 INVALID_TRANSITION
+TS -> R : current version + its steps
+TS -> AP : requireEligible(actor, current level, version cost center)   ' 422 APPROVER_NOT_ELIGIBLE
+TS -> AP : requireSegregation(actor, owner, chain)   ' 422 SELF_APPROVAL_FORBIDDEN / DUPLICATE_APPROVER
+TS -> AP : requireComment(APPROVE, comment)          ' optional on approve
+alt current step is the last one
+  TS -> R : UPDATE budgets SET consumed_cents = consumed_cents + :x\nWHERE cost_center_id = :versionCc AND year_month = :competence\nAND consumed_cents + :x <= amount_cents
+  alt 0 rows (no budget for the month, or not enough)
+    TS --> F : throw BudgetExceeded → whole transaction ROLLS BACK
+    F -> AUD : recordBudgetFailure (REQUIRES_NEW): APPROVAL_FAILED_BUDGET
+    F --> Aprovador : 422 BUDGET_EXCEEDED ("tem R$ … disponíveis em 2026-11; a solicitação exige R$ …")
+  end
+end
+TS -> R : UPDATE approval_steps SET status='APPROVED', approver, decided_at, comment\nWHERE id = :step AND status = 'PENDING'   ' 0 rows → 409
+TS -> R : status = APPROVED (last step) or stays PENDING_APPROVAL
+TS -> AUD : record(APPROVED, step level/sequence, version)   ' same transaction
+TS --> Aprovador : 200 RequestDetail (fresh lockVersion)
+@enduml

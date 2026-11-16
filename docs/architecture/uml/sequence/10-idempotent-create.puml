@@ -1,0 +1,31 @@
+@startuml SEQ-10-IdempotentCreate
+' POST /requests retried after a timeout — the stored response is replayed (README 3.2, ADR-010).
+actor Solicitante
+participant "IdempotencyService" as IDEM
+participant "PurchaseRequestService" as S
+database "PostgreSQL" as DB
+
+== First attempt ==
+Solicitante -> IDEM : POST /requests (key=K, payload=P) — the response is lost
+IDEM -> DB : BEGIN; INSERT idempotency_keys … ON CONFLICT … RETURNING (1 row: reserved)
+IDEM -> S : create(actor, P)
+S -> DB : INSERT purchase_requests + items + event
+IDEM -> DB : UPDATE idempotency_keys SET response (201, body R); COMMIT
+IDEM --> Solicitante : (lost in the network)
+
+== Retry: same key, same payload ==
+Solicitante -> IDEM : POST /requests (key=K, payload=P)
+IDEM -> DB : SELECT → live record, hash matches
+IDEM --> Solicitante : 201, body R, Idempotent-Replayed: true — no new request
+
+== Concurrent duplicate ==
+Solicitante -> IDEM : POST /requests (key=K, payload=P)   [while the first is still running]
+IDEM -> DB : INSERT … ON CONFLICT DO UPDATE WHERE expires_at < now()\n→ waits on the PK; winner commits → 0 rows (no error)
+IDEM -> DB : ROLLBACK; SELECT winner's record → replay R
+
+== Same key, different payload ==
+Solicitante -> IDEM : POST /requests (key=K, payload=P')
+IDEM -> DB : SELECT → hash mismatch
+IDEM --> Solicitante : 409 IDEMPOTENCY_PAYLOAD_MISMATCH
+note over IDEM,DB : the payload hash is SHA-256 of a canonical form (prices in cents);\nexpired keys are taken over by the same INSERT and purged by IdempotencyPurgeJob
+@enduml

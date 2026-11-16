@@ -1,0 +1,68 @@
+# Every value can be overridden by an environment variable (README §5.1: configuration via env, no secrets).
+spring:
+  application:
+    name: purchase-requests
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/purchase}
+    username: ${DB_USER:purchase}
+    password: ${DB_PASSWORD:purchase}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none            # Flyway owns the schema (src/main/resources/db/migration)
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC        # README §5.1: dates stored in UTC
+  flyway:
+    enabled: true
+  threads:
+    virtual:
+      enabled: true             # Java 21+ virtual threads serve HTTP requests and @Scheduled jobs
+
+server:
+  port: ${PORT:3000}            # the frontend dev proxy (/api → :3000) expects this port
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}       # required, ≥ 32 bytes; never committed (see ../.env.example)
+    issuer: ${JWT_ISSUER:purchase-requests}
+    audience: ${JWT_AUDIENCE:purchase-requests-api}   # issued as "aud" and required on every token
+    ttl: ${JWT_TTL:PT15M}       # README §2.1: short-lived token
+  idempotency:
+    ttl: PT24H                  # README §3.2: minimum validity 24 h
+    purge-interval: PT1H
+  seed:
+    enabled: ${SEED_ENABLED:true}   # README §5.4 demo data (public password) — set false outside a local demo
+  security:                         # abuse limits — docs/security/FINDINGS.md
+    login:
+      max-failures-per-account: ${LOGIN_MAX_FAILURES_PER_ACCOUNT:5}
+      max-failures-per-client: ${LOGIN_MAX_FAILURES_PER_CLIENT:50}
+      window: ${LOGIN_THROTTLE_WINDOW:PT15M}
+    max-request-body: ${MAX_REQUEST_BODY:1MB}
+
+# GET /health (app + database) — README §3.1
+management:
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-components: always
+
+# OpenAPI at /docs (README §3.1)
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: ${API_DOCS_ENABLED:true}   # README §3.1 requires /docs; can be switched off in production
+  swagger-ui:
+    path: /docs
+    enabled: ${API_DOCS_ENABLED:true}
+
+# Structured JSON logs (README §5.1); the request id is in the MDC as "requestId"
+logging:
+  structured:
+    format:
+      console: ecs

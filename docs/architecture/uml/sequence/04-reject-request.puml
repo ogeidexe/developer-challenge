@@ -1,0 +1,27 @@
+@startuml SEQ-04-RejectRequest
+' POST /requests/{id}/reject — comment mandatory (>= 10 chars), chain closed (A-31).
+actor Aprovador
+participant "RequestController" as C
+participant "TransitionService\n(@Transactional)" as TS
+participant "RequestAccess / RequestLock" as ACC
+participant "RequestStateMachine" as SM
+participant "ApprovalPolicies" as AP
+participant "repositories" as R
+
+Aprovador -> C : POST /requests/{id}/reject {lockVersion, comment}
+C -> TS : decide(actor, id, REJECT, lockVersion, comment)   ' via TransitionFacade
+TS -> ACC : loadVisible (404) → requireApproverRole (403) → claim (409, first write)
+TS -> SM : require(PENDING_APPROVAL, REJECT)          ' 422 INVALID_TRANSITION
+TS -> AP : requireEligible                            ' 422 APPROVER_NOT_ELIGIBLE
+TS -> AP : requireSegregation                         ' 422 SELF_APPROVAL_FORBIDDEN / DUPLICATE_APPROVER
+TS -> AP : requireComment(REJECT, comment)
+alt missing or < 10 characters
+  AP --> Aprovador : 422 COMMENT_REQUIRED (transaction rolls back)
+else
+  TS -> R : UPDATE approval_steps SET status='REJECTED', approver, decided_at, comment\nWHERE id = :step AND status = 'PENDING'
+  TS -> R : UPDATE approval_steps SET status='SKIPPED'\nWHERE version_id = :v AND status = 'PENDING' AND sequence > :current
+  TS -> R : status = REJECTED, decided_at
+  TS -> R : INSERT request_events (REJECTED, comment, version)
+  TS --> Aprovador : 200 RequestDetail (final; allowedActions = [])
+end
+@enduml

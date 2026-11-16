@@ -1,0 +1,64 @@
+@startuml PurchaseRequest-StateMachine
+' Complete request lifecycle — README 4.1/4.2.
+' Includes guards (actor/conditions), invalid transitions and terminal states.
+' Implemented by domain/RequestStateMachine.java (EnumMap transition table); tested by RequestStateMachineTest.
+
+[*] --> DRAFT : create (owner)
+
+state DRAFT {
+  DRAFT : editable working copy (owner)
+}
+state PENDING_APPROVAL {
+  PENDING_APPROVAL : current step = min(sequence) with status PENDING
+}
+state CHANGES_REQUESTED {
+  CHANGES_REQUESTED : editable working copy (owner)
+}
+state APPROVED
+state REJECTED
+state CANCELLED
+
+' valid transitions (actor + condition)
+DRAFT --> PENDING_APPROVAL : submit (owner)\nitems valid; version frozen; chain built
+PENDING_APPROVAL --> PENDING_APPROVAL : approve (eligible approver)\nintermediate step; advance
+PENDING_APPROVAL --> APPROVED : approve (eligible approver, final step)\nbudget consumed in same tx
+PENDING_APPROVAL --> REJECTED : reject (eligible approver)\ncomment >= 10 chars
+PENDING_APPROVAL --> CHANGES_REQUESTED : request-changes (eligible approver)\ncomment >= 10 chars
+CHANGES_REQUESTED --> PENDING_APPROVAL : submit (owner)\nNEW version frozen; chain recalculated
+DRAFT --> CANCELLED : cancel (owner or ADMIN)
+PENDING_APPROVAL --> CANCELLED : cancel (owner or ADMIN)
+CHANGES_REQUESTED --> CANCELLED : cancel (owner or ADMIN)
+
+APPROVED --> [*]
+REJECTED --> [*]
+CANCELLED --> [*]
+
+' invalid transitions (explicit, evaluated by RequestStateMachine)
+state "INVALID (stay in current state, 422 INVALID_TRANSITION)" as INVALID
+DRAFT --> INVALID : approve / reject / request-changes
+DRAFT --> INVALID : submit without items
+PENDING_APPROVAL --> INVALID : edit (any user)
+CHANGES_REQUESTED --> INVALID : approve / reject / request-changes
+APPROVED --> INVALID : any action (final)
+REJECTED --> INVALID : any action (final)
+CANCELLED --> INVALID : any action (final)
+
+' ownership violations are NOT transition errors (A-27):
+' non-owner edit/submit -> 403 NOT_REQUEST_OWNER; cancel by non-owner non-ADMIN -> 403 NOT_REQUEST_OWNER
+' ADMIN x foreign DRAFT: invisible -> 404 (so ADMIN cancel applies to visible states only, A-26)
+
+note right of PENDING_APPROVAL
+  Eligibility guards (422 codes):
+  - SELF_APPROVAL_FORBIDDEN (owner)
+  - DUPLICATE_APPROVER (same person twice per version)
+  - APPROVER_NOT_ELIGIBLE (role/level/CC)
+  - COMMENT_REQUIRED (reject / request-changes)
+  - BUDGET_EXCEEDED (final step, insufficient balance)
+  No eligible approver => stays pending (NOT an error)
+end note
+
+note right of CHANGES_REQUESTED
+  Previous versions immutable + queryable.
+  Competence month re-stamped at resubmit.
+end note
+@enduml

@@ -1,0 +1,28 @@
+@startuml SEQ-08-ConcurrentSameStepApproval
+' Two approvers click "approve" on the SAME step at the same time.
+' Exactly one succeeds; the other gets 409 (README 2.3.5, NFR-015).
+' Guards: (1) aggregate lock UPDATE first (2) step UPDATE ... WHERE status='PENDING'.
+actor A1 as "Aprovador A"
+actor A2 as "Aprovador B"
+participant "TransitionService (via TransitionFacade)" as TS
+participant "PurchaseRequestRepository" as RQ
+database DB as "PostgreSQL"
+
+== Both read the same state ==
+A1 -> TS : approve(id, lockVersion=7)
+A2 -> TS : approve(id, lockVersion=7)
+TS -> RQ : findById -> aggregate (lock_version=7)   [x2]
+
+== First writer wins: the lock UPDATE is the first write ==
+A1 -> TS : UPDATE purchase_requests SET lock_version=8 WHERE id=:id AND lock_version=7
+TS -> DB : row lock granted; 1 row affected
+A1 -> TS : UPDATE approval_steps SET status='APPROVED', approver=A1, decided_at=now\nWHERE id=:stepId AND status='PENDING'  (1 row)
+A1 -> TS : events; COMMIT
+TS --> A1 : 200 OK (status advanced)
+
+== Second writer: blocked on the row lock, then re-evaluated ==
+A2 -> TS : UPDATE purchase_requests SET lock_version=8 WHERE id=:id AND lock_version=7
+TS -> DB : blocks on A1's row lock; after A1 commits re-evaluates WHERE\non the committed row (lock_version now 8) -> 0 rows
+TS --> A2 : 409 CONCURRENCY_CONFLICT\n('someone acted before you' — refresh to see the new state)
+note over DB : Even if both lock UPDATEs somehow passed, the step update is guarded by\nWHERE status='PENDING' (0 rows -> 409). The old partial unique index was REMOVED:\n(version_id, sequence) is already unique, so it guarded nothing (ADR-009).\nDUPLICATE_APPROVER stays an application-level rule — the aggregate lock serializes its checks.
+@enduml

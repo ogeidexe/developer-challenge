@@ -1,0 +1,33 @@
+@startuml SEQ-06-ResubmitNewVersion
+' PUT /requests/{id} (edit) + POST /requests/{id}/submit — v2 created, v1 preserved, chain rebuilt.
+actor Dono
+participant "RequestController" as C
+participant "PurchaseRequestService" as PS
+participant "TransitionService" as TS
+participant "ApprovalChainBuilder" as CB
+participant "repositories" as R
+database "PostgreSQL" as DB
+
+== Edit the working copy ==
+Dono -> C : PUT /requests/{id} {title, …, items[], lockVersion}
+C -> PS : update(actor, id, input)
+PS -> R : loadVisible (404) → requireOwner (403 NOT_REQUEST_OWNER) → claim (409, first write)
+PS -> PS : status in (DRAFT, CHANGES_REQUESTED)?   ' else 422 INVALID_TRANSITION
+PS -> R : DELETE request_items WHERE request_id = :id; INSERT new items
+PS -> R : update working copy (title, category, cost center, neededBy, total)
+PS -> R : INSERT request_events (EDITED)
+PS --> Dono : 200 RequestDetail (shows the working copy)
+
+== Resubmit ==
+Dono -> C : POST /requests/{id}/submit {lockVersion}
+C -> TS : submit(actor, id, lockVersion)   ' via TransitionFacade
+TS -> R : loadVisible → requireOwner → claim
+TS -> R : INSERT request_versions (v2) + version_items   ' v1 untouched
+TS -> CB : build(new total, category)
+CB --> TS : chain recalculated from zero
+TS -> R : INSERT approval_steps for v2 (all PENDING)
+TS -> R : status = PENDING_APPROVAL, current_version = 2
+TS -> R : INSERT request_events (RESUBMITTED)
+TS --> Dono : 200 (v2 chain; v1 at GET /requests/{id}/versions/1)
+note over R,DB : version rows are @Immutable in Hibernate and protected by triggers.\nv1 approvals do not count for v2 — segregation starts clean.
+@enduml

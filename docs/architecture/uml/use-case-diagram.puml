@@ -1,0 +1,88 @@
+@startuml PurchaseRequestSystem-UseCase
+' Actors and system boundary per README 1.1, 2.x, 3.1.
+left to right direction
+
+actor "SOLICITANTE" as SOL
+actor "APROVADOR\n(NIVEL_1 / NIVEL_2)" as APR
+actor "ADMIN" as ADM
+
+rectangle "Purchase Request System" {
+
+  package "Authentication" {
+    usecase "Register (public,\ncreates SOLICITANTE)" as UC_REGISTER
+    usecase "Login (JWT 15 min)" as UC_LOGIN
+    usecase "View own profile (/auth/me)" as UC_ME
+  }
+
+  package "Requests" {
+    usecase "Create request (DRAFT,\nIdempotency-Key)" as UC_CREATE
+    usecase "Edit own request\n(DRAFT / CHANGES_REQUESTED)" as UC_EDIT
+    usecase "Submit / resubmit" as UC_SUBMIT
+    usecase "Cancel own request" as UC_CANCEL
+    usecase "List own requests\n(filter/paginate/sort)" as UC_LIST_OWN
+    usecase "View request detail\n(versions, steps, history)" as UC_DETAIL
+  }
+
+  package "Approvals" {
+    usecase "View approval inbox" as UC_INBOX
+    usecase "Approve current step" as UC_APPROVE
+    usecase "Reject (comment >= 10)" as UC_REJECT
+    usecase "Request changes (comment >= 10)" as UC_RETURN
+  }
+
+  package "Administration" {
+    usecase "Manage users (any role/level)" as UC_USERS
+    usecase "Manage cost centers" as UC_CC
+    usecase "Define monthly budgets" as UC_BUDGET
+    usecase "View all requests" as UC_LIST_ALL
+    usecase "Cancel any request" as UC_CANCEL_ANY
+  }
+
+  package "Reporting" {
+    usecase "View dashboard (totals,\ncurrent-month budget)" as UC_DASH
+  }
+}
+
+' SOLICITANTE
+SOL --> UC_REGISTER
+SOL --> UC_LOGIN
+SOL --> UC_ME
+SOL --> UC_CREATE
+SOL --> UC_EDIT
+SOL --> UC_SUBMIT
+SOL --> UC_CANCEL
+SOL --> UC_LIST_OWN
+SOL --> UC_DETAIL
+
+' APROVADOR (inherits all requester use cases per README 1.1)
+APR --> UC_CREATE
+APR --> UC_EDIT
+APR --> UC_SUBMIT
+APR --> UC_CANCEL
+APR --> UC_LIST_OWN
+APR --> UC_DETAIL
+APR --> UC_INBOX
+APR --> UC_APPROVE
+APR --> UC_REJECT
+APR --> UC_RETURN
+
+' ADMIN (inherits everything)
+ADM --> UC_CREATE
+ADM --> UC_EDIT
+ADM --> UC_SUBMIT
+ADM --> UC_INBOX
+ADM --> UC_APPROVE
+ADM --> UC_REJECT
+ADM --> UC_RETURN
+ADM --> UC_USERS
+ADM --> UC_CC
+ADM --> UC_BUDGET
+ADM --> UC_LIST_ALL
+ADM --> UC_CANCEL_ANY
+ADM --> UC_DASH
+
+' cross-cutting notes
+note right of UC_APPROVE : Eligibility per step level:\nN1: APROVADOR N1/N2 same CC or ADMIN\nN2: APROVADOR N2 same CC or ADMIN\nADMIN: only ADMIN\n+ segregation of duties
+note bottom of UC_INBOX : Lists only requests whose CURRENT step\nthe caller can approve now (CC, level, SoD applied)
+note bottom of UC_DASH : Scope: own / cost center / all
+@enduml

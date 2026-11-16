@@ -1,0 +1,165 @@
+@startuml PurchaseRequestSystem-ClassDiagram
+' Class diagram of the implemented back end (backend/src/main/java/com/example/purchase).
+' Packages: domain (plain Java) <- persistence (JPA) <- application (services) <- api/security.
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+package "domain" <<Frame>> #E8F5E9 {
+  enum Role { SOLICITANTE ; APROVADOR ; ADMIN }
+  enum ApproverLevel { NIVEL_1 ; NIVEL_2 }
+  enum StepLevel { NIVEL_1 ; NIVEL_2 ; ADMIN }
+  enum Category { EQUIPMENT ; SERVICES ; SUPPLIES ; TRAVEL ; SOFTWARE ; OTHER }
+  enum RequestStatus { DRAFT ; PENDING_APPROVAL ; CHANGES_REQUESTED ; APPROVED ; REJECTED ; CANCELLED ; +isFinal() ; +isEditable() }
+  enum StepStatus { PENDING ; APPROVED ; REJECTED ; RETURNED ; CANCELLED ; SKIPPED }
+  enum Action { SUBMIT ; APPROVE ; REJECT ; REQUEST_CHANGES ; CANCEL ; +verb() }
+  enum AllowedAction { EDIT ; SUBMIT ; CANCEL ; APPROVE ; REJECT ; REQUEST_CHANGES }
+  enum ErrorCode { VALIDATION_FAILED ; NOT_FOUND ; FORBIDDEN ; NOT_REQUEST_OWNER ; CONCURRENCY_CONFLICT ; INVALID_TRANSITION ; APPROVER_NOT_ELIGIBLE ; SELF_APPROVAL_FORBIDDEN ; DUPLICATE_APPROVER ; COMMENT_REQUIRED ; BUDGET_EXCEEDED ; BUDGET_BELOW_CONSUMED ; ... }
+
+  class Money <<record>> {
+    +cents : long
+    +{static} parse(decimal : String) : Money
+    +plus(Money) / minus(Money) / times(int) : Money
+    +isGreaterThan(Money) : boolean
+    +toDecimalString() : String   ' "4899.90"
+    +toBrl() : String             ' "R$ 4.899,90"
+  }
+  class Actor <<record>> {
+    +id : UUID ; +name : String ; +role : Role
+    +approverLevel : ApproverLevel ; +costCenterId : UUID
+  }
+  class StepState <<record>> {
+    +sequence : int ; +level : StepLevel ; +status : StepStatus ; +approverId : UUID
+    +{static} current(chain) : Optional<StepState>
+    +{static} isLast(chain, step) : boolean
+  }
+  class BusinessCalendar {
+    -clock : Clock
+    +competenceMonth(Instant) : String  ' America/Sao_Paulo
+    +today() : LocalDate ; +isFuture(LocalDate) : boolean
+  }
+  class RequestStateMachine <<utility>> {
+    -ALLOWED : EnumMap<RequestStatus, EnumSet<Action>>
+    +{static} require(from, action) : void
+    +{static} next(from, action, lastStep) : RequestStatus
+  }
+  class ApprovalChainBuilder <<utility>> {
+    +{static} build(total : Money, category : Category) : List<StepLevel>
+  }
+  class ApprovalPolicies <<utility>> {
+    +{static} isEligible(actor, level, versionCostCenterId) : boolean
+    +{static} requireEligible(...) ; requireSegregation(...) ; requireComment(action, comment)
+  }
+  class AccessPolicy <<utility>> {
+    +{static} canSee(actor, ownerId, costCenterId, status) : boolean
+    +{static} allowedActions(actor, RequestView) : Set<AllowedAction>
+  }
+  abstract class DomainException <<sealed>> {
+    +code() : ErrorCode ; +detail() : String
+  }
+  class "DomainException.Invalid (400)" as Invalid
+  class "DomainException.NotFound (404)" as NotFound
+  class "DomainException.Forbidden (403)" as Forbidden
+  class "DomainException.Conflict (409)" as Conflict
+  class "DomainException.RuleViolation (422)" as RuleViolation
+  class "DomainException.BudgetExceeded (422)" as BudgetExceeded
+}
+
+package "persistence" <<Frame>> #FFF3E0 {
+  class PurchaseRequestEntity <<@Entity>> {
+    id, requestNumber, ownerId, costCenterId, status
+    currentVersion, lockVersion  ' read-only for Hibernate
+    title, description, category, neededBy, totalCents
+    +updateWorkingCopy(...) ; +markSubmitted(...) ; +moveTo(status, now)
+  }
+  class RequestItemEntity <<@Entity>>
+  class RequestVersionEntity <<@Entity @Immutable>> {
+    versionNumber, costCenterId (frozen), totalCents, competenceMonth, submittedBy/At
+  }
+  class VersionItemEntity <<@Entity @Immutable>>
+  class ApprovalStepEntity <<@Entity>> { sequence, level, status, approverId, decidedAt, comment ; +toState() }
+  class RequestEventEntity <<@Entity @Immutable>>
+  class BudgetEntity <<@Entity>> { costCenterId, yearMonth, amountCents, consumedCents }
+  class UserEntity <<@Entity>> { +toActor() : Actor }
+  class CostCenterEntity <<@Entity>>
+
+  interface PurchaseRequestRepository { +claim(id, expected, now) : int  ' first write ; +nextRequestNumber() }
+  interface BudgetRepository { +consume(cc, ym, cents) : int  ' conditional ; +lockByCostCenterAndMonth() ' FOR UPDATE }
+  interface ApprovalStepRepository { +decide(id, status, ...) : int  ' WHERE status=PENDING ; +skipAfter(...) }
+  interface "Other Spring Data repositories" as OtherRepos
+}
+
+package "application" <<Frame>> #E3F2FD {
+  class PurchaseRequestService { +create(actor, input) ; +update(actor, id, input) }
+  class TransitionService { +submit(actor, id, lock) ; +decide(actor, id, action, lock, comment) ; +cancel(actor, id, lock) }
+  class TransitionFacade { +approve/reject/requestChanges/submit/cancel ; ' audits budget failure after rollback }
+  class RequestLock { +claim(loaded, expected) : PurchaseRequestEntity }
+  class RequestAccess { +loadVisible(actor, id) ; +requireOwner ; +requireApproverRole ; +requireAdmin }
+  class AuditService { +record(...) <<MANDATORY>> ; +recordBudgetFailure(...) <<REQUIRES_NEW>> }
+  class IdempotencyService { +create(actor, key, input) : Outcome }
+  class RequestQueryService
+  class InboxService
+  class DashboardService
+  class RequestMapper
+  class "AuthService / UserAdminService / CostCenterService" as AdminServices
+}
+
+package "api + security" <<Frame>> #F3E5F5 {
+  class RequestController
+  class WorkflowController
+  class AdminController
+  class GlobalExceptionHandler
+  class SecurityConfig
+  class JwtService
+  class CurrentUser { +get() : Actor }
+}
+
+' ---------- relationships ----------
+DomainException <|-- Invalid
+DomainException <|-- NotFound
+DomainException <|-- Forbidden
+DomainException <|-- Conflict
+DomainException <|-- RuleViolation
+DomainException <|-- BudgetExceeded
+
+RequestController --> IdempotencyService
+RequestController --> PurchaseRequestService
+RequestController --> TransitionFacade
+RequestController --> RequestQueryService
+WorkflowController --> InboxService
+WorkflowController --> DashboardService
+AdminController --> AdminServices
+RequestController ..> CurrentUser
+CurrentUser ..> UserEntity
+AdminServices --> JwtService
+
+IdempotencyService --> PurchaseRequestService
+TransitionFacade --> TransitionService
+TransitionFacade --> AuditService
+TransitionService --> RequestAccess
+TransitionService --> RequestLock
+TransitionService --> RequestStateMachine
+TransitionService --> ApprovalChainBuilder
+TransitionService --> ApprovalPolicies
+TransitionService --> BudgetRepository
+TransitionService --> ApprovalStepRepository
+TransitionService --> AuditService
+PurchaseRequestService --> RequestLock
+RequestLock --> PurchaseRequestRepository
+InboxService --> ApprovalPolicies
+RequestMapper --> AccessPolicy
+RequestQueryService --> RequestMapper
+
+PurchaseRequestEntity "1" -- "*" RequestItemEntity : working copy (request_id)
+PurchaseRequestEntity "1" -- "*" RequestVersionEntity : v1, v2… (request_id)
+RequestVersionEntity "1" -- "*" VersionItemEntity
+RequestVersionEntity "1" -- "1..3" ApprovalStepEntity : chain
+PurchaseRequestEntity "1" -- "*" RequestEventEntity : history
+ApprovalStepEntity ..> StepState
+UserEntity ..> Actor
+
+GlobalExceptionHandler ..> DomainException : exhaustive switch
+
+note right of PurchaseRequestEntity : lockVersion (concurrency) is NOT the\nbusiness version (v1, v2…) — README 3.2
+note right of ApprovalChainBuilder : cents: <=100000 -> [N1]\n<=1000000 -> [N1,N2]\nelse [N1,N2,ADMIN]\nSOFTWARE ends with ADMIN (never twice)
+@enduml

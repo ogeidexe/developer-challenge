@@ -1,0 +1,28 @@
+@startuml SEQ-07-BudgetConsumption
+' Final-step approval: atomic budget consumption AFTER the lock claim.
+' On failure the transition rolls back entirely; the audit event commits in its own transaction.
+actor Admin
+participant "TransitionFacade" as F
+participant "TransitionService\n(@Transactional)" as TS
+participant "BudgetRepository" as BR
+participant "AuditService" as AUD
+database "PostgreSQL" as DB
+
+Admin -> F : approve(actor, id, lockVersion, comment?)
+F -> TS : decide(...)
+TS -> DB : lock claim (first write) + policies (SEQ-03)
+TS -> BR : consume(version.costCenterId, version.competenceMonth, version.total)
+BR -> DB : UPDATE budgets SET consumed_cents = consumed_cents + :amount\nWHERE cost_center_id = :cc AND year_month = :ym\nAND consumed_cents + :amount <= amount_cents
+alt 1 row
+  TS -> DB : step APPROVED, request APPROVED, event APPROVED; COMMIT
+  TS --> Admin : 200 (request APPROVED, budget consumed)
+else 0 rows (no budget row = zero balance, or balance too small)
+  TS -> DB : read available amount for the message
+  TS --> F : throw BudgetExceeded
+  F -> DB : (Spring rolled back: no lock bump, no step change, no consumption)
+  F -> AUD : recordBudgetFailure — REQUIRES_NEW
+  AUD -> DB : INSERT request_events (APPROVAL_FAILED_BUDGET, to_status = PENDING_APPROVAL); COMMIT
+  F --> Admin : 422 BUDGET_EXCEEDED
+end
+note over BR,DB : the conditional UPDATE row-locks the budget: concurrent finals serialize and\nre-check the predicate on the committed value → never negative.\nBackstop: CHECK (consumed_cents <= amount_cents).
+@enduml

@@ -1,0 +1,22 @@
+@startuml SEQ-05-RequestChanges
+' POST /requests/{id}/request-changes — return for adjustment (comment mandatory >= 10).
+actor Aprovador
+participant "RequestController" as C
+participant "TransitionService\n(@Transactional)" as TS
+participant "RequestAccess / RequestLock" as ACC
+participant "RequestStateMachine" as SM
+participant "ApprovalPolicies" as AP
+participant "repositories" as R
+
+Aprovador -> C : POST /requests/{id}/request-changes {lockVersion, comment}
+C -> TS : decide(actor, id, REQUEST_CHANGES, lockVersion, comment)   ' via TransitionFacade
+TS -> ACC : loadVisible (404) → requireApproverRole (403) → claim (409, first write)
+TS -> SM : require(PENDING_APPROVAL, REQUEST_CHANGES)   ' 422 INVALID_TRANSITION
+TS -> AP : requireEligible → requireSegregation → requireComment   ' 422 codes
+TS -> R : UPDATE approval_steps SET status='RETURNED', approver, decided_at, comment\nWHERE id = :step AND status = 'PENDING'
+TS -> R : UPDATE approval_steps SET status='SKIPPED' WHERE … sequence > :current
+TS -> R : status = CHANGES_REQUESTED
+TS -> R : INSERT request_events (CHANGES_REQUESTED, comment, version)
+TS --> Aprovador : 200 RequestDetail (owner gets EDIT / SUBMIT / CANCEL)
+note over TS : the working copy is not frozen here; the owner edits it and\nresubmits → a NEW version (SEQ-06)
+@enduml
