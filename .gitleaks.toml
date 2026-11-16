@@ -1,0 +1,14 @@
+# gitleaks configuration — picked up automatically from the scanned source root (security.yml, job "secrets").
+# Keeps every default rule; only documented false positives are allowlisted, each by its exact value.
+title = "purchase-requests gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Documented false positives (not credentials)"
+regexes = [
+  # Example Idempotency-Key header value (a random UUID) in the API usage samples of README.md and
+  # backend/README.md. Idempotency keys are client-generated request identifiers, not secrets.
+  '''^6f1c2b9e-1d2a-4f7a-9a51-0f3c8e2d7b10$''',
+]

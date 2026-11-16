@@ -10,7 +10,7 @@
 |---|---|---|---|
 | `frontend-dependencies` | `npm audit` | **high/critical** in runtime dependencies (`--omit=dev`); **critical** in any dependency | `npm ci --ignore-scripts`: no package install script runs in CI |
 | `dependency-review` (PRs) | `actions/dependency-review-action@v4` | the PR **adds** a dependency with a **high/critical** advisory (npm and Maven) | Needs the dependency graph (on by default for public repos) |
-| `secrets` | gitleaks `v8.18.4` (container) | any finding, full history | `--redact`: values never appear in the log |
+| `secrets` | gitleaks `v8.18.4` (container) | any finding, full history | `--redact`: values never appear in the log; `--verbose` shows file/line/rule. False positives are allowlisted by exact value in `.gitleaks.toml` |
 | `codeql` | `github/codeql-action@v4`, `security-extended`, Java/Kotlin and JS/TS, `build-mode: none` | results go to the Security tab; becomes blocking with a branch-protection rule on code-scanning alerts (high+) | No JDK build needed for extraction |
 | `backend` | `./mvnw verify` (all tests, including the security regression tests) + OWASP Dependency-Check `12.1.0` | any test fails; a dependency has **CVSS ≥ 9** | Dependency-Check runs only if the secret `NVD_API_KEY` exists. CI uses a throw-away `JWT_SECRET` |
 | `dockerfile` | hadolint `v2.12.0` (container) | Dockerfile **errors** (warnings reported only) | |
@@ -30,6 +30,7 @@
 | Exception | Why | Expires |
 |---|---|---|
 | Dev-only highs in `vite`, `cypress` → `extract-zip` (SEC-F18) | They need major upgrades; dev tooling only; `npm audit --omit=dev` excludes them and the "critical anywhere" gate still applies | **2027-02-15**, then upgrade or renew with a justification |
+| gitleaks allowlist: example `Idempotency-Key` UUID in `README.md` / `backend/README.md` | Client-generated request identifier used in API samples, not a credential; the protected `README.md` and git history cannot be rewritten. Allowlisted by exact value only, every other rule and value still blocks | None (value is public documentation) |
 | Dependency-Check skipped without `NVD_API_KEY` | An anonymous NVD sync is too slow for CI | Until the secret is added (R-14) |
 
 ## Hardening of the pipeline itself
