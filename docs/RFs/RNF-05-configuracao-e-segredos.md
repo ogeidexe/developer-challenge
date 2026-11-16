@@ -18,6 +18,8 @@ Toda configuração vem de variáveis de ambiente; nenhum segredo é commitado; 
   guardado num volume, sem passo manual e sem segredo no repositório.
 - **RN-R05.5** O CI procura segredos em **todo o histórico** do git (gitleaks); qualquer achado bloqueia o build.
   Falsos positivos ficam documentados em `.gitleaks.toml`, por valor exato.
+- **RN-R05.7** Redis (`REDIS_HOST`, `REDIS_PORT`) e o gateway (`HTTP_PORT`, `GATEWAY_LOGIN_RATE`) também são
+  configurados por variáveis; Redis não é publicado no host e não guarda nada além das sessões.
 - **RN-R05.6** A senha pública do seed só é aceitável em demonstração local; `SEED_ENABLED=false` desliga o seed.
 
 ## Critérios de aceite

@@ -25,8 +25,8 @@ idempotência. Implementa o contrato de `../docs/api/openapi.yaml` e as decisõe
 ## Pré-requisitos
 
 - JDK 25 (o Maven vem pelo wrapper `./mvnw`)
-- PostgreSQL 16 para rodar localmente, ou Docker
-- Docker para os testes de integração (sem Docker eles são **ignorados**, não falham)
+- PostgreSQL 16 e Redis 7 para rodar localmente, ou Docker (`docker compose up db redis` na raiz)
+- Docker para os testes de integração, que sobem PostgreSQL e Redis com Testcontainers (sem Docker eles são **ignorados**, não falham)
 
 ## Variáveis de ambiente
 
@@ -35,9 +35,10 @@ Todas listadas em [`../.env.example`](../.env.example).
 | Variável | Padrão | Observação |
 |---|---|---|
 | `DB_URL` / `DB_USER` / `DB_PASSWORD` | `jdbc:postgresql://localhost:5432/purchase` / `purchase` / `purchase` | |
+| `REDIS_HOST` / `REDIS_PORT` | `localhost` / `6379` | sessões do JWT (ADR-015); sem Redis os tokens são recusados (`401`) |
 | `JWT_SECRET` | — (**obrigatória**) | aleatória, ≥ 32 bytes; a aplicação não sobe sem ela nem com um placeholder conhecido |
 | `JWT_ISSUER` / `JWT_AUDIENCE` / `JWT_TTL` | `purchase-requests` / `purchase-requests-api` / `PT15M` | `iss` e `aud` são exigidos em todo token |
-| `PORT` | `3000` | o proxy do front (`/api` → `:3000`) espera esta porta |
+| `PORT` | `3000` | o gateway Nginx e o proxy de desenvolvimento (`/api` → `:3000`) esperam esta porta |
 | `SEED_ENABLED` | `true` | cria os dados de demonstração no primeiro start (senha pública: use `false` fora de demo) |
 | `LOGIN_MAX_FAILURES_PER_ACCOUNT` / `LOGIN_MAX_FAILURES_PER_CLIENT` / `LOGIN_THROTTLE_WINDOW` | `5` / `50` / `PT15M` | falhas de login antes do `429` (por e-mail / por endereço) |
 | `MAX_REQUEST_BODY` | `1MB` | corpo maior → `413` |
@@ -83,7 +84,7 @@ demonstrar `BUDGET_EXCEEDED`; o fluxo do vídeo (> R$ 10.000) usa "Notebooks par
 ## Exemplos (curl)
 
 ```bash
-API=http://localhost:3000
+API=http://localhost:3000           # back-end rodando local; com docker compose use http://localhost:8080/api
 TOKEN=$(curl -s $API/auth/login -H 'Content-Type: application/json' \
   -d '{"email":"solic.adm@kingspan.test","password":"Kingspan@123"}' | jq -r .token)
 
@@ -102,6 +103,9 @@ curl -s $API/requests/$ID/approve -H "Authorization: Bearer $TOKEN" -H 'Content-
 curl -s $API/approvals/inbox     -H "Authorization: Bearer $TOKEN"
 curl -s $API/dashboard/summary   -H "Authorization: Bearer $TOKEN"
 curl -s $API/health
+
+# logout: encerra a sessão no Redis; o mesmo token passa a receber 401
+curl -s -X POST $API/auth/logout -H "Authorization: Bearer $TOKEN"
 ```
 
 ## Arquitetura

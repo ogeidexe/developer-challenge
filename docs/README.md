@@ -29,7 +29,7 @@ zod + plain CSS (front end). The ADRs and architecture documents now describe th
 | Architecture | [architecture/OVERVIEW.md](architecture/OVERVIEW.md) · [SYSTEM-DESIGN.md](architecture/SYSTEM-DESIGN.md) · [diagrams/](architecture/diagrams) (Mermaid) · [uml/](architecture/uml) (PlantUML: class, use case, state machine, 10 sequences) |
 | Database | [database/ERD-CONCEPTUAL.md](database/ERD-CONCEPTUAL.md) · [ERD-LOGICAL.md](database/ERD-LOGICAL.md) · [ERD-PHYSICAL.md](database/ERD-PHYSICAL.md) · [DATA-DICTIONARY.md](database/DATA-DICTIONARY.md) · [TRANSACTION-STRATEGY.md](database/TRANSACTION-STRATEGY.md) · [migrations/](database/migrations) (reference SQL; the executed copies are Flyway `V1`–`V6` in `backend/`) |
 | API | [api/API-DESIGN.md](api/API-DESIGN.md) · [api/openapi.yaml](api/openapi.yaml) (OpenAPI 3.1, 25 ops) · [ERROR-CATALOG.md](api/ERROR-CATALOG.md) · [INTEGRATION-CONTRACTS.md](api/INTEGRATION-CONTRACTS.md) |
-| Decisions | [adr/](adr) — 14 ADRs (incl. the 3 mandated: ADR-009 concurrency, ADR-011 versioning/history, ADR-012 403×404) |
+| Decisions | [adr/](adr) — 16 ADRs (incl. the 3 mandated: ADR-009 concurrency, ADR-011 versioning/history, ADR-012 403×404; ADR-015 Redis sessions, ADR-016 Nginx gateway) |
 | Testing | [testing/TEST-STRATEGY.md](testing/TEST-STRATEGY.md) · [TEST-MATRIX.md](testing/TEST-MATRIX.md) (planned ID → real test) · [CONCURRENCY-TESTS.md](testing/CONCURRENCY-TESTS.md) |
 | Security | [security/README.md](security/README.md): threat model, findings (27), remediation log, risk register, test plan/results, CI pipeline (2026-11-15 audit) |
 | Specifications | [specifications/SPEC-INDEX.md](specifications/SPEC-INDEX.md) + 19 feature specs (each with an "Implementation" note) |

@@ -18,7 +18,9 @@ npm run dev:api  # http://localhost:5173 — API real (proxy /api → http://loc
 
 Com `dev:api`, suba antes o back-end (`docker compose up db backend` na raiz, ou `./mvnw spring-boot:run` em
 `backend/`). Para outro endereço de API: `API_PROXY_TARGET=http://host:porta npm run dev:api`. Pelo
-`docker compose up --build` na raiz, o front já sobe ligado à API real em http://localhost:8080.
+`docker compose up --build` na raiz, o front já sobe ligado à API real em http://localhost:8080, atrás do gateway
+Nginx (o gateway serve a SPA e encaminha `/api` ao back-end; ADR-016). Com a stack do compose no ar, o
+`dev:api` também pode usar o gateway: `API_PROXY_TARGET=http://localhost:8080/api npm run dev:api`.
 
 Lint e formatação (os mesmos passos do CI):
 
@@ -62,7 +64,7 @@ Há duas suítes:
 | Suíte | Comando | Contra o quê |
 |---|---|---|
 | `cypress/e2e/` | `npm run test:e2e` | backend simulado em memória (rápida, sem dependências) |
-| `cypress/e2e-api/` | `npm run test:e2e:api` | **API real**: a stack do `docker compose` (nginx → Spring → PostgreSQL) |
+| `cypress/e2e-api/` | `npm run test:e2e:api` | **API real**: a stack do `docker compose` (gateway Nginx → Spring → PostgreSQL + Redis) |
 
 A suíte da API real precisa da stack no ar e de um banco recém-criado (ela confere os números do seed):
 

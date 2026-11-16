@@ -17,8 +17,10 @@ Logs estruturados em JSON com o `X-Request-Id`, que é gerado quando não vem na
 - **RN-R04.3** Logs no formato JSON (ECS) no console, com o `requestId` no MDC em todas as linhas da requisição.
 - **RN-R04.4** O mesmo id é gravado em cada evento do histórico ([RF-11](RF-11-historico-e-auditoria.md)) e
   devolvido no campo `requestId` dos erros `problem+json`.
-- **RN-R04.5** `GET /health` é público e responde `{"status":"UP"}` com os componentes, incluindo o banco; com o
-  banco fora, responde `503` com `DOWN`.
+- **RN-R04.5** `GET /health` é público e responde `{"status":"UP"}` com os componentes, incluindo o banco e o Redis;
+  com um deles fora, ou enquanto o seed de demonstração roda, responde `503`.
+- **RN-R04.6** No compose, o gateway Nginx repassa o `X-Request-Id` do cliente ou cria um (`$request_id`); o
+  back-end continua validando e devolvendo o id (ADR-016).
 
 ## Critérios de aceite
 

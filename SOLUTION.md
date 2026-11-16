@@ -8,10 +8,10 @@ concorrência e idempotência.
 
 | Camada | Stack |
 |---|---|
-| Back-end | Java 25 · Spring Boot 4.1 · Spring Security (JWT HS256) · JPA/Hibernate · Flyway · PostgreSQL 17 |
+| Back-end | Java 25 · Spring Boot 4.1 · Spring Security (JWT HS256 + sessões no Redis) · JPA/Hibernate · Flyway · PostgreSQL 17 · Redis 7 |
 | Front-end | React 18 · TypeScript · Vite 5 · Ant Design 5 · TanStack Query |
-| Testes | JUnit 5 + AssertJ (unitários), Testcontainers PostgreSQL (integração e concorrência), Cypress (E2E) |
-| Entrega | Docker Compose · GitHub Actions (CI, segurança, release) |
+| Testes | JUnit 5 + AssertJ (unitários), Testcontainers PostgreSQL + Redis (integração, concorrência, HTTP), Cypress (E2E) |
+| Entrega | Docker Compose com gateway Nginx (proxy reverso) · GitHub Actions (CI, segurança, release) |
 
 ---
 
@@ -25,18 +25,29 @@ Pré-requisito: Docker com Compose v2.
 docker compose up --build
 ```
 
-Nenhum passo manual: o banco sobe, o back-end aplica as migrations Flyway e cria o seed (§3) na
-primeira subida, e o front-end só inicia quando o `/health` do back-end responde `UP`.
+Nenhum passo manual: PostgreSQL e Redis sobem, o back-end aplica as migrations Flyway e cria o seed (§3) na
+primeira subida, e o gateway só abre quando o back-end está pronto (`/health` com HTTP 200, depois do seed).
 
-| Serviço | URL |
+Todo o tráfego HTTP passa por um **gateway Nginx** (proxy reverso, [ADR-016](docs/adr/ADR-016-nginx-gateway.md)),
+o único serviço publicado:
+
+```
+navegador ──► gateway Nginx :8080 ──┬─ /                   ─► front-end (SPA estática)
+                                    ├─ /api/*              ─► back-end (prefixo /api removido)
+                                    └─ /health, /docs      ─► back-end
+back-end ──► PostgreSQL (dados) e Redis (sessões do JWT)
+```
+
+| O quê | URL |
 |---|---|
-| Front-end (SPA) | <http://localhost:8080> |
-| API | <http://localhost:3000> (o front chama a API por `/api`, via proxy do nginx) |
-| OpenAPI / Swagger UI | <http://localhost:3000/docs> |
-| Health (app + banco) | <http://localhost:3000/health> |
+| Aplicação (SPA) | <http://localhost:8080> |
+| API | <http://localhost:8080/api> (ex.: `POST /api/auth/login`) |
+| OpenAPI / Swagger UI | <http://localhost:8080/docs> |
+| Health (app + banco + Redis) | <http://localhost:8080/health> |
 
 - **Variáveis:** todas têm padrão de demonstração local. Para mudar alguma, copie `.env.example` para
-  `.env` (portas: `FRONTEND_PORT`, `BACKEND_PORT`).
+  `.env` (porta: `HTTP_PORT`; limite de login no gateway: `GATEWAY_LOGIN_RATE`). Back-end, front-end e
+  Redis não ficam expostos no host; o PostgreSQL fica só em `127.0.0.1:5432`.
 - **`JWT_SECRET`:** nenhum segredo está commitado. Se o `.env` não definir um, o serviço `jwt-secret`
   gera um aleatório (48 bytes) na primeira subida e o guarda num volume, então os tokens continuam válidos
   depois de reiniciar. O back-end se recusa a subir com segredo curto ou com placeholder documentado.
@@ -46,7 +57,7 @@ primeira subida, e o front-end só inicia quando o `/health` do back-end respond
 
 ### 1.2 Local, sem Docker para as aplicações
 
-Pré-requisitos: JDK 25, Node 22 e um PostgreSQL (o do compose serve: `docker compose up db`, publicado em
+Pré-requisitos: JDK 25, Node 22, um Redis (`docker run -p 6379:6379 redis:7.4-alpine`) e um PostgreSQL (o do compose serve: `docker compose up db`, publicado em
 `127.0.0.1:5432`; ou um PostgreSQL local com banco/usuário/senha `purchase`).
 
 ```bash
@@ -131,7 +142,7 @@ Cenários prontos:
 
 ## 4. Principais decisões e trade-offs
 
-As decisões completas estão em [`docs/adr/`](docs/adr/) (14 ADRs).
+As decisões completas estão em [`docs/adr/`](docs/adr/) (16 ADRs).
 
 | Tema | Decisão | Trade-off | ADR |
 |---|---|---|---|
@@ -143,6 +154,8 @@ As decisões completas estão em [`docs/adr/`](docs/adr/) (14 ADRs).
 | Transações | Um `@Transactional` por caso de uso; uma falha de orçamento faz rollback da transição, e o evento `APPROVAL_FAILED_BUDGET` é gravado em outra transação (`REQUIRES_NEW`). | Dois commits nesse caminho, mas a tentativa fica auditada. | [008](docs/adr/ADR-008-transaction-management.md) |
 | Arquitetura | Monólito em camadas, com o domínio isolado de HTTP e ORM. | Simples de rodar e testar; separar em módulos seria o próximo passo se crescesse. | [001](docs/adr/ADR-001-architecture-style.md), [003](docs/adr/ADR-003-domain-boundaries.md) |
 | Autenticação | JWT HS256 de 15 min (`sub`, `role`, `costCenterId`, `approverLevel`, `aud`, `iss`); o usuário é recarregado do banco a cada requisição, então uma mudança de papel vale na hora. | Sem refresh token: o usuário faz login de novo depois de 15 min. | [006](docs/adr/ADR-006-authentication-strategy.md), [007](docs/adr/ADR-007-authorization-strategy.md) |
+| Sessões | Cada token abre uma sessão no **Redis** (`session:<jti>`, mesmo TTL); o token só vale enquanto a sessão existe. `POST /auth/logout` encerra a sessão: logout e revogação reais. | Uma consulta ao Redis por requisição; sem Redis, os tokens são recusados (falha fechada, visível no `/health`). | [015](docs/adr/ADR-015-redis-sessions.md) |
+| Entrada HTTP | **Gateway Nginx** como única porta: roteia SPA e API, cabeçalhos de segurança, gzip, limite de corpo, `X-Request-Id` e limite de login por IP. | Um salto a mais; config inline no `docker-compose.yml`. | [016](docs/adr/ADR-016-nginx-gateway.md) |
 
 **Logs e operação:** logs JSON estruturados (ECS) com `requestId` no MDC; `X-Request-Id` é gerado quando
 não vem na requisição e é devolvido na resposta e gravado em cada evento do histórico.
@@ -154,7 +167,8 @@ não vem na requisição e é devolvido na resposta e gravado em cada evento do 
 - Filtros extras na listagem: `minAmount`, `maxAmount`, `q`
 - Tempo médio de aprovação no dashboard
 - Histórico append-only garantido pelo banco (triggers)
-- Rate limit no login (por conta e por cliente)
+- Rate limit no login (por conta e por cliente no back-end, por IP no gateway Nginx)
+- Logout e revogação de token reais (sessões no Redis)
 - Pipeline de segurança (npm audit, dependency review, gitleaks, CodeQL, OWASP Dependency-Check, hadolint),
   descrito em [`docs/security/SECURITY-PIPELINE.md`](docs/security/SECURITY-PIPELINE.md)
 
@@ -169,10 +183,11 @@ não vem na requisição e é devolvido na resposta e gravado em cada evento do 
   é testada contra o simulado).
 - **Caixa de aprovação com N+1:** uma consulta da cadeia por candidata. Serve para esta escala, mas
   deveria virar um SQL único.
-- **Sem refresh token, sem outbox e sem job de SLA** (diferenciais não escolhidos).
-- **Atrás do proxy do front, o limite de login por cliente enxerga o IP do nginx**, porque o back-end
-  ignora `X-Forwarded-For` de propósito (falsificável). Num deploy real, configurar
-  `server.forward-headers-strategy` só com proxy confiável.
+- **Sem outbox e sem job de SLA** (diferenciais não escolhidos).
+- **Atrás do gateway, o limite de login por cliente do back-end enxerga o IP do gateway**, porque o back-end
+  ignora `X-Forwarded-For` de propósito (falsificável). O limite por IP fica no gateway (`limit_req`).
+- **Sem TLS no gateway** (demonstração local) e **sem refresh token**: o logout encerra a sessão atual, mas
+  não há "sair de todas as sessões" de um usuário.
 
 ## 6. O que eu faria com mais tempo
 
@@ -195,5 +210,5 @@ não vem na requisição e é devolvido na resposta e gravado em cada evento do 
 | `docs/RFs/` | requisitos funcionais e não funcionais detalhados, com critérios de aceite e os testes que cobrem cada um ([índice](docs/RFs/README.md)) |
 | `docs/api/openapi.yaml` | contrato da API (também servido em `/docs`) |
 | `docs/` | requisitos, modelagem do banco, testes, segurança ([índice](docs/README.md)) |
-| `docker-compose.yml` | banco + back-end + front-end |
+| `docker-compose.yml` | gateway Nginx (config inline) + front-end + back-end + PostgreSQL + Redis |
 | `.github/workflows/` | `ci.yml` (build, lint, testes, compose), `security.yml`, `release.yml` (tag `vX.Y.Z` → GitHub Release + imagens no GHCR) |

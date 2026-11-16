@@ -14,7 +14,7 @@ enunciado e **não pode ser alterado**.
 | Item | Onde | Situação |
 |---|---|---|
 | `SOLUTION.md`: visão geral, como rodar (compose e local), usuários do seed, decisões e trade-offs, o que ficou de fora, próximos passos | [`SOLUTION.md`](../../SOLUTION.md) | ✅ |
-| ≥ 3 ADRs, entre eles (a) concorrência, (b) versões e histórico, (c) `403` × `404` | [`docs/adr/`](../adr/): 14 ADRs, incluindo [009](../adr/ADR-009-concurrency-control.md), [011](../adr/ADR-011-versioning-history-modeling.md), [012](../adr/ADR-012-403-vs-404.md) | ✅ |
+| ≥ 3 ADRs, entre eles (a) concorrência, (b) versões e histórico, (c) `403` × `404` | [`docs/adr/`](../adr/): 16 ADRs, incluindo [009](../adr/ADR-009-concurrency-control.md), [011](../adr/ADR-011-versioning-history-modeling.md), [012](../adr/ADR-012-403-vs-404.md) | ✅ |
 | `AI_USAGE.md` | raiz | ⏳ **escrito pelo candidato** (agentes de IA não podem escrevê-lo) |
 | `backend/README.md`: pré-requisitos, variáveis, comandos, exemplos `curl` | [`backend/README.md`](../../backend/README.md) | ✅ |
 | `frontend/README.md`: pré-requisitos, variáveis, comandos | [`frontend/README.md`](../../frontend/README.md) | ✅ |
