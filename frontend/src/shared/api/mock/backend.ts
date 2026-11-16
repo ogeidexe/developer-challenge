@@ -10,6 +10,10 @@ import {
 } from './domain'
 import { seed, type BudgetRec, type MockDb, type RequestRec, type UserRec, type VersionRec } from './data'
 
+// Request bodies arrive as untyped JSON (like on a real server) and are validated field by field below.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- deliberate: the fake API must accept any payload
+type JsonBody = any
+
 export interface MockRequest {
   method: string
   path: string
@@ -131,7 +135,7 @@ function skipRemaining(v: VersionRec, afterSequence: number): void {
   for (const s of v.steps) if (s.sequence > afterSequence && s.status === 'PENDING') s.status = 'SKIPPED'
 }
 
-function checkLock(r: RequestRec, body: any): void {
+function checkLock(r: RequestRec, body: JsonBody): void {
   const lv = body?.lockVersion
   if (typeof lv !== 'number' || lv < 1) {
     fail(400, 'VALIDATION_FAILED', 'lockVersion é obrigatório.', { errors: [{ field: 'lockVersion', message: 'lockVersion é obrigatório', code: 'REQUIRED' }] })
@@ -226,7 +230,7 @@ function page<T>(all: T[], q: URLSearchParams): Page<T> {
 }
 
 // ---------- payload validation ----------
-function validateRequestPayload(body: any): void {
+function validateRequestPayload(body: JsonBody): void {
   const errors: { field: string; message: string; code: string }[] = []
   const b = body ?? {}
   if (typeof b.title !== 'string' || b.title.trim().length < 3 || b.title.length > 120) errors.push({ field: 'title', message: 'Título deve ter 3–120 caracteres', code: 'INVALID' })
@@ -249,14 +253,14 @@ function validateRequestPayload(body: any): void {
 }
 
 // ---------- request lifecycle ----------
-function toItems(body: any): RequestRec['items'] {
+function toItems(body: JsonBody): RequestRec['items'] {
   return body.items.map((it: RequestItemInput, i: number) => {
     const unitPriceCents = moneyToCents(it.unitPrice)
     return { position: i, description: it.description.trim(), quantity: it.quantity, unitPriceCents, lineTotalCents: unitPriceCents * it.quantity }
   })
 }
 
-function doSubmit(u: UserRec, r: RequestRec, body: any): RequestDetailDto {
+function doSubmit(u: UserRec, r: RequestRec, body: JsonBody): RequestDetailDto {
   if (r.ownerId !== u.id) fail(403, 'NOT_REQUEST_OWNER', 'Apenas o proprietário pode submeter esta solicitação.')
   checkLock(r, body)
   const from = r.status
@@ -281,7 +285,7 @@ function doSubmit(u: UserRec, r: RequestRec, body: any): RequestDetailDto {
   return detailDto(u, r)
 }
 
-function doDecide(u: UserRec, r: RequestRec, action: 'APPROVE' | 'REJECT' | 'REQUEST_CHANGES', body: any): RequestDetailDto {
+function doDecide(u: UserRec, r: RequestRec, action: 'APPROVE' | 'REJECT' | 'REQUEST_CHANGES', body: JsonBody): RequestDetailDto {
   if (u.role === 'SOLICITANTE') fail(403, 'FORBIDDEN', 'SOLICITANTE não pode executar ações de aprovação.')
   checkLock(r, body)
   const from = r.status
@@ -331,7 +335,7 @@ function doDecide(u: UserRec, r: RequestRec, action: 'APPROVE' | 'REJECT' | 'REQ
   return detailDto(u, r)
 }
 
-function doCancel(u: UserRec, r: RequestRec, body: any): RequestDetailDto {
+function doCancel(u: UserRec, r: RequestRec, body: JsonBody): RequestDetailDto {
   if (r.ownerId !== u.id && u.role !== 'ADMIN') fail(403, 'NOT_REQUEST_OWNER', 'Somente o proprietário ou um ADMIN pode cancelar esta solicitação.')
   checkLock(r, body)
   const from = r.status
@@ -414,7 +418,7 @@ function dashboard(u: UserRec): DashboardSummaryDto {
   return { totals, budgets, averageApprovalTimeDays: avg }
 }
 
-function validateUserPayload(b: any, isCreate: boolean, existing?: UserRec): Partial<UserRec> {
+function validateUserPayload(b: JsonBody, isCreate: boolean, existing?: UserRec): Partial<UserRec> {
   const errors: { field: string; message: string; code: string }[] = []
   if (isCreate) {
     if (typeof b.email !== 'string' || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(b.email)) errors.push({ field: 'email', message: 'E-mail inválido', code: 'INVALID' })
@@ -450,7 +454,7 @@ function handle(request: MockRequest): MockResponse {
   for (const [k, v] of Object.entries(request.headers)) headers[k.toLowerCase()] = v
   reqId = headers['x-request-id'] ?? 'local-' + Math.random().toString(36).slice(2)
   const { method, path, query } = request
-  const body: any = request.body ?? {}
+  const body: JsonBody = request.body ?? {}
   const seg = path.split('/').filter(Boolean)
 
   try {

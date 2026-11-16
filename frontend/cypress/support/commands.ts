@@ -15,9 +15,13 @@ export const USERS = {
   aprov2Adm: 'aprov2.adm@kingspan.test',
 } as const
 
+// Fake-API responses are untyped JSON; specs assert on the fields they need.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- deliberate: response shape varies per endpoint
+type ApiJson = any
+
 type MockHandle = (req: {
   method: string; path: string; query: URLSearchParams; body?: unknown; headers: Record<string, string>
-}) => Promise<{ status: number; json: any }>
+}) => Promise<{ status: number; json: ApiJson }>
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -34,7 +38,7 @@ declare global {
       /** The currently visible antd modal. */
       modal(): Chainable<JQuery<HTMLElement>>
       /** Calls the fake API as another user (a "second browser") — e.g. to provoke a 409. */
-      apiAs(email: string, method: string, path: string, body?: unknown): Chainable<{ status: number; json: any }>
+      apiAs(email: string, method: string, path: string, body?: unknown): Chainable<{ status: number; json: ApiJson }>
       /** Finds a request id by title, as seen by `email`. */
       requestIdByTitle(email: string, title: string): Chainable<string>
       /** Opens a request from the list screen by clicking its row. */

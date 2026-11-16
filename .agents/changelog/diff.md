@@ -758,3 +758,21 @@ One block per agent turn, one row per changed file:
 |---|---|---|---|
 | `.github/workflows/ci.yml` | modified | +26 | -14 |
 | `docker-compose.yml` | created | +108 | -0 |
+
+---
+### Turn 2026-11-16 12:24:15 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: Frontend: add ESLint 9 (typescript-eslint, react-hooks) and Prettier config with lint/format scripts; fix the 12 lint findings
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `frontend/.prettierignore` | created | +6 | -0 |
+| `frontend/.prettierrc.json` | created | +6 | -0 |
+| `frontend/cypress/support/commands.ts` | modified | +6 | -2 |
+| `frontend/eslint.config.js` | created | +31 | -0 |
+| `frontend/package-lock.json` | modified | +1334 | -40 |
+| `frontend/package.json` | modified | +10 | -1 |
+| `frontend/src/shared/api/mock/backend.ts` | modified | +12 | -8 |
+| `frontend/src/shared/auth/safeReturnUrl.ts` | modified | +1 | -0 |
