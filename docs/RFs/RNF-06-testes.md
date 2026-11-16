@@ -22,7 +22,7 @@ menos 3 testes de front-end. Cada lado roda com **um único comando**.
 | Integração: idempotência do `POST /requests` | `T/WorkflowIntegrationTest#idempotentCreateReplaysTheStoredResponse` | ✅ |
 | Concorrência: mesma etapa → exatamente uma sucede, outra `409` | `T/ConcurrencyIntegrationTest#twoApprovalsOfTheSameStepExactlyOneWinsTheOtherGets409` | ✅ |
 | Concorrência: solicitações diferentes, mesmo saldo → nunca negativo | `T/ConcurrencyIntegrationTest#finalApprovalsOfDifferentRequestsNeverOverdrawTheBudget` | ✅ |
-| Front-end: ≥ 3 testes significativos | `E2E/*.cy.ts` (9 specs, 54 testes) | ✅ |
+| Front-end: ≥ 3 testes significativos | `E2E/*.cy.ts` (9 specs, 54 testes, backend simulado) e `frontend/cypress/e2e-api/` (API real) | ✅ |
 | Um comando por lado | `./mvnw verify` · `npm run test:e2e` | ✅ |
 
 ## Números (último CI verde)
@@ -55,7 +55,7 @@ Os números são publicados a cada push pelo CI (job summary e badges, ver `.git
 | Orçamento | `PUT` com `BUDGET_BELOW_CONSUMED` no back-end | [RF-08](RF-08-orcamento.md) |
 | `X-Request-Id` | filtro e gravação no evento | [RNF-04](RNF-04-logs-e-request-id.md), [RF-11](RF-11-historico-e-auditoria.md) |
 | Contrato HTTP | testes dos controllers (status, `problem+json`) com servidor completo | [RNF-01](RNF-01-arquitetura.md) |
-| E2E | specs contra a API real (hoje só contra o backend simulado) | [RF-13](RF-13-interface-web.md) |
+| E2E | administração e casos de borda contra a API real (fluxos principais já cobertos em `cypress/e2e-api/`) | [RF-13](RF-13-interface-web.md) |
 
 ## Implementação
 

@@ -12,8 +12,13 @@ aprovação e dashboard.
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
+npm run dev      # http://localhost:5173 — backend simulado em memória, não precisa de API
+npm run dev:api  # http://localhost:5173 — API real (proxy /api → http://localhost:3000)
 ```
+
+Com `dev:api`, suba antes o back-end (`docker compose up db backend` na raiz, ou `./mvnw spring-boot:run` em
+`backend/`). Para outro endereço de API: `API_PROXY_TARGET=http://host:porta npm run dev:api`. Pelo
+`docker compose up --build` na raiz, o front já sobe ligado à API real em http://localhost:8080.
 
 Lint e formatação (os mesmos passos do CI):
 
@@ -51,6 +56,26 @@ um seletor que preenche qualquer usuário do seed.
    uma solicitação APROVADA do seed).
 
 ## Testes end-to-end (Cypress)
+
+Há duas suítes:
+
+| Suíte | Comando | Contra o quê |
+|---|---|---|
+| `cypress/e2e/` | `npm run test:e2e` | backend simulado em memória (rápida, sem dependências) |
+| `cypress/e2e-api/` | `npm run test:e2e:api` | **API real**: a stack do `docker compose` (nginx → Spring → PostgreSQL) |
+
+A suíte da API real precisa da stack no ar e de um banco recém-criado (ela confere os números do seed):
+
+```bash
+docker compose down --volumes && docker compose up --build --detach --wait   # na raiz
+npm run test:e2e:api                                                         # em frontend/
+```
+
+Ela cobre sessão e `returnUrl`, números do dashboard, filtros da listagem, caixa de aprovação, `404` de
+visibilidade, o fluxo de 3 etapas pelo formulário, cadeia `SOFTWARE`, segregação de funções, rejeição, `409`,
+`BUDGET_EXCEEDED` e reenvio como v2. O CI roda as duas suítes a cada push.
+
+### Suíte com o backend simulado
 
 ```bash
 npm run test:e2e   # um comando: sobe o Vite em 127.0.0.1:5174, roda todas as specs headless e encerra

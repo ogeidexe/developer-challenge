@@ -2,7 +2,7 @@
 
 | Origem | IDs relacionados | Status |
 |---|---|---|
-| README §2.7 | FR-031…FR-040 | ✅ implementado · ⚠ E2E só contra o backend simulado |
+| README §2.7 | FR-031…FR-040 | ✅ implementado · E2E contra o backend simulado e contra a API real |
 
 ## Descrição
 
@@ -46,7 +46,10 @@ SPA em React que conduz cada papel pelo fluxo **sem duplicar as regras do back-e
 - `frontend/src/features/*` (uma pasta por tela)
 - ADR: [`ADR-013`](../adr/ADR-013-frontend-architecture.md)
 
-## Testes (Cypress, `npm run test:e2e`)
+## Testes (Cypress)
+
+Duas suítes: `npm run test:e2e` (backend simulado, `E2E/`) e `npm run test:e2e:api` (API real da stack do
+compose, `frontend/cypress/e2e-api/`, abreviado `E2E-API/`).
 
 | Critério | Spec |
 |---|---|
@@ -55,6 +58,6 @@ SPA em React que conduz cada papel pelo fluxo **sem duplicar as regras do back-e
 | CA-13.4…CA-13.6 | `E2E/05-request-detail.cy.ts` |
 | CA-13.7 | `E2E/04-request-form.cy.ts` (validação no cliente) · ⚠ mapeamento de `errors[]` do servidor sem caso dedicado |
 | Navegação e guardas | `E2E/08-navigation.cy.ts`, `E2E/07-admin.cy.ts` |
+| Contra a API real | `E2E-API/01-seed-and-reads.cy.ts` (sessão, dashboard, listagem, caixa, `404`), `E2E-API/02-approval-flow.cy.ts` (3 etapas, `SOFTWARE`, segregação, rejeição, `409`), `E2E-API/03-budget-and-versions.cy.ts` (`BUDGET_EXCEEDED`, v2) |
 
-⚠ **Limitação:** as specs rodam contra o backend simulado em memória (`frontend/src/shared/api/mock/`), não contra
-a API real. O smoke test do `docker compose` no CI cobre só login e chamadas básicas pela API real.
+⚠ **Limitação:** telas de administração e alguns casos de borda só são testados contra o backend simulado.

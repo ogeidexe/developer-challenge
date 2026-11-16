@@ -40,6 +40,6 @@ escopo do papel de quem chama.
 
 | Critério | Teste |
 |---|---|
-| CA-12.1…CA-12.3 | `E2E/02-dashboard.cy.ts` (contra o backend simulado) |
+| CA-12.1…CA-12.3 | `E2E/02-dashboard.cy.ts` (backend simulado); CA-12.1, CA-12.2 e CA-12.4 também contra a API real em `frontend/cypress/e2e-api/01-seed-and-reads.cy.ts` |
 | CA-12.5 | `E2E/05-request-detail.cy.ts` (fluxo do vídeo: o orçamento é consumido) |
-| Todos | ⚠ **lacuna**: nenhum teste de back-end chama `DashboardService`; a média de aprovação não tem teste |
+| Todos | ⚠ **lacuna**: nenhum teste de back-end (JUnit) chama `DashboardService`; a média de aprovação não tem teste |

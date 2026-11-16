@@ -60,8 +60,8 @@ export JWT_SECRET="$(openssl rand -base64 48)"   # demais variáveis: ../.env.ex
 # front-end (http://localhost:5173)
 cd frontend
 npm install
-npm run dev                            # usa o backend simulado em memória (sem API)
-VITE_MOCK_BACKEND=false npm run dev    # usa a API real em http://localhost:3000 (proxy /api)
+npm run dev        # usa o backend simulado em memória (sem API)
+npm run dev:api    # usa a API real em http://localhost:3000 (proxy /api)
 ```
 
 Detalhes, variáveis e exemplos `curl`: [`backend/README.md`](backend/README.md) e
@@ -72,7 +72,8 @@ Detalhes, variáveis e exemplos `curl`: [`backend/README.md`](backend/README.md)
 | Lado | Comando | O que roda |
 |---|---|---|
 | Back-end | `cd backend && ./mvnw verify` | Checkstyle + unitários + integração e concorrência com PostgreSQL real (Testcontainers, requer Docker) |
-| Front-end | `cd frontend && npm run test:e2e` | sobe o Vite e roda as specs Cypress headless |
+| Front-end | `cd frontend && npm run test:e2e` | sobe o Vite e roda as specs Cypress headless (backend simulado) |
+| Integração | `cd frontend && npm run test:e2e:api` | Cypress contra a stack do compose (API real), com a stack no ar |
 | Front-end | `npm run lint` · `npm run format:check` | ESLint · Prettier |
 
 O CI (`.github/workflows/ci.yml`) roda tudo isso a cada push, além de `docker compose up --build` com um
@@ -163,8 +164,9 @@ não vem na requisição e é devolvido na resposta e gravado em cada evento do 
 
 - **Testes de integração no nível de serviço:** os testes de fluxo chamam os serviços de aplicação, como
   os controllers fazem; testes HTTP com servidor completo existem só para a segurança (`SecurityIntegrationTest`).
-- **Os testes E2E rodam contra o backend simulado em memória**, não contra a API real. Divergências de
-  contrato entre os dois não são pegas pelo Cypress; o smoke test do compose no CI cobre só o caminho básico.
+- **A maior parte dos testes E2E roda contra o backend simulado em memória.** A suíte contra a API real
+  (`cypress/e2e-api/`) cobre os fluxos principais, mas não todas as telas (administração, por exemplo, só
+  é testada contra o simulado).
 - **Caixa de aprovação com N+1:** uma consulta da cadeia por candidata. Serve para esta escala, mas
   deveria virar um SQL único.
 - **Sem refresh token, sem outbox e sem job de SLA** (diferenciais não escolhidos).
@@ -174,8 +176,8 @@ não vem na requisição e é devolvido na resposta e gravado em cada evento do 
 
 ## 6. O que eu faria com mais tempo
 
-1. Testes de contrato HTTP dos controllers (status, `problem+json`, `X-Request-Id`) e uma suíte E2E contra
-   a API real, usando o compose.
+1. Testes de contrato HTTP dos controllers (status, `problem+json`, `X-Request-Id`) e ampliar a suíte E2E
+   contra a API real para todas as telas.
 2. Caixa de aprovação em uma única consulta, e índices revisados com `EXPLAIN` sobre volume real.
 3. Transactional outbox para notificar mudanças de estado e um job de SLA (pendências acima de 3 dias úteis).
 4. Refresh token com rotação e revogação.
