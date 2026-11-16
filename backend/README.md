@@ -6,9 +6,9 @@ API REST do teste: centros de custo com orçamento mensal, cadeia de aprovação
 funções, versões imutáveis, histórico append-only, concorrência otimista + escrita condicional e
 idempotência. Implementa o contrato de `../docs/api/openapi.yaml` e as decisões de `../docs/adr/`.
 
-> **Status: rascunho, ainda não compilado.** Escrito sem JDK disponível no ambiente de autoria. Antes de
-> confiar nele: `./mvnw verify` (com Docker para os testes de integração). Pontos de maior risco estão em
-> [Riscos conhecidos](#riscos-conhecidos-do-rascunho).
+> **Status:** compilado e testado no CI (`.github/workflows/ci.yml`: Checkstyle, testes unitários, de integração e
+> de concorrência com PostgreSQL real, e `docker compose up` com smoke test). Limitações em
+> [Riscos conhecidos](#riscos-conhecidos).
 
 ## Stack
 
@@ -143,11 +143,9 @@ papel/dono → **409** `lockVersion` → **422** regra (estado → nível/centro
 | SQL / modelagem | `db/migration` (CHECKs, uniques, índice parcial, triggers de imutabilidade); SQL nativo nas escritas condicionais |
 | Hibernate | `@Immutable` em versões/itens/eventos, `@CreationTimestamp`, `@Modifying` com `clearAutomatically`, Criteria API (`Specification`), projeções por interface, `@Lock(PESSIMISTIC_WRITE)` |
 
-## Riscos conhecidos do rascunho
+## Riscos conhecidos
 
-- **Não compilado aqui.** As APIs mais sujeitas a ajuste no Spring Boot 4: Jackson 3 (`tools.jackson.databind.json.JsonMapper`
-  injetado em `IdempotencyService` e `ProblemResponses`) e o `NimbusJwtEncoder`/`ImmutableSecret` em `SecurityConfig`.
 - **Caixa de aprovação** faz uma consulta da cadeia por candidata (N+1) — ok nesta escala; virar um SQL único depois.
-- **Sem testes HTTP** (os de integração chamam os serviços, como os controllers fazem). Próximo passo:
+- **Poucos testes HTTP:** os de fluxo chamam os serviços, como os controllers fazem; só `SecurityIntegrationTest`
+  sobe o servidor completo. Próximo passo:
   testes de contrato dos controllers (status, `problem+json`, `X-Request-Id`).
-- O `README`/ADR-002 de `docs/` ainda descreve NestJS — precisa ser atualizado para esta stack.

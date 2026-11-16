@@ -829,3 +829,17 @@ One block per agent turn, one row per changed file:
 | `backend/config/checkstyle.xml` | created | +83 | -0 |
 | `backend/pom.xml` | modified | +29 | -0 |
 | `frontend/README.md` | modified | +7 | -0 |
+
+---
+### Turn 2026-11-16 12:28:55 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: Add SOLUTION.md; publish compose db on loopback for local runs; add compose ports to .env.example; refresh stale status/risks in backend README
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `.env.example` | modified | +7 | -0 |
+| `SOLUTION.md` | created | +196 | -0 |
+| `backend/README.md` | modified | +6 | -8 |
+| `docker-compose.yml` | modified | +3 | -1 |
