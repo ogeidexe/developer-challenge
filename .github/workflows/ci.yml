@@ -155,26 +155,38 @@ jobs:
     name: docker compose up + smoke test + E2E (real API)
     runs-on: ubuntu-latest
     needs: [backend, frontend]
+    env:
+      # Cypress logs in dozens of times a minute; the default edge limit (30r/m) is for humans
+      GATEWAY_LOGIN_RATE: 1200r/m
     steps:
       - uses: actions/checkout@v5
       - name: docker compose up --build
+        # --wait: every service healthy, including the backend's readiness (HTTP 200 once the demo seed is done)
         run: docker compose up --build --detach --wait --wait-timeout 300
-      - name: Smoke test
+      - name: Smoke test (through the Nginx gateway only)
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS http://localhost:3000/health | grep -q '"UP"'
-          curl -fsS http://localhost:8080/ | grep -qi '<div id="root"'
-          curl -fsS http://localhost:8080/api/health | grep -q '"UP"'
-          # seed user (fictional, documented in SOLUTION.md) logs in through the proxy; the token is never printed
-          token=$(curl -fsS -X POST http://localhost:8080/api/auth/login -H 'Content-Type: application/json' \
+          base=http://localhost:8080
+          curl -fsS "$base/health" | python3 -c 'import json,sys; h=json.load(sys.stdin); c=h["components"]; assert h["status"]=="UP" and c["db"]["status"]=="UP" and c["redis"]["status"]=="UP", h'
+          curl -fsS "$base/" | grep -qi '<div id="root"'
+          curl -fsSI "$base/" | grep -qi '^x-content-type-options: nosniff'       # gateway security headers
+          curl -fsSL -o /dev/null "$base/docs"                                     # Swagger UI via the gateway
+          curl -fsS -o /dev/null "$base/v3/api-docs"
+          # seed user (fictional, documented in SOLUTION.md); the token is never printed
+          token=$(curl -fsS -X POST "$base/api/auth/login" -H 'Content-Type: application/json' \
             -d '{"email":"admin1@kingspan.test","password":"Kingspan@123"}' | python3 -c 'import json,sys;print(json.load(sys.stdin)["token"])')
           echo "::add-mask::$token"
-          curl -fsS http://localhost:8080/api/auth/me -H "Authorization: Bearer $token" | grep -q 'admin1@kingspan.test'
-          curl -fsS "http://localhost:8080/api/requests?page=0&size=5" -H "Authorization: Bearer $token" | grep -q '"totalElements"'
+          curl -fsS "$base/api/auth/me" -H "Authorization: Bearer $token" | grep -q 'admin1@kingspan.test'
+          curl -fsS "$base/api/requests?page=0&size=5" -H "Authorization: Bearer $token" | grep -q '"totalElements"'
+          # Redis session: logout ends it, the same token is then rejected
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST "$base/api/auth/logout" -H "Authorization: Bearer $token")" = 204
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$base/api/auth/me" -H "Authorization: Bearer $token")" = 401
+          # backend and frontend are not published: only the gateway answers on the host
+          if curl -s -o /dev/null --max-time 3 http://localhost:3000/health; then echo "backend must not be published"; exit 1; fi
           echo "compose smoke test passed"
       # the real frontend ↔ backend integration: Cypress drives the browser against the compose stack
-      # (nginx → Spring → PostgreSQL), unlike the frontend-e2e job, which uses the in-memory fake backend
+      # (Nginx gateway → Spring → PostgreSQL + Redis), unlike the frontend-e2e job (in-memory fake backend)
       - uses: actions/setup-node@v5
         with:
           node-version: 22
@@ -200,14 +212,35 @@ jobs:
         if: always()
         run: docker compose down --volumes
 
+  # The badge publisher needs GitHub Pages (Settings → Pages → Source: GitHub Actions, and this branch allowed in
+  # Settings → Environments → github-pages). Without Pages, the publish job is skipped instead of failing.
+  pages-check:
+    name: GitHub Pages enabled?
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/teste-pleno'
+    permissions:
+      pages: read
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          if gh api "repos/$REPO/pages" --silent 2>/dev/null; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::GitHub Pages is not enabled, so test badges are not published (Settings → Pages → Source: GitHub Actions)."
+          fi
+
   # Publishes shields.io endpoint JSON (test counts) to GitHub Pages; the READMEs' badges read it.
-  # One-time setup: Settings → Pages → Source: "GitHub Actions", and allow this branch in
-  # Settings → Environments → github-pages. Until then this job is skipped-as-success (continue-on-error).
   badges:
     name: Publish test badges
     runs-on: ubuntu-latest
-    needs: [backend, frontend-e2e]
-    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/teste-pleno'
+    needs: [backend, frontend-e2e, pages-check]
+    if: always() && needs.pages-check.outputs.enabled == 'true'
     continue-on-error: true
     permissions:
       contents: read
