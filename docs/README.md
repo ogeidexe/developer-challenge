@@ -1,5 +1,7 @@
 # Technical Documentation — Purchase Request System
 
+[![version](https://img.shields.io/github/v/release/ogeidexe/developer-challenge?include_prereleases&sort=semver&label=version)](https://github.com/ogeidexe/developer-challenge/releases) [![ci](https://github.com/ogeidexe/developer-challenge/actions/workflows/ci.yml/badge.svg?branch=teste-pleno)](https://github.com/ogeidexe/developer-challenge/actions/workflows/ci.yml?query=branch%3Ateste-pleno) [![security](https://github.com/ogeidexe/developer-challenge/actions/workflows/security.yml/badge.svg?branch=teste-pleno)](https://github.com/ogeidexe/developer-challenge/actions/workflows/security.yml?query=branch%3Ateste-pleno) [![tests](https://img.shields.io/endpoint?url=https://ogeidexe.github.io/developer-challenge/badges/tests.json)](https://github.com/ogeidexe/developer-challenge/actions/workflows/ci.yml?query=branch%3Ateste-pleno)
+
 > Documentation for the Kingspan developer challenge (branch `teste-pleno`). It started as a
 > planning blueprint and is now kept in sync with **what is implemented** in `backend/` and `frontend/`.
 > The original planning and AI-orchestration material is kept as a historical record and marked as such.

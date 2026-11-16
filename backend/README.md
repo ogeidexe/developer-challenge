@@ -1,5 +1,7 @@
 # Backend — Solicitações de Compra (Java 25 · Spring Boot 4.1)
 
+[![version](https://img.shields.io/github/v/release/ogeidexe/developer-challenge?include_prereleases&sort=semver&label=version)](https://github.com/ogeidexe/developer-challenge/releases) [![ci](https://github.com/ogeidexe/developer-challenge/actions/workflows/ci.yml/badge.svg?branch=teste-pleno)](https://github.com/ogeidexe/developer-challenge/actions/workflows/ci.yml?query=branch%3Ateste-pleno) [![security](https://github.com/ogeidexe/developer-challenge/actions/workflows/security.yml/badge.svg?branch=teste-pleno)](https://github.com/ogeidexe/developer-challenge/actions/workflows/security.yml?query=branch%3Ateste-pleno) [![backend-tests](https://img.shields.io/endpoint?url=https://ogeidexe.github.io/developer-challenge/badges/backend-tests.json)](https://github.com/ogeidexe/developer-challenge/actions/workflows/ci.yml?query=branch%3Ateste-pleno)
+
 API REST do teste: centros de custo com orçamento mensal, cadeia de aprovação sequencial, segregação de
 funções, versões imutáveis, histórico append-only, concorrência otimista + escrita condicional e
 idempotência. Implementa o contrato de `../docs/api/openapi.yaml` e as decisões de `../docs/adr/`.

@@ -1,5 +1,7 @@
 # Frontend — Solicitações de Compra (Kingspan challenge)
 
+[![version](https://img.shields.io/github/v/release/ogeidexe/developer-challenge?include_prereleases&sort=semver&label=version)](https://github.com/ogeidexe/developer-challenge/releases) [![ci](https://github.com/ogeidexe/developer-challenge/actions/workflows/ci.yml/badge.svg?branch=teste-pleno)](https://github.com/ogeidexe/developer-challenge/actions/workflows/ci.yml?query=branch%3Ateste-pleno) [![security](https://github.com/ogeidexe/developer-challenge/actions/workflows/security.yml/badge.svg?branch=teste-pleno)](https://github.com/ogeidexe/developer-challenge/actions/workflows/security.yml?query=branch%3Ateste-pleno) [![e2e-tests](https://img.shields.io/endpoint?url=https://ogeidexe.github.io/developer-challenge/badges/e2e-tests.json)](https://github.com/ogeidexe/developer-challenge/actions/workflows/ci.yml?query=branch%3Ateste-pleno)
+
 SPA React 18 + Vite + TypeScript + Ant Design 5, com **backend simulado em memória** que implementa o
 contrato OpenAPI 3.1 (`docs/api/openapi.yaml`): máquina de estados, cadeia de aprovação (valor +
 categoria `SOFTWARE`), segregação de funções, `lockVersion` (409), orçamento por competência

@@ -34,6 +34,27 @@ jobs:
         run: ./mvnw -B verify
         env:
           JWT_SECRET: ci-only-${{ github.run_id }}-not-a-real-secret-0123456789
+      - name: Count tests
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY' > ../backend-counts.json
+          import glob, json, xml.etree.ElementTree as ET
+          t = {"total": 0, "failed": 0, "skipped": 0}
+          for f in glob.glob("target/surefire-reports/TEST-*.xml") + glob.glob("target/failsafe-reports/TEST-*.xml"):
+              r = ET.parse(f).getroot()
+              t["total"] += int(r.get("tests", 0))
+              t["failed"] += int(r.get("failures", 0)) + int(r.get("errors", 0))
+              t["skipped"] += int(r.get("skipped", 0))
+          print(json.dumps(t))
+          PY
+          cat ../backend-counts.json
+          echo "### Backend tests: $(cat ../backend-counts.json)" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: counts-backend
+          path: backend-counts.json
       - name: Upload test reports
         if: failure()
         uses: actions/upload-artifact@v4
@@ -95,7 +116,27 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
       # starts Vite (mock backend) in-process and runs Cypress headless
-      - run: npm run test:e2e
+      - name: E2E tests
+        shell: bash
+        run: npm run test:e2e 2>&1 | tee e2e.log
+      # parses the runner's "E2E: N tests · P passed · F failed · ..." line
+      - name: Count tests
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY' > ../e2e-counts.json
+          import json, re
+          m = re.search(r"E2E: (\d+) tests · (\d+) passed · (\d+) failed · (\d+) pending · (\d+) skipped", open("e2e.log", errors="ignore").read())
+          n = [int(x) for x in m.groups()] if m else [0, 0, 1, 0, 0]
+          print(json.dumps({"total": n[0], "failed": n[2], "skipped": n[3] + n[4]}))
+          PY
+          cat ../e2e-counts.json
+          echo "### E2E tests: $(cat ../e2e-counts.json)" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: counts-e2e
+          path: e2e-counts.json
       - name: Upload screenshots
         if: failure()
         uses: actions/upload-artifact@v4
@@ -122,3 +163,51 @@ jobs:
           push: false
           cache-from: type=gha,scope=${{ matrix.app }}
           cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+
+  # Publishes shields.io endpoint JSON (test counts) to GitHub Pages; the READMEs' badges read it.
+  # One-time setup: Settings → Pages → Source: "GitHub Actions", and allow this branch in
+  # Settings → Environments → github-pages. Until then this job is skipped-as-success (continue-on-error).
+  badges:
+    name: Publish test badges
+    runs-on: ubuntu-latest
+    needs: [backend, frontend-e2e]
+    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/teste-pleno'
+    continue-on-error: true
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: counts-*
+          merge-multiple: true
+      - name: Build badge JSON
+        shell: bash
+        run: |
+          mkdir -p site/badges
+          python3 - <<'PY'
+          import json, os
+          def load(f):
+              try: return json.load(open(f))
+              except Exception: return None
+          def badge(label, c):
+              if c is None: return {"schemaVersion": 1, "label": label, "message": "unknown", "color": "lightgrey"}
+              passed = c["total"] - c["failed"] - c["skipped"]
+              msg = f"{passed} passed" if c["failed"] == 0 else f"{c['failed']} failed, {passed} passed"
+              if c["skipped"]: msg += f", {c['skipped']} skipped"
+              color = "brightgreen" if c["failed"] == 0 and c["total"] > 0 else "red"
+              return {"schemaVersion": 1, "label": label, "message": msg, "color": color}
+          b, e = load("backend-counts.json"), load("e2e-counts.json")
+          total = None if b is None or e is None else {k: b[k] + e[k] for k in ("total", "failed", "skipped")}
+          for name, label, c in [("tests", "tests", total), ("backend-tests", "backend tests", b), ("e2e-tests", "e2e tests", e)]:
+              json.dump(badge(label, c), open(f"site/badges/{name}.json", "w"))
+              print(name, badge(label, c))
+          PY
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - uses: actions/deploy-pages@v4
