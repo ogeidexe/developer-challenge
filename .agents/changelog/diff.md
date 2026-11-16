@@ -854,3 +854,39 @@ One block per agent turn, one row per changed file:
 | File | Change | Additions | Removals |
 |---|---|---|---|
 | `backend/Dockerfile` | modified | +2 | -1 |
+
+---
+### Turn 2026-11-16 12:47:18 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: c99dd3c4-4ace-51b9-af8d-8c02e07a6ced
+- **Prompt**: the readme iself has some problems, "Requisitos funcionais" is mixed with the other topics and aolso not well explanied there is to much on each "Requitos fuicionais" so is kinda hard to test so under docs. make a folder callerd RFs, that we will be describing the requisitos funcionais and nao funcionais in details to be more precise I can’t create files from this side channel, so ask for it in the main conversation. The plan fits the rules, though. Why it’s allowed: the root `README.md` is 
+- **Summary**: Add docs/RFs: detailed functional requirements RF-01..RF-13 (rules, Given/When/Then criteria, HTTP codes, code and test locations, coverage gaps)
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `SOLUTION.md` | modified | +1 | -0 |
+| `docs/README.md` | modified | +1 | -0 |
+| `docs/RFs/README.md` | created | +72 | -0 |
+| `docs/RFs/RF-01-autenticacao.md` | created | +70 | -0 |
+| `docs/RFs/RF-02-usuarios-e-papeis.md` | created | +53 | -0 |
+| `docs/RFs/RF-03-criacao-e-edicao.md` | created | +62 | -0 |
+| `docs/RFs/RF-04-listagem-e-visibilidade.md` | created | +58 | -0 |
+| `docs/RFs/RF-05-cadeia-de-aprovacao.md` | created | +53 | -0 |
+| `docs/RFs/RF-06-transicoes.md` | created | +81 | -0 |
+| `docs/RFs/RF-07-segregacao-de-funcoes.md` | created | +47 | -0 |
+| `docs/RFs/RF-08-orcamento.md` | created | +57 | -0 |
+| `docs/RFs/RF-09-versionamento.md` | created | +55 | -0 |
+| `docs/RFs/RF-10-caixa-de-aprovacao.md` | created | +49 | -0 |
+| `docs/RFs/RF-11-historico-e-auditoria.md` | created | +50 | -0 |
+| `docs/RFs/RF-12-dashboard.md` | created | +45 | -0 |
+| `docs/RFs/RF-13-interface-web.md` | created | +60 | -0 |
+| `docs/RFs/RNF-01-arquitetura.md` | created | +43 | -0 |
+| `docs/RFs/RNF-02-concorrencia.md` | created | +56 | -0 |
+| `docs/RFs/RNF-03-idempotencia.md` | created | +48 | -0 |
+| `docs/RFs/RNF-04-logs-e-request-id.md` | created | +40 | -0 |
+| `docs/RFs/RNF-05-configuracao-e-segredos.md` | created | +44 | -0 |
+| `docs/RFs/RNF-06-testes.md` | created | +63 | -0 |
+| `docs/RFs/RNF-07-execucao-e-ci.md` | created | +48 | -0 |
+| `docs/RFs/RNF-08-seed.md` | created | +56 | -0 |
+| `docs/RFs/RNF-09-documentacao.md` | created | +39 | -0 |
+| `docs/analysis/REQUIREMENTS.md` | modified | +2 | -0 |
