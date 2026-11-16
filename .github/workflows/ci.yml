@@ -145,24 +145,36 @@ jobs:
           path: frontend/cypress/screenshots/
           if-no-files-found: ignore
 
-  docker:
-    name: Docker image build (${{ matrix.app }})
+  # Proves README §5.3: `docker compose up --build` brings up db + backend + frontend with no manual step
+  # (also builds both Docker images). Smoke test goes through the frontend's nginx /api proxy.
+  compose:
+    name: docker compose up + smoke test
     runs-on: ubuntu-latest
     needs: [backend, frontend]
-    strategy:
-      fail-fast: false
-      matrix:
-        app: [backend, frontend]
     steps:
       - uses: actions/checkout@v5
-      - uses: docker/setup-buildx-action@v3
-      # build only (no push): proves the images still build; release.yml publishes them
-      - uses: docker/build-push-action@v6
-        with:
-          context: ${{ matrix.app }}
-          push: false
-          cache-from: type=gha,scope=${{ matrix.app }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+      - name: docker compose up --build
+        run: docker compose up --build --detach --wait --wait-timeout 300
+      - name: Smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS http://localhost:3000/health | grep -q '"UP"'
+          curl -fsS http://localhost:8080/ | grep -qi '<div id="root"'
+          curl -fsS http://localhost:8080/api/health | grep -q '"UP"'
+          # seed user (fictional, documented in SOLUTION.md) logs in through the proxy; the token is never printed
+          token=$(curl -fsS -X POST http://localhost:8080/api/auth/login -H 'Content-Type: application/json' \
+            -d '{"email":"admin1@kingspan.test","password":"Kingspan@123"}' | python3 -c 'import json,sys;print(json.load(sys.stdin)["token"])')
+          echo "::add-mask::$token"
+          curl -fsS http://localhost:8080/api/auth/me -H "Authorization: Bearer $token" | grep -q 'admin1@kingspan.test'
+          curl -fsS "http://localhost:8080/api/requests?page=0&size=5" -H "Authorization: Bearer $token" | grep -q '"totalElements"'
+          echo "compose smoke test passed"
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs --no-color --tail 200
+      - name: Tear down
+        if: always()
+        run: docker compose down --volumes
 
   # Publishes shields.io endpoint JSON (test counts) to GitHub Pages; the READMEs' badges read it.
   # One-time setup: Settings → Pages → Source: "GitHub Actions", and allow this branch in

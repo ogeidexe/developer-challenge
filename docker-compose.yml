@@ -1,0 +1,108 @@
+# docker compose up --build  →  PostgreSQL + backend (Flyway migrations + demo seed on start) + frontend.
+# No manual step: every variable has a local-demo default; copy .env.example to .env to override any of them.
+#   frontend  http://localhost:8080        (SPA; /api is proxied to the backend)
+#   backend   http://localhost:3000        (/health, /docs)
+name: purchase-requests
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: purchase
+      POSTGRES_USER: ${DB_USER:-purchase}
+      # local demo database only, never exposed outside the compose network unless DB_PORT is published
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-purchase}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d purchase"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  # The backend refuses to start without a strong JWT_SECRET (SEC-F13) and none is committed. If .env does not
+  # set one, a random 48-byte secret is generated once and kept in a volume (tokens survive restarts).
+  jwt-secret:
+    image: alpine:3.21
+    environment:
+      JWT_SECRET: ${JWT_SECRET:-}
+    volumes:
+      - jwt-secret:/secrets
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        umask 077
+        if [ -n "$$JWT_SECRET" ]; then printf '%s' "$$JWT_SECRET" > /secrets/jwt
+        elif [ ! -s /secrets/jwt ]; then head -c 48 /dev/urandom | base64 | tr -d '\n' > /secrets/jwt
+        fi
+        chown 10001 /secrets/jwt
+    restart: "no"
+
+  backend:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+      jwt-secret:
+        condition: service_completed_successfully
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/purchase
+      DB_USER: ${DB_USER:-purchase}
+      DB_PASSWORD: ${DB_PASSWORD:-purchase}
+      JWT_ISSUER: ${JWT_ISSUER:-purchase-requests}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-purchase-requests-api}
+      JWT_TTL: ${JWT_TTL:-PT15M}
+      PORT: "3000"
+      SEED_ENABLED: ${SEED_ENABLED:-true}
+      LOGIN_MAX_FAILURES_PER_ACCOUNT: ${LOGIN_MAX_FAILURES_PER_ACCOUNT:-5}
+      LOGIN_MAX_FAILURES_PER_CLIENT: ${LOGIN_MAX_FAILURES_PER_CLIENT:-50}
+      LOGIN_THROTTLE_WINDOW: ${LOGIN_THROTTLE_WINDOW:-PT15M}
+      MAX_REQUEST_BODY: ${MAX_REQUEST_BODY:-1MB}
+      API_DOCS_ENABLED: ${API_DOCS_ENABLED:-true}
+    volumes:
+      - jwt-secret:/secrets:ro
+    # same command as the image's ENTRYPOINT, with JWT_SECRET read from the generated file
+    entrypoint:
+      - sh
+      - -c
+      - JWT_SECRET="$$(cat /secrets/jwt)" exec java -XX:MaxRAMPercentage=75 -jar /app/app.jar
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    healthcheck:
+      # the JRE image has no curl/wget: plain HTTP over bash's /dev/tcp
+      test:
+        - CMD
+        - bash
+        - -c
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/3000
+          && printf 'GET /health HTTP/1.0\r\nHost: localhost\r\n\r\n' >&3
+          && grep -q '"UP"' <&3
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_MOCK_BACKEND: "false"
+        # true shows the seed-user picker on the login screen (local demo convenience, SEC-F04)
+        VITE_DEMO_LOGIN: ${VITE_DEMO_LOGIN:-false}
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      BACKEND_URL: http://backend:3000
+    ports:
+      - "${FRONTEND_PORT:-8080}:8080"
+    restart: unless-stopped
+
+volumes:
+  db-data:
+  jwt-secret:

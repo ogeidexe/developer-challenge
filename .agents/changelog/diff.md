@@ -746,3 +746,15 @@ One block per agent turn, one row per changed file:
 | File | Change | Additions | Removals |
 |---|---|---|---|
 | `backend/mvnw` | modified | +0 | -0 |
+
+---
+### Turn 2026-11-16 12:22:07 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: c99dd3c4-4ace-51b9-af8d-8c02e07a6ced
+- **Prompt**: yep, do all 1, 2 and 5 but remember keep strict to the project rules everytime
+- **Summary**: Add docker-compose.yml (db + backend + frontend, auto-generated JWT secret) and CI job that runs compose up and smoke-tests the stack
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `.github/workflows/ci.yml` | modified | +26 | -14 |
+| `docker-compose.yml` | created | +108 | -0 |
