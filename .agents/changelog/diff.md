@@ -1017,3 +1017,14 @@ One block per agent turn, one row per changed file:
 | `docs/adr/ADR-015-redis-sessions.md` | created | +47 | -0 |
 | `docs/adr/ADR-016-nginx-gateway.md` | created | +41 | -0 |
 | `frontend/README.md` | modified | +4 | -2 |
+
+---
+### Turn 2026-11-16 18:18:12 +0000 · ClaudeCode
+- **Source**: manual
+- **Session**: c99dd3c4-4ace-51b9-af8d-8c02e07a6ced
+- **Prompt**: verify that the log captured the Redis/Nginx change correctly and append the right information if not
+- **Summary**: Clarification of the turns "2026-11-16 17:57:32 +0000" and "2026-11-16 17:59:45 +0000" (no new file changes in this entry). Both turns answered the prompt "now to session add Redis, and for Http requests add Nginx with reverse proxy of course folowing project rules and commiting all also update the current imp docs to mach this change, also the build CI is kinda broken so fix it too." The logger kept only the first summary of the turn and the end-of-turn hook recorded the second without context, so: (1) turn 17:57:32 covers more than its summary says: Redis-backed JWT sessions with POST /auth/logout and tests (backend/, frontend/src, frontend/cypress), plus the Nginx gateway and Redis services in docker-compose.yml with the backend healthcheck fix, the new variables in .env.example, and the CI fix in .github/workflows/ci.yml (smoke test through the gateway, badges job skipped without GitHub Pages); (2) turn 17:59:45 (Source: hook, Session/Prompt/Summary n/a) is the documentation update by ClaudeCode in session c99dd3c4-4ace-51b9-af8d-8c02e07a6ced: ADR-015 (Redis sessions), ADR-016 (Nginx gateway), SOLUTION.md, backend/README.md, frontend/README.md, docs/README.md and the RF/RNF specs. Commits: d543531, 48c120f, 68d96ee, bab32ee. The table below has no file rows on purpose: the 26 files are already listed in those two turns.
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `(no new changes — clarification only; see turns 17:57:32 and 17:59:45 for the 26 files)` | none | +0 | -0 |
