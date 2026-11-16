@@ -100,10 +100,19 @@ public class SecurityConfig {
      * 60 s skew), iss, and — SEC-F08 — aud must contain our audience and exp must be present (the default
      * timestamp validator accepts a token without exp).
      */
-    @Bean
     JwtDecoder jwtDecoder(SecretKey jwtSigningKey, AppProperties props) {
+        return decoder(jwtSigningKey, tokenValidator(props.jwt()));
+    }
+
+    /** The decoder in use: everything above, plus the token's Redis session must still be open (ADR-015). */
+    @Bean
+    JwtDecoder sessionAwareJwtDecoder(SecretKey jwtSigningKey, AppProperties props, SessionStore sessions) {
+        return decoder(jwtSigningKey, new DelegatingOAuth2TokenValidator<>(tokenValidator(props.jwt()), sessions.validator()));
+    }
+
+    private static JwtDecoder decoder(SecretKey jwtSigningKey, OAuth2TokenValidator<Jwt> validator) {
         NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(jwtSigningKey).macAlgorithm(MacAlgorithm.HS256).build();
-        decoder.setJwtValidator(tokenValidator(props.jwt()));
+        decoder.setJwtValidator(validator);
         return decoder;
     }
 

@@ -27,22 +27,25 @@ public class JwtService {
     private final JwtEncoder encoder;
     private final AppProperties props;
     private final Clock clock;
+    private final SessionStore sessions;
 
-    public JwtService(JwtEncoder encoder, AppProperties props, Clock clock) {
+    public JwtService(JwtEncoder encoder, AppProperties props, Clock clock, SessionStore sessions) {
         this.encoder = encoder;
         this.props = props;
         this.clock = clock;
+        this.sessions = sessions;
     }
 
     public IssuedToken issue(UserEntity user) {
         Instant now = clock.instant();
+        String sessionId = UUID.randomUUID().toString(); // jti = Redis session id (ADR-015)
         var claims = JwtClaimsSet.builder()
                 .issuer(props.jwt().issuer())
                 .audience(List.of(props.jwt().audience())) // validated by SecurityConfig.jwtDecoder (SEC-F08)
                 .subject(user.getId().toString())
                 .issuedAt(now)
                 .expiresAt(now.plus(props.jwt().ttl()))
-                .id(UUID.randomUUID().toString())
+                .id(sessionId)
                 .claim("role", user.getRole().name())
                 .claim("name", user.getName());
         if (user.getCostCenterId() != null) claims.claim("costCenterId", user.getCostCenterId().toString());
@@ -50,6 +53,7 @@ public class JwtService {
 
         var header = JwsHeader.with(MacAlgorithm.HS256).build();
         String token = encoder.encode(JwtEncoderParameters.from(header, claims.build())).getTokenValue();
+        sessions.open(sessionId, user.getId(), props.jwt().ttl());
         return new IssuedToken(token, props.jwt().ttl().toSeconds());
     }
 }

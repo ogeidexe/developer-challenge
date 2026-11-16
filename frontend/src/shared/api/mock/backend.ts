@@ -824,6 +824,8 @@ function handle(request: MockRequest): MockResponse {
     const u = authenticate(headers)
 
     if (method === 'GET' && path === '/auth/me') return { status: 200, json: userDto(u) }
+    // the real API deletes the Redis session (ADR-015); the fake backend has no sessions to end
+    if (method === 'POST' && path === '/auth/logout') return { status: 204, json: {} }
 
     // ---- users (admin) ----
     if (path === '/users' && method === 'GET') {

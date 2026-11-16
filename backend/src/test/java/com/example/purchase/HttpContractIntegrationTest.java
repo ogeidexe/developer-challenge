@@ -5,10 +5,12 @@ import com.example.purchase.application.UserAdminService;
 import com.example.purchase.domain.Actor;
 import com.example.purchase.domain.ApproverLevel;
 import com.example.purchase.domain.Role;
+import com.example.purchase.security.SessionStore;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -18,6 +20,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -28,7 +31,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * The HTTP contract with a real server and PostgreSQL: what only exists in the web layer — `GET /auth/me`
  * (RF-01 CA-01.6), problem+json errors (RNF-01), the X-Request-Id filter and its storage in the history
- * (RNF-04, RF-11 CA-11.3), 401/403/404, and a role change seen by an already-issued token (RF-02 CA-02.3).
+ * (RNF-04, RF-11 CA-11.3), 401/403/404, a role change seen by an already-issued token (RF-02 CA-02.3) and the
+ * Redis sessions behind logout (RF-01 RN-01.10, ADR-015).
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers(disabledWithoutDocker = true)
@@ -39,6 +43,8 @@ class HttpContractIntegrationTest extends IntegrationTest {
     @Value("${local.server.port}") int port;
     @Autowired JsonMapper json;
     @Autowired UserAdminService userAdmin;
+    @Autowired SessionStore sessions;
+    @Autowired JwtDecoder jwtDecoder;
 
     private final HttpClient http = HttpClient.newHttpClient();
 
@@ -184,5 +190,38 @@ class HttpContractIntegrationTest extends IntegrationTest {
         var byAction = ((List<Map<String, Object>>) history).stream()
                 .collect(Collectors.toMap(e -> (String) e.get("action"), e -> e.get("xRequestId")));
         assertThat(byAction).containsEntry("REQUEST_CREATED", "trace-create-1").containsEntry("SUBMITTED", "trace-submit-1");
+    }
+
+    // ---------- Redis sessions (ADR-015) ----------
+
+    /** RN-01.10 and CA-01.8: logout ends the session; the same token is a 401 from the next request on. */
+    @Test
+    void logoutEndsTheSessionImmediately() throws Exception {
+        String token = tokenOf(n1);
+        assertThat(call("GET", "/auth/me", token, null, null).statusCode()).isEqualTo(200);
+
+        assertThat(call("POST", "/auth/logout", token, null, null).statusCode()).isEqualTo(204);
+
+        var afterLogout = call("GET", "/auth/me", token, null, null);
+        assertProblem(afterLogout, 401);
+        assertThat(body(afterLogout).get("code")).isEqualTo("UNAUTHENTICATED");
+        assertThat(call("GET", "/auth/me", tokenOf(n1), null, null).statusCode()).isEqualTo(200); // a new login works
+    }
+
+    /** RN-01.10: each login opens its own Redis session, with the token's TTL; closing it rejects the token. */
+    @Test
+    void eachLoginOpensARedisSessionWithTheTokenLifetime() throws Exception {
+        String first = tokenOf(owner);
+        String second = tokenOf(owner);
+        String firstSession = jwtDecoder.decode(first).getId();
+        String secondSession = jwtDecoder.decode(second).getId();
+
+        assertThat(firstSession).isNotEqualTo(secondSession);
+        assertThat(sessions.isOpen(firstSession)).isTrue();
+        assertThat(sessions.remaining(firstSession)).isPositive().isLessThanOrEqualTo(Duration.ofMinutes(15));
+
+        sessions.close(firstSession); // e.g. revoked by an operator
+        assertThat(call("GET", "/auth/me", first, null, null).statusCode()).isEqualTo(401);
+        assertThat(call("GET", "/auth/me", second, null, null).statusCode()).isEqualTo(200); // other sessions unaffected
     }
 }

@@ -8,9 +8,12 @@ import com.example.purchase.application.UserAdminService;
 import com.example.purchase.domain.Money;
 import com.example.purchase.domain.Role;
 import com.example.purchase.security.CurrentUser;
+import com.example.purchase.security.SessionStore;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,12 +27,15 @@ public class AdminController {
     private final AuthService auth;
     private final UserAdminService users;
     private final CostCenterService centers;
+    private final SessionStore sessions;
 
-    public AdminController(CurrentUser currentUser, AuthService auth, UserAdminService users, CostCenterService centers) {
+    public AdminController(CurrentUser currentUser, AuthService auth, UserAdminService users, CostCenterService centers,
+                           SessionStore sessions) {
         this.currentUser = currentUser;
         this.auth = auth;
         this.users = users;
         this.centers = centers;
+        this.sessions = sessions;
     }
 
     // ---------- auth ----------
@@ -45,6 +51,13 @@ public class AdminController {
         // the TCP peer, never a client-supplied X-Forwarded-For (spoofable); behind a trusted reverse proxy set
         // server.forward-headers-strategy so this becomes the real client address (SEC-F01)
         return auth.login(body, request.getRemoteAddr());
+    }
+
+    /** Ends the caller's Redis session: the token is rejected (401) from the next request on (ADR-015). */
+    @PostMapping("/auth/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logout(@AuthenticationPrincipal Jwt jwt) {
+        sessions.close(jwt.getId());
     }
 
     @GetMapping("/auth/me")

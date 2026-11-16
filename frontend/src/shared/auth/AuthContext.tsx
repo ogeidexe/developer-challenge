@@ -69,6 +69,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   locationRef.current = location
 
   const logout = useCallback(() => {
+    // end the Redis session on the server (ADR-015); the local session is dropped even if that call fails
+    api.logout().catch(() => undefined)
     saveSession(null)
     setState(null)
   }, [])

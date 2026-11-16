@@ -67,6 +67,24 @@ describe('Real API — session, dashboard, list and inbox on the seed', () => {
     cy.contains('.ant-table-row', 'Switch rede predial')
   })
 
+  it('logout from the user menu ends the Redis session: the old token is rejected by the backend', () => {
+    cy.login(USERS.aprov1Ti)
+    cy.window().then((win) => {
+      const token = JSON.parse(win.sessionStorage.getItem('kp_auth') ?? '{}').token as string
+      cy.request({ url: '/api/auth/me', headers: { Authorization: `Bearer ${token}` } })
+        .its('status')
+        .should('eq', 200)
+      cy.intercept('POST', '/api/auth/logout').as('logout')
+      cy.get('.ant-layout-header').contains('button', 'João Nunes').click()
+      cy.get('.ant-dropdown-menu').contains('Sair').click()
+      cy.location('pathname').should('eq', '/login')
+      cy.wait('@logout').its('response.statusCode').should('eq', 204)
+      cy.request({ url: '/api/auth/me', headers: { Authorization: `Bearer ${token}` }, failOnStatusCode: false })
+        .its('status')
+        .should('eq', 401)
+    })
+  })
+
   it('a request of another cost center is invisible to an APROVADOR (404 page)', () => {
     cy.requestIdByTitle(USERS.admin1, 'Notebooks para o time de TI').then((id) => {
       cy.login(USERS.aprov1Ti)

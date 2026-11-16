@@ -61,6 +61,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- sessions: one Redis entry per issued JWT, so logout/revocation work (ADR-015) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
         <!-- ops: /health (with DB) + OpenAPI at /docs -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

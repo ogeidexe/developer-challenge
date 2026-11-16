@@ -64,7 +64,9 @@ async function request<T>(method: string, path: string, opts: ReqOptions = {}): 
   }
 
   // A 401 from login/register means "wrong credentials", not "session expired".
-  const isAuthCall = path.startsWith('/auth/login') || path.startsWith('/auth/register')
+  // Logout is exempt too: a 401 there just means the session is already gone (no expired-session loop).
+  const isAuthCall =
+    path.startsWith('/auth/login') || path.startsWith('/auth/register') || path.startsWith('/auth/logout')
   const fail = (status: number, body: unknown): never => {
     const err = problemFrom(status, body, requestId)
     if (err.status === 401 && !isAuthCall) notifyAuthExpired()
@@ -116,6 +118,8 @@ export const api = {
   login: (email: string, password: string) =>
     request<LoginResponse>('POST', '/auth/login', { body: { email, password } }),
   me: () => request<UserDto>('GET', '/auth/me'),
+  /** Ends the server-side (Redis) session of the current token (ADR-015). */
+  logout: () => request<Record<string, never>>('POST', '/auth/logout'),
   health: () => request<HealthDto>('GET', '/health'),
 
   listUsers: (query: { page?: number; size?: number; role?: string; costCenterId?: string; q?: string } = {}) =>

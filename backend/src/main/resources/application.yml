@@ -16,6 +16,11 @@ spring:
           time_zone: UTC        # README §5.1: dates stored in UTC
   flyway:
     enabled: true
+  data:
+    redis:                      # JWT sessions (ADR-015); /health also reports Redis
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2s
   threads:
     virtual:
       enabled: true             # Java 21+ virtual threads serve HTTP requests and @Scheduled jobs

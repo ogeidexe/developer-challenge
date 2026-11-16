@@ -971,3 +971,28 @@ One block per agent turn, one row per changed file:
 | `docs/RFs/RNF-06-testes.md` | modified | +22 | -12 |
 | `docs/RFs/RNF-07-execucao-e-ci.md` | modified | +1 | -0 |
 | `docs/RFs/RNF-08-seed.md` | modified | +10 | -0 |
+
+---
+### Turn 2026-11-16 17:57:32 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: c99dd3c4-4ace-51b9-af8d-8c02e07a6ced
+- **Prompt**: now to session add Redis, and for Http requests add Nginx with reverse proxy of course folowing project rules and commiting all also update the current imp docs to mach this change, also the build CI is kinda broken so fix it too.
+- **Summary**: Add Redis-backed JWT sessions (jti) with logout endpoint, session-aware decoder, tests; frontend logout calls the API
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `.env.example` | modified | +9 | -4 |
+| `.github/workflows/ci.yml` | modified | +46 | -13 |
+| `backend/pom.xml` | modified | +6 | -0 |
+| `backend/src/main/java/com/example/purchase/api/AdminController.java` | modified | +14 | -1 |
+| `backend/src/main/java/com/example/purchase/security/JwtService.java` | modified | +6 | -2 |
+| `backend/src/main/java/com/example/purchase/security/SecurityConfig.java` | modified | +11 | -2 |
+| `backend/src/main/java/com/example/purchase/security/SessionStore.java` | created | +56 | -0 |
+| `backend/src/main/resources/application.yml` | modified | +5 | -0 |
+| `backend/src/test/java/com/example/purchase/HttpContractIntegrationTest.java` | modified | +40 | -1 |
+| `backend/src/test/java/com/example/purchase/TestcontainersConfiguration.java` | modified | +23 | -1 |
+| `docker-compose.yml` | modified | +116 | -11 |
+| `frontend/cypress/e2e-api/01-seed-and-reads.cy.ts` | modified | +18 | -0 |
+| `frontend/src/shared/api/client.ts` | modified | +5 | -1 |
+| `frontend/src/shared/api/mock/backend.ts` | modified | +2 | -0 |
+| `frontend/src/shared/auth/AuthContext.tsx` | modified | +2 | -0 |
