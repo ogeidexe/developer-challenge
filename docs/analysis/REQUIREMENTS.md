@@ -1,6 +1,8 @@
 # Requirements Catalog — Purchase Request System (Kingspan Pleno Challenge)
 
 > Source of truth: `README.md` of the `teste-pleno` branch (challenge statement, Portuguese).
+> Detailed, test-oriented specs (numbered rules, Given/When/Then acceptance criteria, HTTP codes, code and test
+> locations, coverage gaps) live in [`docs/RFs/`](../RFs/README.md); they reference the IDs defined here.
 > Requirements are stack-independent; where each one is implemented and tested: `TRACEABILITY-MATRIX.md`.
 > Every identifier below is stable and cross-referenced by the traceability matrix, specifications, tests and ADRs.
 > Classification: **FR** functional · **BR** business rule · **NFR** non-functional · **SEC** security ·

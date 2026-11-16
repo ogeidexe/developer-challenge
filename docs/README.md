@@ -24,6 +24,7 @@ zod + plain CSS (front end). The ADRs and architecture documents now describe th
 
 | Area | Documents |
 |---|---|
+| Requirements (detailed, testable) | [RFs/](RFs/README.md): 13 RF + 9 RNF, one file each, with Given/When/Then acceptance criteria, HTTP codes, code and test locations, and coverage gaps |
 | Requirements | [analysis/REQUIREMENTS.md](analysis/REQUIREMENTS.md) (150 reqs) · [TRACEABILITY-MATRIX.md](analysis/TRACEABILITY-MATRIX.md) (requirement → code → test) · [ASSUMPTIONS-AND-OPEN-QUESTIONS.md](analysis/ASSUMPTIONS-AND-OPEN-QUESTIONS.md) |
 | Architecture | [architecture/OVERVIEW.md](architecture/OVERVIEW.md) · [SYSTEM-DESIGN.md](architecture/SYSTEM-DESIGN.md) · [diagrams/](architecture/diagrams) (Mermaid) · [uml/](architecture/uml) (PlantUML: class, use case, state machine, 10 sequences) |
 | Database | [database/ERD-CONCEPTUAL.md](database/ERD-CONCEPTUAL.md) · [ERD-LOGICAL.md](database/ERD-LOGICAL.md) · [ERD-PHYSICAL.md](database/ERD-PHYSICAL.md) · [DATA-DICTIONARY.md](database/DATA-DICTIONARY.md) · [TRANSACTION-STRATEGY.md](database/TRANSACTION-STRATEGY.md) · [migrations/](database/migrations) (reference SQL; the executed copies are Flyway `V1`–`V6` in `backend/`) |

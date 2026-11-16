@@ -190,6 +190,7 @@ não vem na requisição e é devolvido na resposta e gravado em cada evento do 
 | `backend/` | API Spring Boot ([README](backend/README.md)) |
 | `frontend/` | SPA React ([README](frontend/README.md)) |
 | `docs/adr/` | decisões de arquitetura |
+| `docs/RFs/` | requisitos funcionais e não funcionais detalhados, com critérios de aceite e os testes que cobrem cada um ([índice](docs/RFs/README.md)) |
 | `docs/api/openapi.yaml` | contrato da API (também servido em `/docs`) |
 | `docs/` | requisitos, modelagem do banco, testes, segurança ([índice](docs/README.md)) |
 | `docker-compose.yml` | banco + back-end + front-end |
