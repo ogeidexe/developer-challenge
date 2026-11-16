@@ -49,7 +49,8 @@ Controles de segurança e achados da auditoria: [`../docs/security/`](../docs/se
 
 ```bash
 ./mvnw test                 # unitários + integração/concorrência (integração requer Docker)
-./mvnw verify               # idem + empacotamento
+./mvnw verify               # Checkstyle (lint/formatação) + testes + empacotamento — o mesmo que o CI roda
+./mvnw checkstyle:check     # só lint/formatação (regras em config/checkstyle.xml)
 ./mvnw spring-boot:run      # roda local (exporte as variáveis antes)
 ./mvnw package -DskipTests  # gera target/purchase-requests-*.jar
 

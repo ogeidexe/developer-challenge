@@ -15,6 +15,13 @@ npm install
 npm run dev      # http://localhost:5173
 ```
 
+Lint e formatação (os mesmos passos do CI):
+
+```bash
+npm run lint           # ESLint (eslint.config.js)
+npm run format:check   # Prettier (.prettierrc.json); `npm run format` corrige
+```
+
 Não há passos extras: o mock já sobe com o seed (README §5.4). **"Reiniciar dados de demonstração"**, no
 menu do usuário (canto superior direito), volta ao estado inicial e pede login de novo. Na tela de login há
 um seletor que preenche qualquer usuário do seed.

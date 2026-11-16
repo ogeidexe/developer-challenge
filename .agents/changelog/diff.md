@@ -813,3 +813,19 @@ One block per agent turn, one row per changed file:
 | `frontend/src/shared/auth/safeReturnUrl.ts` | modified | +2 | -1 |
 | `frontend/src/shared/ui.tsx` | modified | +31 | -8 |
 | `frontend/vite.config.ts` | modified | +2 | -1 |
+
+---
+### Turn 2026-11-16 12:26:44 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: Backend: add Checkstyle (lint/format) bound to verify; CI runs frontend lint + format check; document lint commands in backend/frontend READMEs
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `.github/workflows/ci.yml` | modified | +8 | -4 |
+| `.github/workflows/release.yml` | modified | +2 | -0 |
+| `backend/README.md` | modified | +2 | -1 |
+| `backend/config/checkstyle.xml` | created | +83 | -0 |
+| `backend/pom.xml` | modified | +29 | -0 |
+| `frontend/README.md` | modified | +7 | -0 |

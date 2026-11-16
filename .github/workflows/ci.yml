@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   backend:
-    name: Backend (Java 25) build + tests
+    name: Backend (Java 25) lint + build + tests
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -29,8 +29,8 @@ jobs:
           java-version: "25"
           cache: maven
       - run: chmod +x mvnw # the wrapper may be committed from Windows without the executable bit
-      # unit + integration tests (Testcontainers uses the runner's Docker) and the packaged jar
-      - name: Build and test
+      # Checkstyle (lint/format, validate phase), unit + integration tests (Testcontainers) and the jar
+      - name: Lint, build and test
         run: ./mvnw -B verify
         env:
           JWT_SECRET: ci-only-${{ github.run_id }}-not-a-real-secret-0123456789
@@ -72,7 +72,7 @@ jobs:
           retention-days: 7
 
   frontend:
-    name: Frontend (React) typecheck + build
+    name: Frontend (React) lint + typecheck + build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -85,6 +85,10 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      - name: Lint (ESLint)
+        run: npm run lint
+      - name: Formatting (Prettier)
+        run: npm run format:check
       # tsc on the app (part of `npm run build`) and on the Cypress specs
       - name: Typecheck E2E specs
         run: npm run typecheck:e2e
