@@ -1,0 +1,124 @@
+# Build + test of both apps on every push/PR. Security scanning lives in security.yml.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main, teste-pleno]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (Java 25) build + tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+      - run: chmod +x mvnw # the wrapper may be committed from Windows without the executable bit
+      # unit + integration tests (Testcontainers uses the runner's Docker) and the packaged jar
+      - name: Build and test
+        run: ./mvnw -B verify
+        env:
+          JWT_SECRET: ci-only-${{ github.run_id }}-not-a-real-secret-0123456789
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-reports
+          path: |
+            backend/target/surefire-reports/
+            backend/target/failsafe-reports/
+          if-no-files-found: ignore
+      - name: Upload jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jar
+          path: backend/target/purchase-requests-*.jar
+          retention-days: 7
+
+  frontend:
+    name: Frontend (React) typecheck + build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      # tsc on the app (part of `npm run build`) and on the Cypress specs
+      - name: Typecheck E2E specs
+        run: npm run typecheck:e2e
+      - name: Production build
+        run: npm run build
+        env:
+          VITE_MOCK_BACKEND: "false"
+          VITE_DEMO_LOGIN: "false"
+      - name: Upload dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+          retention-days: 7
+
+  frontend-e2e:
+    name: Frontend E2E (Cypress)
+    runs-on: ubuntu-latest
+    needs: frontend
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      # starts Vite (mock backend) in-process and runs Cypress headless
+      - run: npm run test:e2e
+      - name: Upload screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: frontend/cypress/screenshots/
+          if-no-files-found: ignore
+
+  docker:
+    name: Docker image build (${{ matrix.app }})
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      # build only (no push): proves the images still build; release.yml publishes them
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.app }}
+          push: false
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }}

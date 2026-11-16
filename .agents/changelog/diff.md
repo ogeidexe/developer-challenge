@@ -682,3 +682,18 @@ One block per agent turn, one row per changed file:
 | File | Change | Additions | Removals |
 |---|---|---|---|
 | `frontend/.env.example` | modified | +6 | -2 |
+
+---
+### Turn 2026-11-16 12:03:50 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: c99dd3c4-4ace-51b9-af8d-8c02e07a6ced
+- **Prompt**: withou violate project rules make a pipeline to build and realese both java and react app
+- **Summary**: Add CI (build/test both apps, Docker build check) and release (tagged GitHub Release + GHCR images) workflows, plus frontend nginx Dockerfile
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `.github/workflows/ci.yml` | created | +124 | -0 |
+| `.github/workflows/release.yml` | created | +148 | -0 |
+| `frontend/.dockerignore` | created | +6 | -0 |
+| `frontend/Dockerfile` | created | +19 | -0 |
+| `frontend/nginx/default.conf.template` | created | +27 | -0 |
