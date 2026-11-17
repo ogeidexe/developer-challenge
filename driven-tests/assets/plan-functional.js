@@ -41,12 +41,14 @@ window.TEST_PLAN.areas.push(
       },
       {
         id: 'AUTH-04',
-        title: 'Cadastro público cria apenas SOLICITANTE',
+        title: 'Cadastro público cria apenas SOLICITANTE, com nome completo, senha confirmada e medidor de força',
         steps: [
-          'Pegue um centro de custo em `GET $API/cost-centers`.',
-          'Cadastre-se em `POST $API/auth/register` enviando também `"role":"ADMIN"` no corpo (ou pela tela de cadastro).',
+          'Na tela "Criar conta", abra "Centro de custo" (deve listar CC-TI-01 e CC-ADM-02).',
+          'Tente os nomes `Jo`, `José`, `João-Silva Souza` e `Silva, João`; depois `José da Silva`.',
+          'Digite senhas de forças diferentes e uma confirmação diferente da senha.',
+          'Pela API, cadastre-se em `POST $API/auth/register` enviando também `"role":"ADMIN"` no corpo.',
         ],
-        expected: '`201` e o usuário criado é `SOLICITANTE`, sem nível; o papel enviado é ignorado.',
+        expected: 'Centros listados; nomes inválidos recusados (só `José da Silva` passa); o medidor vai de Fraca a Forte e a confirmação diferente é recusada; `201` e o usuário é `SOLICITANTE`, sem nível.',
         ref: '§2.1 · RF-01 CA-01.3',
       },
       {
@@ -138,8 +140,11 @@ window.TEST_PLAN.areas.push(
       },
       {
         id: 'LIST-02',
-        title: 'Filtros status, category, costCenterId, createdFrom, createdTo',
-        steps: ['Na tela de listagem, filtre por status e categoria; copie a URL e abra em outra aba.', 'Pela API, combine `status=PENDING_APPROVAL&category=SOFTWARE`.'],
+        title: 'Filtros status, category, costCenterId, createdFrom, createdTo (nos cabeçalhos da tabela)',
+        steps: [
+          'Na listagem, use os filtros dos cabeçalhos das colunas (Status, Categoria, Centro, Título, Total, Criada em); copie a URL e abra em outra aba.',
+          'Pela API, combine `status=PENDING_APPROVAL&category=SOFTWARE`.',
+        ],
         expected: 'O filtro vai para a URL e sobrevive ao recarregar (link compartilhável); a API combina os filtros.',
         ref: '§2.2, §2.7 · RF-04 CA-04.6 · RF-13 CA-13.3',
       },

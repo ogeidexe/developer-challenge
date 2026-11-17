@@ -1282,3 +1282,15 @@ One block per agent turn, one row per changed file:
 | `docs/RFs/RF-01-autenticacao.md` | modified | +13 | -0 |
 | `docs/RFs/RF-13-interface-web.md` | modified | +10 | -0 |
 | `frontend/README.md` | modified | +6 | -1 |
+
+---
+### Turn 2026-11-17 13:29:53 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: driven-tests catalog: sign-up steps (centers, name rule, meter, confirmation), list filters in column headers, pre-filled demo login, new FE-07 for antd tables and forms
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `driven-tests/assets/plan-delivery.js` | modified | +16 | -2 |
+| `driven-tests/assets/plan-functional.js` | modified | +11 | -6 |

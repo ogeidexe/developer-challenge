@@ -25,8 +25,12 @@ window.TEST_PLAN.areas.unshift({
     },
     {
       id: 'SETUP-03',
-      title: 'Seed obrigatório',
-      steps: ['Entre com cada usuário do `SOLUTION.md` (senha Kingspan@123).', 'Confira centros de custo, orçamento e solicitações.'],
+      title: 'Seed obrigatório e login de demonstração',
+      steps: [
+        'Abra http://localhost:8080: "Entrar" já vem preenchido com `admin1@kingspan.test` (demonstração).',
+        'Entre com cada usuário do `SOLUTION.md` (senha Kingspan@123).',
+        'Confira centros de custo, orçamento e solicitações.',
+      ],
       expected: '2 centros (CC-TI-01 quase esgotado), por centro 1 solicitante + aprovador N1 + N2, 2 ADMIN, solicitações em vários estados.',
       ref: '§5.4 · RNF-08',
     },
@@ -101,6 +105,16 @@ window.TEST_PLAN.areas.push(
         steps: ['Na nova solicitação, adicione e remova itens alterando quantidade e preço.'],
         expected: 'O total muda ao digitar; depois de salvar, o detalhe mostra o total calculado pelo servidor.',
         ref: '§2.7 · RF-13 RN-13.5',
+      },
+      {
+        id: 'FE-07',
+        title: 'Filtros e ordenação antd em todas as tabelas; validação antd em todos os campos',
+        steps: [
+          'Em cada tabela (solicitações, caixa, orçamentos do dashboard, administração, itens) use os filtros e a ordenação dos cabeçalhos.',
+          'Em cada formulário, tente salvar com campos vazios ou inválidos (preço 0, data passada, senha sem número).',
+        ],
+        expected: 'Toda tabela filtra e ordena pelos cabeçalhos; todo campo mostra a mensagem de validação antes de chamar a API.',
+        ref: '§2.7 · RF-13 RN-13.11, RN-13.12',
       },
       {
         id: 'FE-03',
