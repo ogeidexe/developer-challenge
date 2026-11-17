@@ -15,6 +15,18 @@ describe('Real API — session, dashboard, list and inbox on the seed', () => {
     cy.location('pathname').should('eq', '/login')
   })
 
+  it('sign-up form lists the cost centers from the backend', () => {
+    cy.visit('/login')
+    cy.contains('.ant-segmented-item', 'Criar conta').click()
+    cy.get('#login_costCenterId').closest('.ant-select').click()
+    cy.get('.ant-select-dropdown:not(.ant-select-dropdown-hidden)')
+      .last()
+      .within(() => {
+        cy.contains('.ant-select-item-option', 'CC-TI-01')
+        cy.contains('.ant-select-item-option', 'CC-ADM-02')
+      })
+  })
+
   it('sends an anonymous visitor to /login and back to the original route with its filter', () => {
     cy.visit('/requests?status=APPROVED')
     cy.location('pathname').should('eq', '/login')
