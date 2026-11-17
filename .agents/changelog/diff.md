@@ -1076,3 +1076,16 @@ One block per agent turn, one row per changed file:
 | `driven-tests/assets/checklist.js` | created | +225 | -0 |
 | `driven-tests/assets/styles.css` | modified | +147 | -0 |
 | `driven-tests/index.html` | modified | +1 | -0 |
+
+---
+### Turn 2026-11-17 06:45:33 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: driven-tests: final report (summary, per-area table, Missing/Need Work items with notes first), print/PDF, Markdown and JSON export, JSON import; [hidden] CSS fix
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `driven-tests/assets/report.js` | created | +204 | -0 |
+| `driven-tests/assets/styles.css` | modified | +112 | -0 |
+| `driven-tests/index.html` | modified | +1 | -0 |
