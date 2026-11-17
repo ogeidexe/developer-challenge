@@ -1089,3 +1089,15 @@ One block per agent turn, one row per changed file:
 | `driven-tests/assets/report.js` | created | +204 | -0 |
 | `driven-tests/assets/styles.css` | modified | +112 | -0 |
 | `driven-tests/index.html` | modified | +1 | -0 |
+
+---
+### Turn 2026-11-17 06:46:07 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: driven-tests: catalog integrity check script and CI job (unique area-prefixed ids, required fields, balanced code spans, scripts parse)
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `.github/workflows/ci.yml` | modified | +11 | -0 |
+| `driven-tests/check-plan.mjs` | created | +53 | -0 |
