@@ -1164,3 +1164,15 @@ One block per agent turn, one row per changed file:
 | `frontend/src/features/auth/LoginPage.tsx` | modified | +48 | -10 |
 | `frontend/src/shared/api/mock/backend.ts` | modified | +10 | -4 |
 | `frontend/src/shared/validation.ts` | created | +51 | -0 |
+
+---
+### Turn 2026-11-17 13:18:59 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: c99dd3c4-4ace-51b9-af8d-8c02e07a6ced
+- **Prompt**: this is the logo lol
+- **Summary**: Sign-up cost centers: fetched without credentials (stale token cannot 401 the public list); loading, error-with-retry and empty states in the dropdown
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `frontend/src/features/auth/LoginPage.tsx` | modified | +23 | -2 |
+| `frontend/src/shared/api/client.ts` | modified | +5 | -1 |

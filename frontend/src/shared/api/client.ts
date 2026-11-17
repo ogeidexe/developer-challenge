@@ -35,6 +35,8 @@ export interface ReqOptions {
   body?: unknown
   query?: Record<string, string | number | undefined>
   headers?: Record<string, string>
+  /** Public endpoint: never send the stored token (a stale token would turn a public call into a 401). */
+  anonymous?: boolean
 }
 
 function qs(query?: ReqOptions['query']): string {
@@ -59,7 +61,7 @@ async function request<T>(method: string, path: string, opts: ReqOptions = {}): 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'X-Request-Id': requestId,
-    ...authHeaders(),
+    ...(opts.anonymous ? {} : authHeaders()),
     ...opts.headers,
   }
 
@@ -135,6 +137,8 @@ export const api = {
   updateUser: (id: string, b: Record<string, unknown>) => request<UserDto>('PATCH', `/users/${id}`, { body: b }),
 
   listCostCenters: () => request<CostCenterDto[]>('GET', '/cost-centers'),
+  /** Sign-up form: the same public list, requested without credentials. */
+  listPublicCostCenters: () => request<CostCenterDto[]>('GET', '/cost-centers', { anonymous: true }),
   createCostCenter: (code: string, name: string) =>
     request<CostCenterDto>('POST', '/cost-centers', { body: { code, name } }),
   getBudget: (ccId: string, ym: string) => request<BudgetDto>('GET', `/cost-centers/${ccId}/budgets/${ym}`),

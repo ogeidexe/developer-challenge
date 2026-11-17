@@ -44,9 +44,14 @@ export function LoginPage() {
   const [busy, setBusy] = useState(false)
   const password = Form.useWatch('password', form)
   const strength = passwordStrength(password)
-  const { data: centers } = useQuery({
+  const {
+    data: centers,
+    isLoading: centersLoading,
+    isError: centersFailed,
+    refetch: reloadCenters,
+  } = useQuery({
     queryKey: ['centers-public'],
-    queryFn: api.listCostCenters,
+    queryFn: api.listPublicCostCenters,
     enabled: mode === 'register',
   })
 
@@ -120,7 +125,23 @@ export function LoginPage() {
               >
                 <Select
                   placeholder="Selecione…"
+                  loading={centersLoading}
+                  status={centersFailed ? 'error' : undefined}
                   options={(centers ?? []).map((c) => ({ value: c.id, label: `${c.code} — ${c.name}` }))}
+                  notFoundContent={
+                    centersFailed ? (
+                      <span>
+                        Não foi possível carregar os centros de custo.{' '}
+                        <Button type="link" size="small" onClick={() => reloadCenters()}>
+                          Tentar de novo
+                        </Button>
+                      </span>
+                    ) : centersLoading ? (
+                      'Carregando…'
+                    ) : (
+                      'Nenhum centro de custo cadastrado'
+                    )
+                  }
                 />
               </Form.Item>
             </>
