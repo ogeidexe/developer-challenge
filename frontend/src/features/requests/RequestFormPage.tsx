@@ -25,6 +25,7 @@ import { ApiError } from '../../shared/api/errors'
 import { useAuth } from '../../shared/auth/AuthContext'
 import type { Category } from '../../shared/api/types'
 import { PageHeader, categoryOptions, errText, moneyBRL, serverFieldErrors } from '../../shared/ui'
+import { moneyRules } from '../../shared/validation'
 
 interface ItemValue {
   description?: string
@@ -174,13 +175,13 @@ export function RequestFormPage() {
                 name="title"
                 label="Título"
                 rules={[
-                  { required: true, message: 'Informe o título' },
+                  { required: true, whitespace: true, message: 'Informe o título' },
                   { min: 3, max: 120, message: 'Entre 3 e 120 caracteres' },
                 ]}
               >
                 <Input placeholder="Ex.: Notebooks para o time de TI" />
               </Form.Item>
-              <Form.Item name="description" label="Descrição" rules={[{ max: 2000 }]}>
+              <Form.Item name="description" label="Descrição" rules={[{ max: 2000, message: 'Até 2000 caracteres' }]}>
                 <Input.TextArea rows={3} showCount maxLength={2000} placeholder="Justificativa, contexto…" />
               </Form.Item>
               <Row gutter={16}>
@@ -207,7 +208,19 @@ export function RequestFormPage() {
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={7}>
-                  <Form.Item name="neededBy" label="Necessário até" tooltip="Opcional; precisa ser uma data futura">
+                  <Form.Item
+                    name="neededBy"
+                    label="Necessário até"
+                    tooltip="Opcional; precisa ser uma data futura"
+                    rules={[
+                      {
+                        validator: (_, d?: dayjs.Dayjs | null) =>
+                          !d || d.isAfter(dayjs().endOf('day'))
+                            ? Promise.resolve()
+                            : Promise.reject(new Error('Escolha uma data futura')),
+                      },
+                    ]}
+                  >
                     <DatePicker
                       style={{ width: '100%' }}
                       format="DD/MM/YYYY"
@@ -238,7 +251,7 @@ export function RequestFormPage() {
                             label={index === 0 ? 'Descrição' : undefined}
                             rules={[
                               { required: true, whitespace: true, message: 'Descrição obrigatória' },
-                              { max: 255 },
+                              { max: 255, message: 'Até 255 caracteres' },
                             ]}
                           >
                             <Input placeholder="Descrição do item" />
@@ -260,7 +273,7 @@ export function RequestFormPage() {
                           <Form.Item
                             name={[field.name, 'unitPrice']}
                             label={index === 0 ? 'Preço unit. (R$)' : undefined}
-                            rules={[{ required: true, message: 'Preço' }]}
+                            rules={moneyRules('o preço')}
                           >
                             <InputNumber<string>
                               stringMode

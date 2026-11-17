@@ -1212,3 +1212,18 @@ One block per agent turn, one row per changed file:
 | File | Change | Additions | Removals |
 |---|---|---|---|
 | `frontend/src/main.tsx` | modified | +5 | -1 |
+
+---
+### Turn 2026-11-17 13:23:01 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: antd validation on every form input: request form (title, description, future neededBy, unit price > 0), admin user form (email, password rules, role, cost center for non-admins), cost center and budget forms; shared moneyRules; Cypress tests
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `frontend/cypress/e2e/04-request-form.cy.ts` | modified | +9 | -1 |
+| `frontend/cypress/e2e/07-admin.cy.ts` | modified | +13 | -0 |
+| `frontend/src/features/admin/AdminPage.tsx` | modified | +42 | -8 |
+| `frontend/src/features/requests/RequestFormPage.tsx` | modified | +18 | -5 |
+| `frontend/src/shared/validation.ts` | modified | +18 | -0 |

@@ -27,7 +27,7 @@ import dayjs, { type Dayjs } from 'dayjs'
 import { api } from '../../shared/api/client'
 import type { CostCenterDto, Role, UserDto } from '../../shared/api/types'
 import { PageHeader, errText, moneyBRL, roleLabel, serverFieldErrors } from '../../shared/ui'
-import { fullNameRules } from '../../shared/validation'
+import { fullNameRules, moneyRules, passwordRules } from '../../shared/validation'
 
 const ROLE_COLOR: Record<Role, string> = { ADMIN: 'volcano', APROVADOR: 'geekblue', SOLICITANTE: 'default' }
 
@@ -153,10 +153,17 @@ function UsersTab() {
         <Form<UserForm> name="user" form={form} layout="vertical" onFinish={(v) => save.mutate(v)}>
           {!editing && (
             <>
-              <Form.Item name="email" label="E-mail" rules={[{ required: true, type: 'email' }]}>
+              <Form.Item
+                name="email"
+                label="E-mail"
+                rules={[
+                  { required: true, type: 'email', message: 'E-mail inválido' },
+                  { max: 254, message: 'Até 254 caracteres' },
+                ]}
+              >
                 <Input />
               </Form.Item>
-              <Form.Item name="password" label="Senha" rules={[{ required: true, min: 8 }]}>
+              <Form.Item name="password" label="Senha" rules={passwordRules} validateFirst>
                 <Input.Password />
               </Form.Item>
             </>
@@ -166,7 +173,7 @@ function UsersTab() {
           </Form.Item>
           <Row gutter={12}>
             <Col span={12}>
-              <Form.Item name="role" label="Papel" rules={[{ required: true }]}>
+              <Form.Item name="role" label="Papel" rules={[{ required: true, message: 'Selecione o papel' }]}>
                 <Select
                   options={(['SOLICITANTE', 'APROVADOR', 'ADMIN'] as Role[]).map((r) => ({
                     value: r,
@@ -192,7 +199,20 @@ function UsersTab() {
               )}
             </Col>
           </Row>
-          <Form.Item name="costCenterId" label="Centro de custo" tooltip="Vazio = admin global (apenas ADMIN)">
+          <Form.Item
+            name="costCenterId"
+            label="Centro de custo"
+            tooltip="Vazio = admin global (apenas ADMIN)"
+            dependencies={['role']}
+            rules={[
+              ({ getFieldValue }) => ({
+                validator: (_, v?: string) =>
+                  v || getFieldValue('role') === 'ADMIN'
+                    ? Promise.resolve()
+                    : Promise.reject(new Error('Obrigatório para Solicitante e Aprovador')),
+              }),
+            ]}
+          >
             <Select allowClear options={options} />
           </Form.Item>
           {editing && (
@@ -263,10 +283,24 @@ function CentersTab() {
         onOk={() => form.submit()}
       >
         <Form name="costCenter" form={form} layout="vertical" onFinish={(v) => create.mutate(v)}>
-          <Form.Item name="code" label="Código" rules={[{ required: true, min: 2, max: 30 }]}>
+          <Form.Item
+            name="code"
+            label="Código"
+            rules={[
+              { required: true, whitespace: true, message: 'Informe o código' },
+              { min: 2, max: 30, message: 'Entre 2 e 30 caracteres' },
+            ]}
+          >
             <Input placeholder="CC-MKT-03" />
           </Form.Item>
-          <Form.Item name="name" label="Nome" rules={[{ required: true, min: 2, max: 120 }]}>
+          <Form.Item
+            name="name"
+            label="Nome"
+            rules={[
+              { required: true, whitespace: true, message: 'Informe o nome' },
+              { min: 2, max: 120, message: 'Entre 2 e 120 caracteres' },
+            ]}
+          >
             <Input placeholder="Marketing" />
           </Form.Item>
         </Form>
@@ -341,7 +375,7 @@ function BudgetsTab() {
             </Col>
           </Row>
           <Form name="budget" form={form} layout="inline" onFinish={(v) => set.mutate(v)} style={{ rowGap: 8 }}>
-            <Form.Item name="amount" rules={[{ required: true, message: 'Informe o valor' }]} style={{ flex: 1 }}>
+            <Form.Item name="amount" rules={moneyRules('o valor', { allowZero: true })} style={{ flex: 1 }}>
               <InputNumber<string>
                 stringMode
                 min="0"

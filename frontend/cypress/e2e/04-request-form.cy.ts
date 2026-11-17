@@ -11,8 +11,16 @@ describe('Request form screen (create / edit)', () => {
     cy.contains('.ant-form-item-explain-error', 'Informe o título')
     cy.contains('.ant-form-item-explain-error', 'Selecione a categoria')
     cy.contains('.ant-form-item-explain-error', 'Descrição obrigatória')
-    cy.contains('.ant-form-item-explain-error', 'Preço')
+    cy.contains('.ant-form-item-explain-error', 'Informe o preço')
     cy.location('pathname').should('eq', '/requests/new')
+  })
+
+  it('refuses a zero unit price and a too-short title (antd rules)', () => {
+    cy.visit('/requests/new')
+    cy.get('#request_title').type('AB').blur()
+    cy.contains('.ant-form-item-explain-error', 'Entre 3 e 120 caracteres')
+    cy.get('#request_items_0_unitPrice').type('0').blur()
+    cy.contains('.ant-form-item-explain-error', 'Deve ser maior que zero')
   })
 
   it("defaults the cost center to the requester's own", () => {

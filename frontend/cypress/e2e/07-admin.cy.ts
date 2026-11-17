@@ -35,6 +35,19 @@ describe('Administration screen', () => {
         .and('contain', 'CC-TI-01')
     })
 
+    it('validates the user form: password with letters and digits, cost center required for non-admins', () => {
+      cy.contains('button', 'Novo usuário').click()
+      cy.get('#user_email').type('sem.digito@kingspan.test')
+      cy.get('#user_password').type('SoLetrasAqui')
+      cy.get('#user_name').type('Pessoa Teste')
+      cy.antSelect('#user_role', 'Solicitante')
+      cy.modal().contains('button', 'Salvar').click()
+      cy.modal().contains('.ant-form-item-explain-error', 'Use letras e números')
+      cy.modal().contains('.ant-form-item-explain-error', 'Obrigatório para Solicitante e Aprovador')
+      cy.get('#user_name').clear().type('Pessoa-Teste')
+      cy.modal().contains('.ant-form-item-explain-error', 'Informe nome e sobrenome')
+    })
+
     it('creates a cost center and refuses a duplicate code', () => {
       tab('Centros de custo')
       cy.contains('button', 'Novo centro').click()

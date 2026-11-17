@@ -49,3 +49,21 @@ export function passwordStrength(password: string | undefined): PasswordStrength
   } as const
   return { score, ...scale[score as 1 | 2 | 3 | 4] }
 }
+
+/** Money typed in an InputNumber (string mode): required, greater than zero unless `allowZero`, at most 13 integer digits. */
+export function moneyRules(label: string, { allowZero = false }: { allowZero?: boolean } = {}): Rule[] {
+  return [
+    { required: true, message: `Informe ${label}` },
+    {
+      validator: (_, value?: string | null) => {
+        if (value === undefined || value === null || value === '') return Promise.resolve()
+        const n = Number(value)
+        if (!Number.isFinite(n)) return Promise.reject(new Error('Valor inválido'))
+        if (allowZero ? n < 0 : n <= 0)
+          return Promise.reject(new Error(allowZero ? 'Não pode ser negativo' : 'Deve ser maior que zero'))
+        if (Math.trunc(Math.abs(n)).toString().length > 13) return Promise.reject(new Error('Valor alto demais'))
+        return Promise.resolve()
+      },
+    },
+  ]
+}
