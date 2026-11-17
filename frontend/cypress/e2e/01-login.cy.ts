@@ -40,6 +40,7 @@ describe('Login screen', () => {
     cy.antSelect('#login_costCenterId', 'CC-TI-01')
     cy.get('#login_email').clear().type('nova.pessoa@kingspan.test')
     cy.get('#login_password').clear().type('Senha1234')
+    cy.get('#login_confirmPassword').type('Senha1234')
     cy.contains('button', 'Criar conta (Solicitante) e entrar').click()
     cy.contains('h3', 'Olá, Nova Pessoa')
     cy.get('.ant-layout-header').contains('Solicitante')
@@ -76,5 +77,66 @@ describe('Login screen', () => {
     cy.get('.ant-layout-header').contains('button', 'João Nunes').click()
     cy.get('.ant-dropdown-menu').contains('Sair').click()
     cy.location('pathname').should('eq', '/login')
+  })
+
+  describe('Criar conta — validations (antd Form)', () => {
+    const openSignUp = () => {
+      cy.visit('/login')
+      cy.contains('.ant-segmented-item', 'Criar conta').click()
+    }
+    const nameError = () => cy.get('#login_name').closest('.ant-form-item').find('.ant-form-item-explain-error')
+
+    it('lists the cost centers in the sign-up form', () => {
+      openSignUp()
+      cy.get('#login_costCenterId').closest('.ant-select').click()
+      cy.get('.ant-select-dropdown:not(.ant-select-dropdown-hidden)')
+        .last()
+        .within(() => {
+          cy.contains('.ant-select-item-option', 'CC-TI-01')
+          cy.contains('.ant-select-item-option', 'CC-ADM-02')
+        })
+    })
+
+    it('requires a full name with letters only (accents allowed; no comma, hyphen or digits)', () => {
+      openSignUp()
+      for (const invalid of ['Jo', 'José', 'João-Silva Souza', 'Silva, João', 'Ana Costa2']) {
+        cy.get('#login_name').clear().type(invalid).blur()
+        nameError().should('be.visible')
+      }
+      cy.get('#login_name').clear().type('José da Silva').blur()
+      nameError().should('not.exist')
+    })
+
+    it('shows a password strength meter', () => {
+      openSignUp()
+      cy.get('#login_password').clear().type('abc')
+      cy.get('[data-testid="password-strength"]').should('contain', 'Fraca')
+      cy.get('#login_password').clear().type('senha1234')
+      cy.get('[data-testid="password-strength"]').should('contain', 'Razoável')
+      cy.get('#login_password').clear().type('Senha12345678')
+      cy.get('[data-testid="password-strength"]').should('contain', 'Boa')
+      cy.get('#login_password').clear().type('Senha-Forte#2026')
+      cy.get('[data-testid="password-strength"]').should('contain', 'Forte')
+    })
+
+    it('requires the password confirmation to match', () => {
+      openSignUp()
+      cy.get('#login_name').type('Nova Pessoa')
+      cy.antSelect('#login_costCenterId', 'CC-TI-01')
+      cy.get('#login_email').clear().type('outra.pessoa@kingspan.test')
+      cy.get('#login_password').clear().type('Senha1234')
+      cy.get('#login_confirmPassword').type('Senha9999')
+      cy.contains('button', 'Criar conta (Solicitante) e entrar').click()
+      cy.get('#login_confirmPassword').closest('.ant-form-item').should('contain', 'As senhas não conferem')
+      cy.location('pathname').should('eq', '/login')
+    })
+  })
+
+  it('shows the company logo on the login card, the top bar and as the favicon', () => {
+    cy.visit('/login')
+    cy.get('.ant-card img[src="/logo.svg"]').should('be.visible')
+    cy.get('link[rel="icon"]').should('have.attr', 'href', '/logo.svg')
+    cy.login(USERS.admin1)
+    cy.get('.ant-layout-header img[src="/logo.svg"]').should('be.visible')
   })
 })

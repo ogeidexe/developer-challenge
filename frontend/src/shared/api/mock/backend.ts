@@ -30,6 +30,9 @@ import {
   validYearMonth,
 } from './domain'
 import { seed, type BudgetRec, type MockDb, type RequestRec, type UserRec, type VersionRec } from './data'
+import { FULL_NAME } from '../../validation'
+
+const FULL_NAME_MESSAGE = 'informe nome e sobrenome, só com letras (acentos permitidos) e espaços simples'
 
 // Request bodies arrive as untyped JSON (like on a real server) and are validated field by field below.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- deliberate: the fake API must accept any payload
@@ -721,8 +724,11 @@ function validateUserPayload(b: JsonBody, isCreate: boolean, existing?: UserRec)
     )
       errors.push({ field: 'password', message: 'Senha deve ter ≥ 8 caracteres com letras e dígitos', code: 'INVALID' })
   }
-  if (b.name != null && (typeof b.name !== 'string' || b.name.trim().length < 2 || b.name.length > 120))
-    errors.push({ field: 'name', message: 'Nome deve ter 2–120 caracteres', code: 'INVALID' })
+  if (
+    b.name != null &&
+    (typeof b.name !== 'string' || b.name.length < 5 || b.name.length > 120 || !FULL_NAME.test(b.name))
+  )
+    errors.push({ field: 'name', message: FULL_NAME_MESSAGE, code: 'INVALID' })
   const role = b.role ?? existing?.role
   const level = b.approverLevel !== undefined ? b.approverLevel : (existing?.approverLevel ?? null)
   const ccId = b.costCenterId !== undefined ? b.costCenterId : (existing?.costCenterId ?? null)
@@ -782,8 +788,8 @@ function handle(request: MockRequest): MockResponse {
           message: 'Senha deve ter ≥ 8 caracteres com letras e dígitos',
           code: 'INVALID',
         })
-      if (typeof body.name !== 'string' || body.name.trim().length < 2 || body.name.length > 120)
-        errors.push({ field: 'name', message: 'Nome deve ter 2–120 caracteres', code: 'INVALID' })
+      if (typeof body.name !== 'string' || body.name.length < 5 || body.name.length > 120 || !FULL_NAME.test(body.name))
+        errors.push({ field: 'name', message: FULL_NAME_MESSAGE, code: 'INVALID' })
       if (!db.costCenters.some((c) => c.id === body.costCenterId))
         errors.push({
           field: 'costCenterId',

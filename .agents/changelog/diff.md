@@ -1149,3 +1149,18 @@ One block per agent turn, one row per changed file:
 | `frontend/public/logo.svg` | created | +8 | -0 |
 | `frontend/src/App.tsx` | modified | +7 | -3 |
 | `frontend/src/shared/Logo.tsx` | created | +5 | -0 |
+
+---
+### Turn 2026-11-17 13:17:28 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: Frontend sign-up: full-name rule, password rules, strength meter, Confirmar senha, logo on the card; shared validation module; fake backend and admin form mirror the name rule; Cypress tests
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `frontend/cypress/e2e/01-login.cy.ts` | modified | +62 | -0 |
+| `frontend/src/features/admin/AdminPage.tsx` | modified | +2 | -1 |
+| `frontend/src/features/auth/LoginPage.tsx` | modified | +48 | -10 |
+| `frontend/src/shared/api/mock/backend.ts` | modified | +10 | -4 |
+| `frontend/src/shared/validation.ts` | created | +51 | -0 |

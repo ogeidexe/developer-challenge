@@ -1,18 +1,21 @@
 import { useState } from 'react'
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Alert, Button, Card, Divider, Flex, Form, Input, Segmented, Select, Typography, theme } from 'antd'
+import { Alert, Button, Card, Divider, Flex, Form, Input, Progress, Segmented, Select, Typography, theme } from 'antd'
 import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons'
 import { useAuth } from '../../shared/auth/AuthContext'
 import { safeReturnUrl } from '../../shared/auth/safeReturnUrl'
 import { SHOW_DEMO_LOGIN } from '../../shared/config'
 import { api } from '../../shared/api/client'
 import { errText, serverFieldErrors } from '../../shared/ui'
+import { Logo } from '../../shared/Logo'
+import { fullNameRules, passwordRules, passwordStrength } from '../../shared/validation'
 
 type Mode = 'login' | 'register'
 interface Values {
   email: string
   password: string
+  confirmPassword?: string
   name?: string
   costCenterId?: string
 }
@@ -39,6 +42,8 @@ export function LoginPage() {
   const [mode, setMode] = useState<Mode>('login')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const password = Form.useWatch('password', form)
+  const strength = passwordStrength(password)
   const { data: centers } = useQuery({
     queryKey: ['centers-public'],
     queryFn: api.listCostCenters,
@@ -67,6 +72,9 @@ export function LoginPage() {
   return (
     <Flex align="center" justify="center" style={{ minHeight: '100vh', background: token.colorBgLayout, padding: 16 }}>
       <Card style={{ width: '100%', maxWidth: 440 }}>
+        <Flex justify="center" style={{ marginBottom: 12 }}>
+          <Logo height={48} />
+        </Flex>
         <Typography.Title level={3} style={{ marginTop: 0, marginBottom: 4 }}>
           Solicitações de Compra
         </Typography.Title>
@@ -83,6 +91,10 @@ export function LoginPage() {
           onChange={(m) => {
             setMode(m)
             setError(null)
+            form.setFields([
+              { name: 'password', errors: [] },
+              { name: 'confirmPassword', errors: [] },
+            ])
           }}
         />
 
@@ -98,14 +110,7 @@ export function LoginPage() {
         >
           {mode === 'register' && (
             <>
-              <Form.Item
-                name="name"
-                label="Nome completo"
-                rules={[
-                  { required: true, message: 'Informe seu nome' },
-                  { min: 2, max: 120 },
-                ]}
-              >
+              <Form.Item name="name" label="Nome completo" rules={fullNameRules} validateFirst>
                 <Input prefix={<UserOutlined />} />
               </Form.Item>
               <Form.Item
@@ -130,13 +135,46 @@ export function LoginPage() {
           <Form.Item
             name="password"
             label="Senha"
-            rules={[{ required: true, min: 8, message: 'Mínimo de 8 caracteres' }]}
+            rules={mode === 'register' ? passwordRules : [{ required: true, message: 'Informe a senha' }]}
+            validateFirst
+            extra={
+              mode === 'register' && strength.score > 0 ? (
+                <div data-testid="password-strength">
+                  <Progress
+                    percent={strength.score * 25}
+                    steps={4}
+                    strokeColor={strength.color}
+                    showInfo={false}
+                    size="small"
+                  />{' '}
+                  <span style={{ color: strength.color }}>Força da senha: {strength.label}</span>
+                </div>
+              ) : undefined
+            }
           >
             <Input.Password
               prefix={<LockOutlined />}
               autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
             />
           </Form.Item>
+          {mode === 'register' && (
+            <Form.Item
+              name="confirmPassword"
+              label="Confirmar senha"
+              dependencies={['password']}
+              rules={[
+                { required: true, message: 'Confirme a senha' },
+                ({ getFieldValue }) => ({
+                  validator: (_, value) =>
+                    !value || value === getFieldValue('password')
+                      ? Promise.resolve()
+                      : Promise.reject(new Error('As senhas não conferem')),
+                }),
+              ]}
+            >
+              <Input.Password prefix={<LockOutlined />} autoComplete="new-password" />
+            </Form.Item>
+          )}
           <Button type="primary" htmlType="submit" block size="large" loading={busy}>
             {mode === 'login' ? 'Entrar' : 'Criar conta (Solicitante) e entrar'}
           </Button>

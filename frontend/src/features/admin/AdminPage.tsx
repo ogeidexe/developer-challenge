@@ -27,6 +27,7 @@ import dayjs, { type Dayjs } from 'dayjs'
 import { api } from '../../shared/api/client'
 import type { CostCenterDto, Role, UserDto } from '../../shared/api/types'
 import { PageHeader, errText, moneyBRL, roleLabel, serverFieldErrors } from '../../shared/ui'
+import { fullNameRules } from '../../shared/validation'
 
 const ROLE_COLOR: Record<Role, string> = { ADMIN: 'volcano', APROVADOR: 'geekblue', SOLICITANTE: 'default' }
 
@@ -160,7 +161,7 @@ function UsersTab() {
               </Form.Item>
             </>
           )}
-          <Form.Item name="name" label="Nome" rules={[{ required: true, min: 2, max: 120 }]}>
+          <Form.Item name="name" label="Nome completo" rules={fullNameRules}>
             <Input />
           </Form.Item>
           <Row gutter={12}>
