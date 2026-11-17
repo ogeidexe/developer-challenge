@@ -1384,3 +1384,14 @@ One block per agent turn, one row per changed file:
 | `SOLUTION.md` | modified | +3 | -1 |
 | `docs/adr/ADR-016-nginx-gateway.md` | modified | +6 | -1 |
 | `frontend/README.md` | modified | +9 | -4 |
+
+---
+### Turn 2026-11-17 15:14:22 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: Add driven-tests checks FE-08 (plain-HTTP site) and NFR-07 (frontend container starts alone) and the current automated test counts
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `driven-tests/assets/plan-delivery.js` | modified | +21 | -1 |

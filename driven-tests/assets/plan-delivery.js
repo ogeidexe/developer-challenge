@@ -144,6 +144,18 @@ window.TEST_PLAN.areas.push(
         expected: '409: "alguém agiu antes de você" e a tela recarrega; 422: a mensagem do servidor; lista vazia com estado próprio.',
         ref: '§2.7 · RF-13 CA-13.5, CA-13.6',
       },
+      {
+        id: 'FE-08',
+        title: 'Funciona em HTTP sem TLS num host que não é localhost',
+        steps: [
+          'Abra a stack pelo IP ou nome da máquina, não por localhost (ex.: `http://<ip-da-máquina>:8080`).',
+          'Com o DevTools aberto (aba Network), entre com o usuário pré-preenchido, abra "Criar conta" e veja os centros de custo.',
+          'Logado, crie uma nova solicitação.',
+        ],
+        expected:
+          'Login, lista de centros de custo e criação funcionam e as requisições aparecem no Network; nunca "Falha inesperada" sem requisição (sem `crypto.randomUUID` o app usa `crypto.getRandomValues`).',
+        ref: '§2.7 · RF-13 RN-13.14, CA-13.8 · RF-01 CA-01.13',
+      },
     ],
   },
   {
@@ -195,6 +207,14 @@ window.TEST_PLAN.areas.push(
         expected: 'Nenhum segredo real; o back-end recusa segredo fraco ou placeholder; o job gitleaks do CI está verde.',
         ref: '§5.1 · RNF-05',
       },
+      {
+        id: 'NFR-07',
+        title: 'O contêiner do front-end sobe sem o back-end',
+        steps: ['Na raiz, com a stack parada: `docker compose up --build --detach --wait --no-deps frontend`.', 'Veja `docker compose logs frontend` e depois `docker compose down`.'],
+        expected:
+          'O front-end fica `healthy`, sem `host not found in upstream "backend"` nos logs (o Nginx resolve o `BACKEND_URL` a cada requisição). O CI repete isso no passo "frontend starts alone".',
+        ref: '§5.3 · RNF-07 RN-R07.9, CA-R07.5 · ADR-016',
+      },
     ],
   },
   {
@@ -234,7 +254,7 @@ window.TEST_PLAN.areas.push(
         id: 'AUTO-05',
         title: 'Pelo menos 3 testes significativos de front-end',
         steps: ['Veja `frontend/cypress/e2e/` e `frontend/cypress/e2e-api/`.'],
-        expected: 'Formulário com itens, ações por `allowedActions` e tratamento de 409/422 cobertos (simulado e API real).',
+        expected: 'Formulário com itens, ações por `allowedActions` e tratamento de 409/422 cobertos (simulado e API real); no último CI verde: 67 testes no simulado e 18 contra a API real, além de 209 no back-end.',
         ref: '§5.2 · RF-13',
       },
     ],
