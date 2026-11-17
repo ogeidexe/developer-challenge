@@ -1135,3 +1135,17 @@ One block per agent turn, one row per changed file:
 |---|---|---|---|
 | `backend/src/main/java/com/example/purchase/api/dto/AdminDtos.java` | modified | +7 | -3 |
 | `backend/src/test/java/com/example/purchase/HttpContractIntegrationTest.java` | modified | +19 | -0 |
+
+---
+### Turn 2026-11-17 13:17:07 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: Frontend: company logo slot (public/logo.svg placeholder to be replaced by the official Isoeste logo) as favicon and in the top bar; Logo component
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `frontend/index.html` | modified | +1 | -0 |
+| `frontend/public/logo.svg` | created | +8 | -0 |
+| `frontend/src/App.tsx` | modified | +7 | -3 |
+| `frontend/src/shared/Logo.tsx` | created | +5 | -0 |

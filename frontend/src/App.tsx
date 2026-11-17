@@ -11,6 +11,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons'
 import { useAuth } from './shared/auth/AuthContext'
+import { Logo } from './shared/Logo'
 import { roleLabel } from './shared/ui'
 import { LoginPage } from './features/auth/LoginPage'
 import { DashboardPage } from './features/dashboard/DashboardPage'
@@ -113,9 +114,12 @@ function Shell() {
       <Layout>
         <Header style={{ borderBottom: `1px solid ${token.colorBorderSecondary}` }}>
           <Flex justify="space-between" align="center" style={{ height: '100%' }}>
-            <Typography.Text type="secondary">
-              Solicitações de compra{USE_MOCK_BACKEND ? ' · backend simulado em memória' : ''}
-            </Typography.Text>
+            <Flex align="center" gap={12}>
+              <Logo height={32} />
+              <Typography.Text type="secondary">
+                Solicitações de compra{USE_MOCK_BACKEND ? ' · backend simulado em memória' : ''}
+              </Typography.Text>
+            </Flex>
             <Dropdown
               trigger={['click']}
               menu={{

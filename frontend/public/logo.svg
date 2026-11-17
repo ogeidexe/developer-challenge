@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Logo">
+  <!-- PLACEHOLDER mark (neutral, not a company logo). Replace this file with the official Isoeste logo
+       (same name, frontend/public/logo.svg): the favicon, the login card and the top bar all use it. -->
+  <rect x="4" y="4" width="56" height="56" rx="12" fill="#1f4e8c"/>
+  <rect x="14" y="16" width="36" height="8" rx="2" fill="#ffffff"/>
+  <rect x="14" y="28" width="36" height="8" rx="2" fill="#9cc3f0"/>
+  <rect x="14" y="40" width="36" height="8" rx="2" fill="#ffffff"/>
+</svg>
