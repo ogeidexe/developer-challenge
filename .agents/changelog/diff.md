@@ -1258,3 +1258,14 @@ One block per agent turn, one row per changed file:
 | `frontend/src/features/dashboard/DashboardPage.tsx` | modified | +23 | -3 |
 | `frontend/src/features/requests/RequestDetailPage.tsx` | modified | +20 | -5 |
 | `frontend/src/shared/tableSort.ts` | created | +32 | -0 |
+
+---
+### Turn 2026-11-17 13:28:43 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: Cypress: login validation test matches the login rules (required password; length rules only on sign-up)
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `frontend/cypress/e2e/01-login.cy.ts` | modified | +4 | -3 |

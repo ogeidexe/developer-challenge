@@ -18,11 +18,12 @@ describe('Login screen', () => {
 
   it('validates the form on the client before calling the API', () => {
     cy.visit('/login')
-    cy.get('#login_email').clear()
-    cy.get('#login_password').clear().type('123')
+    cy.get('#login_email').clear().type('nao-e-email')
+    cy.get('#login_password').clear()
     cy.contains('button', /^Entrar$/).click()
     cy.contains('.ant-form-item-explain-error', 'E-mail inválido')
-    cy.contains('.ant-form-item-explain-error', 'Mínimo de 8 caracteres')
+    cy.contains('.ant-form-item-explain-error', 'Informe a senha') // length rules apply on sign-up, not on login
+    cy.location('pathname').should('eq', '/login')
   })
 
   it('fills the form from the demo-user picker', () => {
