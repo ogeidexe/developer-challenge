@@ -1123,3 +1123,15 @@ One block per agent turn, one row per changed file:
 | File | Change | Additions | Removals |
 |---|---|---|---|
 | `frontend/cypress/e2e-api/01-seed-and-reads.cy.ts` | modified | +12 | -0 |
+
+---
+### Turn 2026-11-17 13:16:49 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: c99dd3c4-4ace-51b9-af8d-8c02e07a6ced
+- **Prompt**: deployed on http://prezados.com.br:8080/login?returnUrl=%2F is a public page can be accesd for testing
+- **Summary**: Backend: full-name rule (first and last name, letters incl. accents, single spaces, 5-120) on sign-up and admin user create/update; HTTP test
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `backend/src/main/java/com/example/purchase/api/dto/AdminDtos.java` | modified | +7 | -3 |
+| `backend/src/test/java/com/example/purchase/HttpContractIntegrationTest.java` | modified | +19 | -0 |

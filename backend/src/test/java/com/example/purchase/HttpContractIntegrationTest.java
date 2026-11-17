@@ -224,4 +224,23 @@ class HttpContractIntegrationTest extends IntegrationTest {
         assertThat(call("GET", "/auth/me", first, null, null).statusCode()).isEqualTo(401);
         assertThat(call("GET", "/auth/me", second, null, null).statusCode()).isEqualTo(200); // other sessions unaffected
     }
+
+    // ---------- sign-up name rule ----------
+
+    /** RF-01 RN-01.12: full name = first name and surname, letters (accents allowed) and single spaces, 5–120 chars. */
+    @Test
+    @SuppressWarnings("unchecked")
+    void signUpRequiresAFullNameWithLettersOnly() throws Exception {
+        for (String invalid : List.of("Jo", "José", "João-Silva Souza", "Silva, João", "Ana  Costa", "Ana Costa2")) {
+            var response = call("POST", "/auth/register", null, null, Map.of(
+                    "email", "nome." + UUID.randomUUID() + "@test.local", "password", "Senha1234", "name", invalid, "costCenterId", cc.toString()));
+            assertProblem(response, 400);
+            var fields = ((List<Map<String, Object>>) body(response).get("errors")).stream().map(e -> e.get("field")).toList();
+            assertThat(fields).as(invalid).contains("name");
+        }
+        var created = call("POST", "/auth/register", null, null, Map.of(
+                "email", "jose." + UUID.randomUUID() + "@test.local", "password", "Senha1234", "name", "José da Silva", "costCenterId", cc.toString()));
+        assertThat(created.statusCode()).isEqualTo(201);
+        assertThat(body(created).get("name")).isEqualTo("José da Silva");
+    }
 }

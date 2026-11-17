@@ -16,10 +16,14 @@ public final class AdminDtos {
     public static final String PASSWORD_PATTERN = "^(?=.*[A-Za-z])(?=.*\\d).+$";
     public static final String PASSWORD_MESSAGE = "deve ter letras e dígitos";
 
+    /** Full name: first name and surname, letters only (accents allowed), single spaces — no commas, hyphens or digits. */
+    public static final String NAME_PATTERN = "^\\p{L}+( \\p{L}+)+$";
+    public static final String NAME_MESSAGE = "informe nome e sobrenome, só com letras (acentos permitidos) e espaços simples";
+
     public record RegisterInput(
             @NotBlank @Email @Size(max = 254) String email,
             @NotBlank @Size(min = 8, max = 72) @Pattern(regexp = PASSWORD_PATTERN, message = PASSWORD_MESSAGE) String password,
-            @NotBlank @Size(min = 2, max = 120) String name,
+            @NotBlank @Size(min = 5, max = 120) @Pattern(regexp = NAME_PATTERN, message = NAME_MESSAGE) String name,
             @NotNull UUID costCenterId) {}
 
     /** Upper bounds keep oversized values away from the database and bcrypt (SEC-F05). */
@@ -33,14 +37,14 @@ public final class AdminDtos {
     public record CreateUserInput(
             @NotBlank @Email @Size(max = 254) String email,
             @NotBlank @Size(min = 8, max = 72) @Pattern(regexp = PASSWORD_PATTERN, message = PASSWORD_MESSAGE) String password,
-            @NotBlank @Size(min = 2, max = 120) String name,
+            @NotBlank @Size(min = 5, max = 120) @Pattern(regexp = NAME_PATTERN, message = NAME_MESSAGE) String name,
             @NotNull Role role,
             ApproverLevel approverLevel,
             UUID costCenterId) {}
 
     /** PATCH: absent fields keep their value; lockVersion guards concurrent admin edits. */
     public record UpdateUserInput(
-            @Size(min = 2, max = 120) String name,
+            @Size(min = 5, max = 120) @Pattern(regexp = NAME_PATTERN, message = NAME_MESSAGE) String name,
             Role role,
             ApproverLevel approverLevel,
             UUID costCenterId,
