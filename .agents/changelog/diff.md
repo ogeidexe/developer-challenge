@@ -1305,3 +1305,15 @@ One block per agent turn, one row per changed file:
 | File | Change | Additions | Removals |
 |---|---|---|---|
 | `frontend/cypress/e2e/04-request-form.cy.ts` | modified | +3 | -2 |
+
+---
+### Turn 2026-11-17 14:38:20 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: c99dd3c4-4ace-51b9-af8d-8c02e07a6ced
+- **Prompt**: error introduced on build frontend-1 2026/11/17 14:35:53 [emerg] 1#1: host not found in upstream "backend" in /etc/nginx/conf.d/default.conf:9 frontend-1 nginx: [emerg] host not found in upstream "backend" in /etc/nginx/conf.d/default.conf:9 Container purchase-requests-frontend-1 Error dependency frontend failed to start dependency failed to start: container purchase-requests-frontend-1 is unhealthy
+- **Summary**: Fix frontend container crash 'host not found in upstream backend': resolve BACKEND_URL per request via the container DNS resolver so the SPA starts without a backend
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `frontend/Dockerfile` | modified | +5 | -2 |
+| `frontend/nginx/default.conf.template` | modified | +9 | -1 |

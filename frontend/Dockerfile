@@ -12,8 +12,11 @@ ENV VITE_MOCK_BACKEND=${VITE_MOCK_BACKEND} VITE_DEMO_LOGIN=${VITE_DEMO_LOGIN}
 RUN npm run build
 
 FROM nginxinc/nginx-unprivileged:1.27-alpine
-# /api/* is proxied to the backend (same contract as the Vite dev proxy); override BACKEND_URL at runtime
-ENV BACKEND_URL=http://backend:3000
+# /api/* is proxied to the backend (same contract as the Vite dev proxy); override BACKEND_URL at runtime.
+# The backend host is resolved per request through the container's DNS (see nginx/default.conf.template), so the
+# image starts without a backend; the entrypoint exports NGINX_LOCAL_RESOLVERS when this flag is set.
+ENV BACKEND_URL=http://backend:3000 \
+    NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 8080
