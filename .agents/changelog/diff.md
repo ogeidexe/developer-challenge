@@ -1039,3 +1039,14 @@ One block per agent turn, one row per changed file:
 | File | Change | Additions | Removals |
 |---|---|---|---|
 | `driven-tests/assets/plan-functional.js` | created | +396 | -0 |
+
+---
+### Turn 2026-11-17 06:41:14 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: driven-tests: non-functional and delivery test catalog (setup, API contract, frontend, concurrency/idempotency/logs, automated tests, docs, repository rules, video, differentiators; 40 tests)
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `driven-tests/assets/plan-delivery.js` | created | +354 | -0 |
