@@ -1227,3 +1227,16 @@ One block per agent turn, one row per changed file:
 | `frontend/src/features/admin/AdminPage.tsx` | modified | +42 | -8 |
 | `frontend/src/features/requests/RequestFormPage.tsx` | modified | +18 | -5 |
 | `frontend/src/shared/validation.ts` | modified | +18 | -0 |
+
+---
+### Turn 2026-11-17 13:25:17 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: Request list: antd column filters (status, category, cost center, title search, total range, created range) and sorters, server-side and in the URL; functional URL updates; Cypress commands and tests
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `frontend/cypress/e2e/03-request-list.cy.ts` | modified | +26 | -5 |
+| `frontend/cypress/support/commands.ts` | modified | +17 | -0 |
+| `frontend/src/features/requests/RequestListPage.tsx` | modified | +199 | -79 |

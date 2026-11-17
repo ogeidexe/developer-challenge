@@ -49,6 +49,10 @@ declare global {
       openRequest(title: string): Chainable<void>
       /** Asserts an antd message toast. */
       toast(text: string | RegExp): Chainable<void>
+      /** Opens the antd filter of a table column (by header text). */
+      openColumnFilter(column: string): Chainable<JQuery<HTMLElement>>
+      /** Picks options in an antd column filter (`filters`) and confirms with OK. */
+      tableFilter(column: string, ...options: string[]): Chainable<void>
     }
   }
 }
@@ -82,6 +86,19 @@ Cypress.Commands.add('confirmPopover', (okText: string | RegExp) => {
 })
 
 Cypress.Commands.add('modal', () => cy.get('.ant-modal-content').filter(':visible').last())
+
+Cypress.Commands.add('openColumnFilter', (column: string) => {
+  // antd duplicates headers in hidden measure cells when the table scrolls; .ant-table-thead holds the visible ones
+  cy.contains('.ant-table-thead th', column).find('.ant-table-filter-trigger').click()
+  return cy.get('.ant-table-filter-dropdown').filter(':visible').last()
+})
+
+Cypress.Commands.add('tableFilter', (column: string, ...options: string[]) => {
+  cy.openColumnFilter(column).within(() => {
+    options.forEach((option) => cy.contains('.ant-dropdown-menu-item', option).click())
+    cy.contains('button', 'OK').click()
+  })
+})
 
 Cypress.Commands.add('toast', (text: string | RegExp) => {
   cy.get('.ant-message').contains(text).should('be.visible')

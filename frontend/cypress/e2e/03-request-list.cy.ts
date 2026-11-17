@@ -18,16 +18,37 @@ describe('Request list screen', () => {
     cy.get('.ant-table').should('not.contain', 'Monitores para o time de suporte')
   })
 
-  it('status filter goes to the URL and survives a reload (shareable link)', () => {
+  it('status column filter (antd) goes to the URL and survives a reload (shareable link)', () => {
     cy.visit('/requests')
-    cy.antSelectByPlaceholder('Status', 'Em aprovação')
+    cy.tableFilter('Status', 'Em aprovação')
     cy.location('search').should('contain', 'status=PENDING_APPROVAL')
     rows()
       .should('have.length', 4)
       .each((row) => cy.wrap(row).should('contain', 'Em aprovação'))
     cy.reload()
     rows().should('have.length', 4)
-    cy.get('.ant-select-selection-item').should('contain', 'Em aprovação')
+    cy.contains('.ant-table-thead th', 'Status').find('.ant-table-filter-trigger').should('have.class', 'active')
+  })
+
+  it('category and cost center column filters combine on the server', () => {
+    cy.visit('/requests')
+    cy.tableFilter('Categoria', 'Software')
+    cy.location('search').should('contain', 'category=SOFTWARE')
+    rows().should('have.length', 2)
+    cy.tableFilter('Centro', 'CC-ADM-02')
+    cy.location('search').should('contain', 'category=SOFTWARE').and('contain', 'costCenterId=')
+    rows().should('have.length', 1).first().should('contain', 'Plataforma e-sign')
+  })
+
+  it('total column filter: requests from R$ 10.000', () => {
+    cy.visit('/requests')
+    cy.openColumnFilter('Total').within(() => {
+      cy.get('input[placeholder="Valor mín. (R$)"]').type('10000')
+      cy.contains('button', 'Filtrar').click()
+    })
+    cy.location('search').should('contain', 'minAmount=10000')
+    rows().should('have.length', 4)
+    cy.contains('.ant-table-row', 'Kit periféricos estoque').should('not.exist')
   })
 
   it('opens directly from a shared URL with filters applied', () => {
@@ -37,9 +58,9 @@ describe('Request list screen', () => {
     cy.contains('.ant-table-row', 'Plataforma e-sign')
   })
 
-  it('searches by title', () => {
+  it('searches by title in the column filter', () => {
     cy.visit('/requests')
-    cy.get('input[placeholder="Buscar no título"]').type('notebook{enter}')
+    cy.openColumnFilter('Título').within(() => cy.get('input[placeholder="Buscar no título"]').type('notebook{enter}'))
     cy.location('search').should('contain', 'q=notebook')
     rows().should('have.length', 1).first().should('contain', 'Notebooks para o time de TI')
   })
