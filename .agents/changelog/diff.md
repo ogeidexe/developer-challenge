@@ -1063,3 +1063,16 @@ One block per agent turn, one row per changed file:
 | `driven-tests/assets/app.js` | created | +65 | -0 |
 | `driven-tests/assets/styles.css` | created | +284 | -0 |
 | `driven-tests/index.html` | created | +43 | -0 |
+
+---
+### Turn 2026-11-17 06:43:22 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: driven-tests: checklist interaction (Good/Missing/Need Work per test, notes, progress summary, per-area counters, state and text filters, localStorage persistence, reset)
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `driven-tests/assets/checklist.js` | created | +225 | -0 |
+| `driven-tests/assets/styles.css` | modified | +147 | -0 |
+| `driven-tests/index.html` | modified | +1 | -0 |

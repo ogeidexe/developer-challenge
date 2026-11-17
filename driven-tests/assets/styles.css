@@ -282,3 +282,150 @@ select {
     max-height: none;
   }
 }
+
+/* ---------- states, notes, summary (checklist.js) ---------- */
+
+.test[data-state='good'] {
+  border-left-color: var(--good);
+}
+
+.test[data-state='missing'] {
+  border-left-color: var(--missing);
+}
+
+.test[data-state='work'] {
+  border-left-color: var(--work);
+}
+
+.test__controls {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+}
+
+.states {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.state {
+  padding: 0.35em 0.85em;
+  font-weight: 600;
+}
+
+.state--good[aria-pressed='true'] {
+  background: var(--good-bg);
+  border-color: var(--good);
+  color: var(--good);
+}
+
+.state--missing[aria-pressed='true'] {
+  background: var(--missing-bg);
+  border-color: var(--missing);
+  color: var(--missing);
+}
+
+.state--work[aria-pressed='true'] {
+  background: var(--work-bg);
+  border-color: var(--work);
+  color: var(--work);
+}
+
+.state--clear {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.note {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+}
+
+.progress {
+  display: flex;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--pending-bg);
+  border: 1px solid var(--border);
+}
+
+.progress__bar {
+  height: 100%;
+  transition: width 0.2s ease;
+}
+
+.progress__bar--good {
+  background: var(--good);
+}
+
+.progress__bar--work {
+  background: var(--work);
+}
+
+.progress__bar--missing {
+  background: var(--missing);
+}
+
+.summary__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.6rem;
+}
+
+.summary__counts {
+  margin: 0;
+}
+
+.filters {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filters select {
+  width: auto;
+}
+
+.filters input {
+  width: 260px;
+  max-width: 100%;
+}
+
+.tag {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 0.05em 0.6em;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.tag--good {
+  background: var(--good-bg);
+  color: var(--good);
+}
+
+.tag--missing {
+  background: var(--missing-bg);
+  color: var(--missing);
+}
+
+.tag--work {
+  background: var(--work-bg);
+  color: var(--work);
+}
+
+.tag--pending {
+  background: var(--pending-bg);
+  color: var(--pending);
+}
+
+.sidebar a[data-complete='true'] .count {
+  color: var(--good);
+  font-weight: 600;
+}
