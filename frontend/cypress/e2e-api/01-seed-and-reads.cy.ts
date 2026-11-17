@@ -8,11 +8,19 @@ const rows = () => cy.get('.ant-table-tbody .ant-table-row')
 describe('Real API — session, dashboard, list and inbox on the seed', () => {
   it('rejects wrong credentials with the backend message and stays on /login', () => {
     cy.visit('/login')
-    cy.get('#login_email').type(USERS.solicTi)
-    cy.get('#login_password').type('senhaErrada1')
+    cy.get('#login_email').clear().type(USERS.solicTi)
+    cy.get('#login_password').clear().type('senhaErrada1')
     cy.contains('button', /^Entrar$/).click()
     cy.get('.ant-alert-error').should('be.visible')
     cy.location('pathname').should('eq', '/login')
+  })
+
+  it('demo stack: "Entrar" opens pre-filled with the main seed user and signs in as is', () => {
+    cy.visit('/login')
+    cy.get('#login_email').should('have.value', USERS.admin1)
+    cy.get('#login_password').should('not.have.value', '')
+    cy.contains('button', /^Entrar$/).click()
+    cy.location('pathname').should('eq', '/')
   })
 
   it('sign-up form lists the cost centers from the backend', () => {
@@ -30,8 +38,8 @@ describe('Real API — session, dashboard, list and inbox on the seed', () => {
   it('sends an anonymous visitor to /login and back to the original route with its filter', () => {
     cy.visit('/requests?status=APPROVED')
     cy.location('pathname').should('eq', '/login')
-    cy.get('#login_email').type(USERS.admin1)
-    cy.get('#login_password').type('Kingspan@123', { log: false })
+    cy.get('#login_email').clear().type(USERS.admin1)
+    cy.get('#login_password').clear().type('Kingspan@123', { log: false })
     cy.contains('button', /^Entrar$/).click()
     cy.location('pathname').should('eq', '/requests')
     cy.location('search').should('eq', '?status=APPROVED')

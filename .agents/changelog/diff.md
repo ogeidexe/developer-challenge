@@ -1190,3 +1190,14 @@ One block per agent turn, one row per changed file:
 | `SOLUTION.md` | modified | +3 | -2 |
 | `docker-compose.yml` | modified | +3 | -2 |
 | `docs/security/README.md` | modified | +2 | -1 |
+
+---
+### Turn 2026-11-17 13:19:55 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: Real-API Cypress: clear pre-filled login fields before typing; new test for the pre-filled demo login
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `frontend/cypress/e2e-api/01-seed-and-reads.cy.ts` | modified | +12 | -4 |
