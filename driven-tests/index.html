@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Roteiro de Testes — Desafio Pleno</title>
+    <meta name="description" content="Checklist para conduzir, um a um, os testes do desafio pleno e gerar o relatório final." />
+    <link rel="stylesheet" href="assets/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1>Roteiro de testes — desafio pleno</h1>
+        <p class="muted">Solicitações de compra · conduza cada teste e marque o resultado</p>
+      </div>
+      <div class="topbar__actions" id="actions"></div>
+    </header>
+
+    <section class="session" aria-label="Dados da sessão de teste">
+      <label>Avaliador <input id="meta-tester" type="text" autocomplete="name" placeholder="Seu nome" /></label>
+      <label>Fork / commit avaliado <input id="meta-target" type="text" placeholder="usuario/developer-challenge @ abc1234" /></label>
+      <label>Data <input id="meta-date" type="date" /></label>
+    </section>
+
+    <section class="summary" id="summary" aria-live="polite"></section>
+
+    <div class="layout">
+      <nav class="sidebar" id="sidebar" aria-label="Áreas"></nav>
+      <main id="plan" class="plan"></main>
+    </div>
+
+    <section id="report" class="report" hidden></section>
+
+    <footer class="footer muted">
+      Ambiente: <code>docker compose up --build</code> · App <code>http://localhost:8080</code> · API
+      <code>http://localhost:8080/api</code> · senha do seed <code>Kingspan@123</code>
+    </footer>
+
+    <script src="assets/plan-functional.js"></script>
+    <script src="assets/plan-delivery.js"></script>
+    <script src="assets/app.js"></script>
+  </body>
+</html>
