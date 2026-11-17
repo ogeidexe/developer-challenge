@@ -1,4 +1,5 @@
 // ApiClient — attaches auth + X-Request-Id, unwraps problem+json (INTEGRATION-CONTRACTS §1/§7).
+import { uuid } from '../uuid'
 import { USE_MOCK_BACKEND as USE_MOCK } from '../config'
 import { notifyAuthExpired, problemFrom } from './errors'
 import type {
@@ -57,7 +58,7 @@ export function authHeaders(): Record<string, string> {
 }
 
 async function request<T>(method: string, path: string, opts: ReqOptions = {}): Promise<T> {
-  const requestId = crypto.randomUUID()
+  const requestId = uuid()
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'X-Request-Id': requestId,

@@ -1328,3 +1328,18 @@ One block per agent turn, one row per changed file:
 | File | Change | Additions | Removals |
 |---|---|---|---|
 | `.github/workflows/ci.yml` | modified | +6 | -0 |
+
+---
+### Turn 2026-11-17 14:58:02 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: c99dd3c4-4ace-51b9-af8d-8c02e07a6ced
+- **Prompt**: but nothing got requested to the backend? chech this also add to cypress
+- **Summary**: Fix 'Falha inesperada' with no request on plain-HTTP deployments: crypto.randomUUID is secure-context only; shared uuid() with getRandomValues fallback used by the API client, the idempotency key and the fake backend
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `frontend/src/features/requests/RequestFormPage.tsx` | modified | +2 | -1 |
+| `frontend/src/shared/api/client.ts` | modified | +2 | -1 |
+| `frontend/src/shared/api/mock/backend.ts` | modified | +5 | -4 |
+| `frontend/src/shared/api/mock/domain.ts` | modified | +2 | -3 |
+| `frontend/src/shared/uuid.ts` | created | +14 | -0 |

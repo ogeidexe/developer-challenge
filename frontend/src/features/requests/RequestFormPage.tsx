@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { uuid } from '../../shared/uuid'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -57,7 +58,7 @@ export function RequestFormPage() {
   const { message } = App.useApp()
   const { user } = useAuth()
   const [form] = Form.useForm<FormValues>()
-  const idemKey = useRef(crypto.randomUUID()) // one key per form session; retries reuse it (README §3.2)
+  const idemKey = useRef(uuid()) // one key per form session; retries reuse it (README §3.2)
   const [banner, setBanner] = useState<string | null>(null)
 
   const { data: centers } = useQuery({ queryKey: ['centers'], queryFn: api.listCostCenters })

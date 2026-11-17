@@ -1,4 +1,5 @@
 // Fake backend implementing docs/api/openapi.yaml semantics in-memory (state machine, chains,
+import { uuid } from '../../uuid'
 // segregation, budget, versions, idempotency, visibility, 404/403/409/422 ordering per the blueprint).
 import type {
   AllowedAction,
@@ -800,7 +801,7 @@ function handle(request: MockRequest): MockResponse {
       if (db.users.some((u) => u.email.toLowerCase() === body.email.toLowerCase()))
         fail(409, 'EMAIL_ALREADY_REGISTERED', 'E-mail já cadastrado.')
       const u: UserRec = {
-        id: crypto.randomUUID(),
+        id: uuid(),
         email: body.email,
         password: body.password,
         name: body.name.trim(),
@@ -855,7 +856,7 @@ function handle(request: MockRequest): MockResponse {
       if (db.users.some((x) => x.email.toLowerCase() === v.email!.toLowerCase()))
         fail(409, 'EMAIL_ALREADY_REGISTERED', 'E-mail já cadastrado.')
       const nu: UserRec = {
-        id: crypto.randomUUID(),
+        id: uuid(),
         email: v.email!,
         password: v.password!,
         name: v.name!.trim(),
@@ -906,7 +907,7 @@ function handle(request: MockRequest): MockResponse {
       if (errors.length) fail(400, 'VALIDATION_FAILED', 'Um ou mais campos são inválidos.', { errors })
       if (db.costCenters.some((c) => c.code.toLowerCase() === body.code.toLowerCase()))
         fail(409, 'CODE_ALREADY_USED', `Código '${body.code}' já utilizado.`)
-      const cc = { id: crypto.randomUUID(), code: body.code.trim(), name: body.name.trim(), active: true }
+      const cc = { id: uuid(), code: body.code.trim(), name: body.name.trim(), active: true }
       db.costCenters.push(cc)
       return { status: 201, json: cc }
     }
@@ -982,7 +983,7 @@ function handle(request: MockRequest): MockResponse {
           errors: [{ field: 'costCenterId', message: 'Informe o centro de custo', code: 'REQUIRED' }],
         })
       const r: RequestRec = {
-        id: crypto.randomUUID(),
+        id: uuid(),
         requestNumber: 'REQ-' + String(++db.seqRequestNumber).padStart(6, '0'),
         ownerId: u.id,
         costCenterId: ccId,

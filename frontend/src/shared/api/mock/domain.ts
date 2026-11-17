@@ -1,9 +1,8 @@
 // Domain helpers for the fake backend — mirrors backend/src/domain (ADR-005, BR-004/BR-005, BR-007).
 import type { Category, StepLevel } from '../types'
 
-export function uuid(): string {
-  return crypto.randomUUID()
-}
+// works on plain HTTP too (crypto.randomUUID is secure-context only) — see shared/uuid.ts
+export { uuid } from '../../uuid'
 
 // ---- money: integer cents in, decimal string out (DATA-005) ----
 export function moneyToCents(s: string | number): number {
