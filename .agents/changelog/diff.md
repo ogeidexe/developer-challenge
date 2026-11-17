@@ -1317,3 +1317,14 @@ One block per agent turn, one row per changed file:
 |---|---|---|---|
 | `frontend/Dockerfile` | modified | +5 | -2 |
 | `frontend/nginx/default.conf.template` | modified | +9 | -1 |
+
+---
+### Turn 2026-11-17 14:38:23 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: CI regression check: the frontend container must become healthy alone, with no backend running
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `.github/workflows/ci.yml` | modified | +6 | -0 |

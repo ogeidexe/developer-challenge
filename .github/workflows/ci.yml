@@ -171,6 +171,12 @@ jobs:
       GATEWAY_LOGIN_RATE: 1200r/m
     steps:
       - uses: actions/checkout@v5
+      # regression: the SPA container must start and be healthy with NO backend running (it resolves the
+      # backend per request); it used to abort with "host not found in upstream" when it started first
+      - name: frontend starts alone (no backend)
+        run: |
+          docker compose up --build --detach --wait --wait-timeout 180 --no-deps frontend
+          docker compose ps frontend
       - name: docker compose up --build
         # --wait: every service healthy, including the backend's readiness (HTTP 200 once the demo seed is done)
         run: docker compose up --build --detach --wait --wait-timeout 300
