@@ -1294,3 +1294,14 @@ One block per agent turn, one row per changed file:
 |---|---|---|---|
 | `driven-tests/assets/plan-delivery.js` | modified | +16 | -2 |
 | `driven-tests/assets/plan-functional.js` | modified | +11 | -6 |
+
+---
+### Turn 2026-11-17 13:36:43 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: c99dd3c4-4ace-51b9-af8d-8c02e07a6ced
+- **Prompt**: <task-noti***> <task-id>bjrhn4knf</task-id> <tool-use-id>toolu_01SjPuKocFQmPKvg5r1G5fDd</tool-use-id> <output-file>/tmp/claude-0/-home-user-developer-challenge/c99dd3c4-4ace-51b9-af8d-8c02e07a6ced/tasks/bjrhn4knf.output</output-file> <status>completed</status> <summary>Background command "sleep 150; echo done" completed (exit code 0)</summary> </task-noti***>
+- **Summary**: Cypress: unit-price test asserts the InputNumber clamps a typed zero to 0,01 (validator stays as backstop)
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `frontend/cypress/e2e/04-request-form.cy.ts` | modified | +3 | -2 |

@@ -15,12 +15,13 @@ describe('Request form screen (create / edit)', () => {
     cy.location('pathname').should('eq', '/requests/new')
   })
 
-  it('refuses a zero unit price and a too-short title (antd rules)', () => {
+  it('refuses a too-short title and never keeps a zero unit price (antd rules)', () => {
     cy.visit('/requests/new')
     cy.get('#request_title').type('AB').blur()
     cy.contains('.ant-form-item-explain-error', 'Entre 3 e 120 caracteres')
+    // the price InputNumber (min 0,01) clamps a typed zero; the moneyRules validator is the backstop for pasted values
     cy.get('#request_items_0_unitPrice').type('0').blur()
-    cy.contains('.ant-form-item-explain-error', 'Deve ser maior que zero')
+    cy.get('#request_items_0_unitPrice').should('have.value', '0,01')
   })
 
   it("defaults the cost center to the requester's own", () => {
