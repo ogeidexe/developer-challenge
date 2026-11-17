@@ -35,7 +35,12 @@ Option 2: a `gateway` service (`nginxinc/nginx-unprivileged`, non-root) is the o
   configured: local demo).
 - Local development without Docker is unchanged (`npm run dev:api` proxies to `localhost:3000`).
 - The frontend image keeps its own `/api` proxy (`BACKEND_URL`) so it still works when run alone.
+- Because the compose frontend no longer waits for the backend, the frontend Nginx resolves `BACKEND_URL` per
+  request (`resolver ${NGINX_LOCAL_RESOLVERS}` + `proxy_pass $backend_upstream`, with
+  `NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1` in the image). A literal upstream host made Nginx fail at startup with
+  `host not found in upstream "backend"`, which left the container unhealthy and blocked the gateway.
 
 ## Verification
 CI compose job: smoke test only through the gateway (health with db and Redis `UP`, security headers, Swagger,
-login, logout, backend not reachable on the host), then the real-API Cypress suite against `http://localhost:8080`.
+login, logout, backend not reachable on the host), then the real-API Cypress suite against `http://localhost:8080`. Before the full stack, the job starts the
+frontend alone (`--no-deps frontend`) and requires it to become healthy.

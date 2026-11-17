@@ -188,7 +188,9 @@ não vem na requisição e é devolvido na resposta e gravado em cada evento do 
 - **Atrás do gateway, o limite de login por cliente do back-end enxerga o IP do gateway**, porque o back-end
   ignora `X-Forwarded-For` de propósito (falsificável). O limite por IP fica no gateway (`limit_req`).
 - **Sem TLS no gateway** (demonstração local) e **sem refresh token**: o logout encerra a sessão atual, mas
-  não há "sair de todas as sessões" de um usuário.
+  não há "sair de todas as sessões" de um usuário. A SPA funciona em HTTP puro num host público (sem
+  `crypto.randomUUID`, ver RF-13 RN-13.14), mas em produção o gateway deve terminar TLS: em HTTP o token e as
+  senhas trafegam em claro.
 
 ## 6. O que eu faria com mais tempo
 

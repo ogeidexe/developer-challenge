@@ -1371,3 +1371,16 @@ One block per agent turn, one row per changed file:
 | `docs/RFs/RF-13-interface-web.md` | modified | +8 | -0 |
 | `docs/RFs/RNF-06-testes.md` | modified | +16 | -5 |
 | `docs/RFs/RNF-07-execucao-e-ci.md` | modified | +7 | -0 |
+
+---
+### Turn 2026-11-17 15:14:19 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: Document the frontend per-request backend resolution in ADR-016, the plain-HTTP note in SOLUTION.md and the Cypress suite contents in frontend/README.md
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `SOLUTION.md` | modified | +3 | -1 |
+| `docs/adr/ADR-016-nginx-gateway.md` | modified | +6 | -1 |
+| `frontend/README.md` | modified | +9 | -4 |

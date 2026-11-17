@@ -80,7 +80,8 @@ npm run test:e2e:api                                                         # e
 
 Ela cobre sessão e `returnUrl`, números do dashboard, filtros da listagem, caixa de aprovação, `404` de
 visibilidade, o fluxo de 3 etapas pelo formulário, cadeia `SOFTWARE`, segregação de funções, rejeição, `409`,
-`BUDGET_EXCEEDED` e reenvio como v2. O CI roda as duas suítes a cada push.
+`BUDGET_EXCEEDED` e reenvio como v2, o "Entrar" pré-preenchido da demonstração, os centros de custo do cadastro
+e o uso em **HTTP sem TLS** (18 testes). O CI roda as duas suítes a cada push.
 
 ### Suíte com o backend simulado
 
@@ -91,21 +92,25 @@ npm run dev:e2e    # alternativa interativa: em um terminal…
 npm run cy:open    # …e o runner do Cypress em outro
 ```
 
-Uma spec por tela, em `cypress/e2e/` (46 testes):
+Uma spec por tela, em `cypress/e2e/` (67 testes):
 
 | Spec | Tela | O que cobre |
 |---|---|---|
-| `01-login` | Login | login, credenciais inválidas, validação, cadastro público (sempre Solicitante), `returnUrl`, sessão expirada (401), logout |
+| `01-login` | Login | login, credenciais inválidas, validação, cadastro público (sempre Solicitante), nome completo, confirmação e medidor de força da senha, centros de custo do cadastro, logo, `returnUrl`, sessão expirada (401), logout, **site em HTTP sem TLS** (sem `crypto.randomUUID`) |
 | `02-dashboard` | Dashboard | totais por status no escopo de cada papel (rascunhos só do dono), orçamento do mês |
 | `03-request-list` | Listagem | filtros nos cabeçalhos da tabela antd (status, categoria, centro, título, total), ordenação, tudo refletido na URL, reload preserva o estado, estado vazio, rascunho alheio nunca listado |
-| `04-request-form` | Formulário | validação, itens dinâmicos com total ao vivo, criação em Rascunho, edição |
+| `04-request-form` | Formulário | validação antd (título curto, valor unitário zero vira `0,01`), itens dinâmicos com total ao vivo, criação em Rascunho, edição |
 | `05-request-detail` | Detalhe | fluxo do vídeo (N1 → N2 → ADMIN → orçamento consumido), cadeia por valor e categoria, `allowedActions`, rejeição com comentário ≥ 10, devolução → edição → v2 com v1 imutável, `BUDGET_EXCEEDED`, **409**, cancelamento |
 | `06-inbox` | Caixa de aprovação | escopo por nível/centro, segregação de funções, 403 para Solicitante |
 | `07-admin` | Administração | acesso só ADMIN, usuários, centros de custo, orçamento abaixo do consumido (422) |
 | `08-navigation` | Navegação | menu por papel, 404 de rota e de recurso fora da visibilidade (ADR-012), persistência e reinício dos dados |
+| `09-security` | Segurança | `returnUrl` hostil (outro domínio, `//`, `javascript:`…) ignorado; `returnUrl` interno preservado com a query string |
 
 Notas:
 - Cada teste começa do seed: o Cypress limpa `localStorage` (banco simulado) e `sessionStorage` (token) entre testes.
+- **HTTP sem TLS:** num site `http://` que não é `localhost` o navegador não oferece `crypto.randomUUID`. Os UUIDs
+  (`X-Request-Id`, `Idempotency-Key`) vêm de `src/shared/uuid.ts`, com fallback para `crypto.getRandomValues`. As duas
+  suítes reproduzem esse cenário com `cy.visitWithoutRandomUUID(url)`.
 - Para provocar um **409**, a spec age como um segundo usuário pelo gancho `window.__mockBackend`, exposto só dentro do Cypress.
 - `cypress/e2e-runner.mjs` sobe o Vite e roda o Cypress pelas APIs JS (sem matar processos — ferramentas que usam `wmic.exe` quebram no Windows 11 recente). Ele e `cypress/run.mjs` removem `ELECTRON_RUN_AS_NODE` (exportado pelos terminais do VS Code), que impede o Cypress de abrir.
 - Se `npm install` não baixar o binário do Cypress (política de install scripts), rode `npx cypress install`.
