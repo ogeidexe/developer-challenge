@@ -1101,3 +1101,14 @@ One block per agent turn, one row per changed file:
 |---|---|---|---|
 | `.github/workflows/ci.yml` | modified | +11 | -0 |
 | `driven-tests/check-plan.mjs` | created | +53 | -0 |
+
+---
+### Turn 2026-11-17 06:46:19 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: SOLUTION.md: point to the driven-tests manual checklist in the repository map
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `SOLUTION.md` | modified | +1 | -0 |

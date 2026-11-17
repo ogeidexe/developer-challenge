@@ -208,6 +208,7 @@ não vem na requisição e é devolvido na resposta e gravado em cada evento do 
 | `frontend/` | SPA React ([README](frontend/README.md)) |
 | `docs/adr/` | decisões de arquitetura |
 | `docs/RFs/` | requisitos funcionais e não funcionais detalhados, com critérios de aceite e os testes que cobrem cada um ([índice](docs/RFs/README.md)) |
+| `driven-tests/` | roteiro de testes manuais (abra `driven-tests/index.html`): checklist com os 81 testes do desafio, estados Good / Missing / Need Work, notas e relatório final (PDF, Markdown, JSON) |
 | `docs/api/openapi.yaml` | contrato da API (também servido em `/docs`) |
 | `docs/` | requisitos, modelagem do banco, testes, segurança ([índice](docs/README.md)) |
 | `docker-compose.yml` | gateway Nginx (config inline) + front-end + back-end + PostgreSQL + Redis |
