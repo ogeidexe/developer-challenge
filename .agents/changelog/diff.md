@@ -1343,3 +1343,16 @@ One block per agent turn, one row per changed file:
 | `frontend/src/shared/api/mock/backend.ts` | modified | +5 | -4 |
 | `frontend/src/shared/api/mock/domain.ts` | modified | +2 | -3 |
 | `frontend/src/shared/uuid.ts` | created | +14 | -0 |
+
+---
+### Turn 2026-11-17 14:58:05 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: Cypress (fake backend and real API): plain-HTTP scenario without crypto.randomUUID - sign-in, sign-up cost centers and request creation
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `frontend/cypress/e2e-api/01-seed-and-reads.cy.ts` | modified | +26 | -0 |
+| `frontend/cypress/e2e/01-login.cy.ts` | modified | +26 | -0 |
+| `frontend/cypress/support/commands.ts` | modified | +15 | -0 |

@@ -49,6 +49,11 @@ declare global {
       openRequest(title: string): Chainable<void>
       /** Asserts an antd message toast. */
       toast(text: string | RegExp): Chainable<void>
+      /**
+       * Visits like a site served over plain http:// (not a secure context): crypto.randomUUID does not exist there.
+       * Starts signed out. Navigate inside the SPA afterwards (a new cy.visit reloads the page and restores it).
+       */
+      visitWithoutRandomUUID(url: string): Chainable<void>
       /** Opens the antd filter of a table column (by header text). */
       openColumnFilter(column: string): Chainable<JQuery<HTMLElement>>
       /** Picks options in an antd column filter (`filters`) and confirms with OK. */
@@ -86,6 +91,16 @@ Cypress.Commands.add('confirmPopover', (okText: string | RegExp) => {
 })
 
 Cypress.Commands.add('modal', () => cy.get('.ant-modal-content').filter(':visible').last())
+
+Cypress.Commands.add('visitWithoutRandomUUID', (url: string) => {
+  cy.visit(url, {
+    onBeforeLoad: (win) => {
+      win.sessionStorage.clear()
+      Object.defineProperty(win.crypto, 'randomUUID', { value: undefined, configurable: true })
+    },
+  })
+  cy.window().its('crypto.randomUUID').should('be.undefined')
+})
 
 Cypress.Commands.add('openColumnFilter', (column: string) => {
   // antd duplicates headers in hidden measure cells when the table scrolls; .ant-table-thead holds the visible ones
