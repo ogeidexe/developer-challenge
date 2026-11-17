@@ -1028,3 +1028,14 @@ One block per agent turn, one row per changed file:
 | File | Change | Additions | Removals |
 |---|---|---|---|
 | `(no new changes — clarification only; see turns 17:57:32 and 17:59:45 for the 26 files)` | none | +0 | -0 |
+
+---
+### Turn 2026-11-17 06:40:00 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: c99dd3c4-4ace-51b9-af8d-8c02e07a6ced
+- **Prompt**: create an test plan a site that drives the tests of the chalenge one by to be made by a human u can create a folder calleed dirven-tests to do so, this will be in format of a site contaning a chech list of all tests for "pleno" chalange dont forget folow project and activate/use the hoooks to not violate any chalange rule, also, instead of making a great commit breaki down to pieces of implementation. no need a README about how to drive the test but will be goo in the final of the tests be capab
+- **Summary**: driven-tests: functional test catalog (README §2-§4, 41 manual tests in 11 areas with steps, expected result and RF references)
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `driven-tests/assets/plan-functional.js` | created | +396 | -0 |
