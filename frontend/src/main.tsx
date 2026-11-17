@@ -12,6 +12,10 @@ import './index.css'
 
 dayjs.locale('pt-br')
 
+// E2E only: keep antd toasts on screen longer than the default 3 s, so a slow CI runner does not miss them
+// (the "request detail" spec asserts several toasts in a row). Users get the default duration.
+const toastConfig = typeof window !== 'undefined' && 'Cypress' in window ? { duration: 10 } : undefined
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -43,7 +47,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ConfigProvider locale={ptBR} theme={theme}>
       {/* <AntApp> provides context-aware message/modal/notification via App.useApp() */}
-      <AntApp>
+      <AntApp message={toastConfig}>
         <QueryClientProvider client={queryClient}>
           <BrowserRouter>
             <AuthProvider>

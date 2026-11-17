@@ -1201,3 +1201,14 @@ One block per agent turn, one row per changed file:
 | File | Change | Additions | Removals |
 |---|---|---|---|
 | `frontend/cypress/e2e-api/01-seed-and-reads.cy.ts` | modified | +12 | -4 |
+
+---
+### Turn 2026-11-17 13:20:59 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: Fix flaky E2E: keep antd toasts 10 s when running under Cypress (default 3 s for users)
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `frontend/src/main.tsx` | modified | +5 | -1 |
