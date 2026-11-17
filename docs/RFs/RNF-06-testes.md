@@ -22,17 +22,17 @@ menos 3 testes de front-end. Cada lado roda com **um único comando**.
 | Integração: idempotência do `POST /requests` | `T/WorkflowIntegrationTest#idempotentCreateReplaysTheStoredResponse` | ✅ |
 | Concorrência: mesma etapa → exatamente uma sucede, outra `409` | `T/ConcurrencyIntegrationTest#twoApprovalsOfTheSameStepExactlyOneWinsTheOtherGets409` | ✅ |
 | Concorrência: solicitações diferentes, mesmo saldo → nunca negativo | `T/ConcurrencyIntegrationTest#finalApprovalsOfDifferentRequestsNeverOverdrawTheBudget` | ✅ |
-| Front-end: ≥ 3 testes significativos | `E2E/*.cy.ts` (9 specs, 54 testes, backend simulado) e `frontend/cypress/e2e-api/` (API real) | ✅ |
+| Front-end: ≥ 3 testes significativos | `E2E/*.cy.ts` (9 specs, 67 testes, backend simulado) e `frontend/cypress/e2e-api/` (API real) | ✅ |
 | Um comando por lado | `./mvnw verify` · `npm run test:e2e` | ✅ |
 
 ## Números (último CI verde)
 
 | Suíte | Testes |
 |---|---|
-| Back-end (unitários + integração + concorrência + segurança + contrato HTTP + seed) | 206 |
-| Front-end E2E com o backend simulado (`npm run test:e2e`) | 54 |
-| Front-end E2E contra a API real (`npm run test:e2e:api`, stack do compose) | 14 |
-| **Total** | **274** |
+| Back-end (unitários + integração + concorrência + segurança + contrato HTTP + seed) | 209 |
+| Front-end E2E com o backend simulado (`npm run test:e2e`) | 67 |
+| Front-end E2E contra a API real (`npm run test:e2e:api`, stack do compose) | 18 |
+| **Total** | **294** |
 
 Os números são publicados a cada push pelo CI (job summary e badges, ver `.github/workflows/ci.yml`).
 
@@ -66,6 +66,17 @@ Todos os critérios de aceite dos RF têm teste automatizado. O que ainda falta:
 | `T/RequestRulesIntegrationTest` | RF-03 CA-03.3, RF-04 CA-04.3/04.4/04.6, RF-09 CA-09.5, RF-11 CA-11.1/11.5, RNF-03 CA-R03.3/R03.4 |
 | `T/HttpContractIntegrationTest` (servidor HTTP real) | RF-01 CA-01.6, RF-02 CA-02.3, RF-11 CA-11.3, RNF-01 CA-R01.3/R01.4, RNF-04 CA-R04.1…R04.4 |
 | `T/DemoSeedIntegrationTest` | RNF-08 (todos) |
+
+## Testes adicionados depois das lacunas (sessões, gateway, telas e HTTP puro)
+
+| Teste | Cobre |
+|---|---|
+| `T/HttpContractIntegrationTest#logoutEndsTheSessionImmediately`, `#eachLoginOpensARedisSessionWithTheTokenLifetime` | RF-01 CA-01.8/01.9 (sessão no Redis) |
+| `T/HttpContractIntegrationTest#signUpRequiresAFullNameWithLettersOnly` | RF-01 CA-01.10 (nome completo) |
+| `E2E/01-login.cy.ts` (nome, confirmação, medidor de força, centros de custo, logo, regras do "Entrar") | RF-01 CA-01.10…01.12, RF-13 RN-13.12/13.13 |
+| `E2E/04-request-form.cy.ts` ("…never keeps a zero unit price (antd rules)") | RF-13 RN-13.12 (valor unitário > 0) |
+| `E2E/01-login.cy.ts` e `E2E-API/01-seed-and-reads.cy.ts`, "on a plain-HTTP site (no crypto.randomUUID…)" | RF-13 RN-13.14 / CA-13.8 (site em HTTP sem TLS) |
+| CI, job `compose`, passo "frontend starts alone (no backend)" | RNF-07 RN-R07.9 / CA-R07.5 (o contêiner do front sobe sem o back-end) |
 
 ## Implementação
 

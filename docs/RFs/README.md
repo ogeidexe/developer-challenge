@@ -56,7 +56,7 @@ Abreviações de caminho usadas nos arquivos:
 | [RNF-03](RNF-03-idempotencia.md) | Idempotência | §3.2 | ✅ | integração · ⚠ corrida com a mesma chave |
 | [RNF-04](RNF-04-logs-e-request-id.md) | Logs estruturados e `X-Request-Id` | §5.1 | ✅ | HTTP real · formato dos logs por inspeção |
 | [RNF-05](RNF-05-configuracao-e-segredos.md) | Configuração e segredos | §5.1, §5.3 | ✅ | unitário + CI (gitleaks, compose) |
-| [RNF-06](RNF-06-testes.md) | Testes automatizados | §5.2 | ✅ | 274 testes (206 back-end, 54 E2E simulado, 14 E2E API real) |
+| [RNF-06](RNF-06-testes.md) | Testes automatizados | §5.2 | ✅ | 294 testes (209 back-end, 67 E2E simulado, 18 E2E API real) |
 | [RNF-07](RNF-07-execucao-e-ci.md) | Execução e CI | §5.3 | ✅ | CI: build, lint, testes, compose |
 | [RNF-08](RNF-08-seed.md) | Seed obrigatório | §5.4 | ✅ | integração + smoke test do CI |
 | [RNF-09](RNF-09-documentacao.md) | Documentação | §5.5, §5.6 | ✅ · ⏳ `AI_USAGE.md` e vídeo | — |

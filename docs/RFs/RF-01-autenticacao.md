@@ -55,6 +55,7 @@ públicas, exige o token no cabeçalho `Authorization: Bearer <token>`. O cadast
 | CA-01.10 | um cadastro com nome `Jo`, `José`, `João-Silva Souza` ou `Silva, João` | é enviado | `400` no campo `name`; `José da Silva` é aceito |
 | CA-01.11 | a tela "Criar conta" | a senha é digitada e confirmada diferente | o medidor mostra a força e o formulário recusa a confirmação |
 | CA-01.12 | a tela "Criar conta" no compose | o campo de centro de custo é aberto | lista CC-TI-01 e CC-ADM-02 |
+| CA-01.13 | o app servido em `http://` sem TLS, num host que não é `localhost` | o usuário entra ou abre "Criar conta" | o login chega ao servidor e funciona, e os centros de custo são listados (ver RF-13 RN-13.14) |
 
 ## Códigos HTTP
 
@@ -91,3 +92,4 @@ públicas, exige o token no cabeçalho `Authorization: Bearer <token>`. O cadast
 | CA-01.10 | `T/HttpContractIntegrationTest#signUpRequiresAFullNameWithLettersOnly`; `E2E/01-login.cy.ts` ("requires a full name…") |
 | CA-01.11 | `E2E/01-login.cy.ts` ("shows a password strength meter", "requires the password confirmation to match") |
 | CA-01.12 | `E2E/01-login.cy.ts`; API real em `frontend/cypress/e2e-api/01-seed-and-reads.cy.ts` ("sign-up form lists the cost centers") |
+| CA-01.13 | `E2E/01-login.cy.ts` e `frontend/cypress/e2e-api/01-seed-and-reads.cy.ts`, bloco "on a plain-HTTP site (no crypto.randomUUID…)" |

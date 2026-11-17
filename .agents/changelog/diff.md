@@ -1356,3 +1356,18 @@ One block per agent turn, one row per changed file:
 | `frontend/cypress/e2e-api/01-seed-and-reads.cy.ts` | modified | +26 | -0 |
 | `frontend/cypress/e2e/01-login.cy.ts` | modified | +26 | -0 |
 | `frontend/cypress/support/commands.ts` | modified | +15 | -0 |
+
+---
+### Turn 2026-11-17 15:14:06 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: c99dd3c4-4ace-51b9-af8d-8c02e07a6ced
+- **Prompt**: again folowing project rules updated test docs ( and related ones) with what has be made here
+- **Summary**: Update RF-01, RF-13, RNF-06, RNF-07 and the RF index with the plain-HTTP fix, the frontend-alone CI step and the latest CI test counts
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `docs/RFs/README.md` | modified | +1 | -1 |
+| `docs/RFs/RF-01-autenticacao.md` | modified | +2 | -0 |
+| `docs/RFs/RF-13-interface-web.md` | modified | +8 | -0 |
+| `docs/RFs/RNF-06-testes.md` | modified | +16 | -5 |
+| `docs/RFs/RNF-07-execucao-e-ci.md` | modified | +7 | -0 |
