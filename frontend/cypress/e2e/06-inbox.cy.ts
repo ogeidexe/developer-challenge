@@ -45,6 +45,20 @@ describe('Approval inbox screen', () => {
     cy.contains('.ant-table-row', 'Plataforma e-sign').should('contain', 'Nível 2')
   })
 
+  it('sorts by total and filters by cost center (antd table)', () => {
+    cy.login(USERS.admin1)
+    cy.visit('/approvals')
+    rows().should('have.length', 4)
+    cy.contains('.ant-table-thead th', 'Total').click() // ascending
+    rows().first().should('contain', 'Kit periféricos estoque') // R$ 900,00
+    cy.contains('.ant-table-thead th', 'Total').click() // descending
+    rows().first().should('contain', 'Notebooks para o time de TI') // R$ 24.499,50
+    cy.tableFilter('Centro', 'CC-ADM-02')
+    rows()
+      .should('have.length', 2)
+      .each((row) => cy.wrap(row).should('contain', 'CC-ADM-02'))
+  })
+
   it('SOLICITANTE has no inbox: no menu entry and a 403 page on direct access', () => {
     cy.login(USERS.solicTi)
     cy.get('.ant-menu').should('not.contain', 'Caixa de aprovação')

@@ -28,6 +28,7 @@ import { api } from '../../shared/api/client'
 import type { CostCenterDto, Role, UserDto } from '../../shared/api/types'
 import { PageHeader, errText, moneyBRL, roleLabel, serverFieldErrors } from '../../shared/ui'
 import { fullNameRules, moneyRules, passwordRules } from '../../shared/validation'
+import { byText, distinctFilters } from '../../shared/tableSort'
 
 const ROLE_COLOR: Record<Role, string> = { ADMIN: 'volcano', APROVADOR: 'geekblue', SOLICITANTE: 'default' }
 
@@ -109,20 +110,43 @@ function UsersTab() {
         pagination={false}
         scroll={{ x: 720 }}
         columns={[
-          { title: 'Nome', dataIndex: 'name' },
-          { title: 'E-mail', dataIndex: 'email' },
+          { title: 'Nome', dataIndex: 'name', sorter: byText((u) => u.name), defaultSortOrder: 'ascend' },
+          { title: 'E-mail', dataIndex: 'email', sorter: byText((u) => u.email) },
           {
             title: 'Papel',
+            sorter: byText((u) => roleLabel(u.role)),
+            filters: (['SOLICITANTE', 'APROVADOR', 'ADMIN'] as Role[]).map((r) => ({ text: roleLabel(r), value: r })),
+            onFilter: (value, u) => u.role === value,
             render: (_, u) => (
               <Tag color={ROLE_COLOR[u.role]} bordered={false}>
                 {roleLabel(u.role)}
               </Tag>
             ),
           },
-          { title: 'Nível', render: (_, u) => u.approverLevel?.replace('NIVEL_', 'N') ?? '—' },
-          { title: 'Centro de custo', render: (_, u) => code(u.costCenterId) },
+          {
+            title: 'Nível',
+            render: (_, u) => u.approverLevel?.replace('NIVEL_', 'N') ?? '—',
+            sorter: byText((u) => u.approverLevel ?? ''),
+            filters: [
+              { text: 'N1', value: 'NIVEL_1' },
+              { text: 'N2', value: 'NIVEL_2' },
+            ],
+            onFilter: (value, u) => u.approverLevel === value,
+          },
+          {
+            title: 'Centro de custo',
+            render: (_, u) => code(u.costCenterId),
+            sorter: byText((u) => code(u.costCenterId)),
+            filters: distinctFilters(data?.data, (u) => code(u.costCenterId)),
+            onFilter: (value, u) => code(u.costCenterId) === value,
+          },
           {
             title: 'Ativo',
+            filters: [
+              { text: 'Sim', value: true },
+              { text: 'Não', value: false },
+            ],
+            onFilter: (value, u) => u.active === value,
             render: (_, u) => (
               <Tag color={u.active ? 'success' : 'default'} bordered={false}>
                 {u.active ? 'Sim' : 'Não'}
@@ -260,10 +284,15 @@ function CentersTab() {
         dataSource={centers}
         pagination={false}
         columns={[
-          { title: 'Código', dataIndex: 'code' },
-          { title: 'Nome', dataIndex: 'name' },
+          { title: 'Código', dataIndex: 'code', sorter: byText((c) => c.code), defaultSortOrder: 'ascend' },
+          { title: 'Nome', dataIndex: 'name', sorter: byText((c) => c.name) },
           {
             title: 'Ativo',
+            filters: [
+              { text: 'Sim', value: true },
+              { text: 'Não', value: false },
+            ],
+            onFilter: (value, c) => c.active === value,
             render: (_, c) => (
               <Tag color={c.active ? 'success' : 'default'} bordered={false}>
                 {c.active ? 'Sim' : 'Não'}

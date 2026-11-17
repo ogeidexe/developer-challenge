@@ -18,6 +18,14 @@ describe('Dashboard screen', () => {
     cy.contains('Tempo médio de aprovação')
   })
 
+  it('budget table sorts by available amount (antd table)', () => {
+    cy.login(USERS.admin1)
+    cy.contains('.ant-table-thead th', 'Disponível').click() // ascending
+    cy.get('.ant-table-tbody .ant-table-row').first().should('contain', 'CC-TI-01') // R$ 800,00
+    cy.contains('.ant-table-thead th', 'Disponível').click() // descending
+    cy.get('.ant-table-tbody .ant-table-row').first().should('contain', 'CC-ADM-02') // R$ 68.000,00
+  })
+
   it('SOLICITANTE: only own requests and only own cost center budget', () => {
     cy.login(USERS.solicTi)
     stat('Rascunho').should('have.text', '1')

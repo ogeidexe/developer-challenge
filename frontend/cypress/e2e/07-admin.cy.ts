@@ -35,6 +35,15 @@ describe('Administration screen', () => {
         .and('contain', 'CC-TI-01')
     })
 
+    it('filters users by role and sorts by name (antd table)', () => {
+      cy.tableFilter('Papel', 'Aprovador')
+      cy.get('.ant-tabs-tabpane-active .ant-table-row')
+        .should('have.length', 4)
+        .each((row) => cy.wrap(row).should('contain', 'Aprovador'))
+      cy.contains('.ant-tabs-tabpane-active .ant-table-thead th', 'Nome').click() // already ascending → descending
+      cy.get('.ant-tabs-tabpane-active .ant-table-row').first().should('contain', 'Pedro Alves')
+    })
+
     it('validates the user form: password with letters and digits, cost center required for non-admins', () => {
       cy.contains('button', 'Novo usuário').click()
       cy.get('#user_email').type('sem.digito@kingspan.test')

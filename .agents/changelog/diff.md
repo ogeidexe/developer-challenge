@@ -1240,3 +1240,21 @@ One block per agent turn, one row per changed file:
 | `frontend/cypress/e2e/03-request-list.cy.ts` | modified | +26 | -5 |
 | `frontend/cypress/support/commands.ts` | modified | +17 | -0 |
 | `frontend/src/features/requests/RequestListPage.tsx` | modified | +199 | -79 |
+
+---
+### Turn 2026-11-17 13:27:48 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: antd sorters and filters on every other table: inbox (full list, client pagination), dashboard budgets, admin users and cost centers, request items; shared tableSort helper; Cypress tests
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `frontend/cypress/e2e/02-dashboard.cy.ts` | modified | +8 | -0 |
+| `frontend/cypress/e2e/06-inbox.cy.ts` | modified | +14 | -0 |
+| `frontend/cypress/e2e/07-admin.cy.ts` | modified | +9 | -0 |
+| `frontend/src/features/admin/AdminPage.tsx` | modified | +35 | -6 |
+| `frontend/src/features/approvals/InboxPage.tsx` | modified | +51 | -18 |
+| `frontend/src/features/dashboard/DashboardPage.tsx` | modified | +23 | -3 |
+| `frontend/src/features/requests/RequestDetailPage.tsx` | modified | +20 | -5 |
+| `frontend/src/shared/tableSort.ts` | created | +32 | -0 |

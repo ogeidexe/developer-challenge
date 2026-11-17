@@ -4,6 +4,7 @@ import { api } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
 import type { DashboardSummaryDto } from '../../shared/api/types'
 import { PageHeader, STATUSES, STATUS_LABEL, moneyBRL } from '../../shared/ui'
+import { byNumber, byText, distinctFilters } from '../../shared/tableSort'
 
 type BudgetRow = DashboardSummaryDto['budgets'][number]
 
@@ -66,17 +67,36 @@ export function DashboardPage() {
           columns={[
             {
               title: 'Centro de custo',
+              sorter: byText((b) => b.code),
+              filters: distinctFilters(data?.budgets, (b) => b.code),
+              onFilter: (value, b) => b.code === value,
               render: (_, b) => (
                 <>
                   <strong>{b.code}</strong> — {b.name}
                 </>
               ),
             },
-            { title: 'Orçado', align: 'right', render: (_, b) => moneyBRL(b.amount) },
-            { title: 'Consumido', align: 'right', render: (_, b) => moneyBRL(b.consumed) },
-            { title: 'Disponível', align: 'right', render: (_, b) => <strong>{moneyBRL(b.available)}</strong> },
+            {
+              title: 'Orçado',
+              align: 'right',
+              sorter: byNumber((b) => b.amount),
+              render: (_, b) => moneyBRL(b.amount),
+            },
+            {
+              title: 'Consumido',
+              align: 'right',
+              sorter: byNumber((b) => b.consumed),
+              render: (_, b) => moneyBRL(b.consumed),
+            },
+            {
+              title: 'Disponível',
+              align: 'right',
+              sorter: byNumber((b) => b.available),
+              render: (_, b) => <strong>{moneyBRL(b.available)}</strong>,
+            },
             {
               title: 'Uso',
+              sorter: (a, b) => usage(a) - usage(b),
               width: '28%',
               render: (_, b) => {
                 const pct = usage(b)

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { byNumber, byText } from '../../shared/tableSort'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -105,17 +106,31 @@ function ItemsTable({ items }: { items: ItemDto[] }) {
       dataSource={items}
       scroll={{ x: 560 }}
       columns={[
-        { title: '#', dataIndex: 'position', width: 48, render: (p: number) => p + 1 },
-        { title: 'Descrição', dataIndex: 'description' },
-        { title: 'Qtd.', dataIndex: 'quantity', align: 'right', width: 80 },
+        {
+          title: '#',
+          dataIndex: 'position',
+          width: 56,
+          render: (p: number) => p + 1,
+          sorter: byNumber((i) => i.position),
+        },
+        { title: 'Descrição', dataIndex: 'description', sorter: byText((i) => i.description) },
+        { title: 'Qtd.', dataIndex: 'quantity', align: 'right', width: 90, sorter: byNumber((i) => i.quantity) },
         {
           title: 'Preço unit.',
           dataIndex: 'unitPrice',
           align: 'right',
-          width: 130,
+          width: 140,
           render: (v: string) => moneyBRL(v),
+          sorter: byNumber((i) => i.unitPrice),
         },
-        { title: 'Subtotal', dataIndex: 'lineTotal', align: 'right', width: 140, render: (v: string) => moneyBRL(v) },
+        {
+          title: 'Subtotal',
+          dataIndex: 'lineTotal',
+          align: 'right',
+          width: 150,
+          render: (v: string) => moneyBRL(v),
+          sorter: byNumber((i) => i.lineTotal),
+        },
       ]}
     />
   )
