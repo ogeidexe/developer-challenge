@@ -1269,3 +1269,16 @@ One block per agent turn, one row per changed file:
 | File | Change | Additions | Removals |
 |---|---|---|---|
 | `frontend/cypress/e2e/01-login.cy.ts` | modified | +4 | -3 |
+
+---
+### Turn 2026-11-17 13:29:50 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: Docs: RF-01 (name rule, password confirmation and meter, public cost centers, demo pre-fill) and RF-13 (antd tables and forms, logo) with their tests; frontend README logo and list filters
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `docs/RFs/RF-01-autenticacao.md` | modified | +13 | -0 |
+| `docs/RFs/RF-13-interface-web.md` | modified | +10 | -0 |
+| `frontend/README.md` | modified | +6 | -1 |

@@ -57,6 +57,11 @@ um seletor que preenche qualquer usuário do seed.
 5. `CC-TI-01` aparece com orçamento "quase esgotado" (R$ 49.200 de R$ 50.000 — valor real, oriundo de
    uma solicitação APROVADA do seed).
 
+## Logo
+
+`public/logo.svg` é o único arquivo de logo: favicon, cartão de login e barra superior. O arquivo versionado é um
+**placeholder neutro**; substitua-o pelo logo oficial (mesmo nome) e nada mais precisa mudar.
+
 ## Testes end-to-end (Cypress)
 
 Há duas suítes:
@@ -92,7 +97,7 @@ Uma spec por tela, em `cypress/e2e/` (46 testes):
 |---|---|---|
 | `01-login` | Login | login, credenciais inválidas, validação, cadastro público (sempre Solicitante), `returnUrl`, sessão expirada (401), logout |
 | `02-dashboard` | Dashboard | totais por status no escopo de cada papel (rascunhos só do dono), orçamento do mês |
-| `03-request-list` | Listagem | filtros/ordenação/busca refletidos na URL, reload preserva o estado, estado vazio, rascunho alheio nunca listado |
+| `03-request-list` | Listagem | filtros nos cabeçalhos da tabela antd (status, categoria, centro, título, total), ordenação, tudo refletido na URL, reload preserva o estado, estado vazio, rascunho alheio nunca listado |
 | `04-request-form` | Formulário | validação, itens dinâmicos com total ao vivo, criação em Rascunho, edição |
 | `05-request-detail` | Detalhe | fluxo do vídeo (N1 → N2 → ADMIN → orçamento consumido), cadeia por valor e categoria, `allowedActions`, rejeição com comentário ≥ 10, devolução → edição → v2 com v1 imutável, `BUDGET_EXCEEDED`, **409**, cancelamento |
 | `06-inbox` | Caixa de aprovação | escopo por nível/centro, segregação de funções, 403 para Solicitante |

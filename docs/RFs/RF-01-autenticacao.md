@@ -31,6 +31,13 @@ públicas, exige o token no cabeçalho `Authorization: Bearer <token>`. O cadast
   recebe `401` a partir da requisição seguinte. Sem Redis, os tokens são recusados (falha fechada).
 - **RN-01.11** No compose, o gateway Nginx limita `POST /api/auth/login` por IP (`GATEWAY_LOGIN_RATE`, padrão
   `30r/m`, rajada 20) → `429` (ADR-016).
+- **RN-01.12 Nome completo:** nome e sobrenome, só letras (acentos permitidos) e espaços simples, 5–120 caracteres;
+  vírgula, hífen, números e símbolos são recusados (`400` no campo `name`). Vale para o cadastro e para o ADMIN
+  criando ou editando usuários.
+- **RN-01.13 Criar conta (tela):** campo "Confirmar senha" igual à senha e medidor de força (Fraca, Razoável, Boa,
+  Forte); a lista de centros de custo é pública e carregada sem credenciais.
+- **RN-01.14 Demonstração:** no `docker compose`, "Entrar" já vem preenchido com o usuário principal do seed
+  (`admin1`); builds de produção fora do compose não fazem isso (SEC-F04).
 
 ## Critérios de aceite
 
@@ -45,6 +52,9 @@ públicas, exige o token no cabeçalho `Authorization: Bearer <token>`. O cadast
 | CA-01.7 | uma senha com mais de 72 bytes | se cadastra | recebe `400`, não `500` e sem truncar a senha |
 | CA-01.8 | um usuário logado | chama `POST /auth/logout` e depois `GET /auth/me` com o mesmo token | recebe `204` e depois `401 UNAUTHENTICATED`; um novo login funciona |
 | CA-01.9 | dois logins do mesmo usuário | uma das sessões é encerrada | só o token daquela sessão passa a dar `401` |
+| CA-01.10 | um cadastro com nome `Jo`, `José`, `João-Silva Souza` ou `Silva, João` | é enviado | `400` no campo `name`; `José da Silva` é aceito |
+| CA-01.11 | a tela "Criar conta" | a senha é digitada e confirmada diferente | o medidor mostra a força e o formulário recusa a confirmação |
+| CA-01.12 | a tela "Criar conta" no compose | o campo de centro de custo é aberto | lista CC-TI-01 e CC-ADM-02 |
 
 ## Códigos HTTP
 
@@ -78,3 +88,6 @@ públicas, exige o token no cabeçalho `Authorization: Bearer <token>`. O cadast
 | CA-01.7 | `T/SecurityIntegrationTest#passwordsLongerThanBcryptCanHashAreRejectedNotTruncatedOrA500`; `T/application/InputHardeningTest#passwordsAreLimitedTo72BytesNot72Characters` |
 | CA-01.8 | `T/HttpContractIntegrationTest#logoutEndsTheSessionImmediately`; logout pela interface contra a API real em `frontend/cypress/e2e-api/01-seed-and-reads.cy.ts`; smoke test do compose no CI |
 | CA-01.9 | `T/HttpContractIntegrationTest#eachLoginOpensARedisSessionWithTheTokenLifetime` |
+| CA-01.10 | `T/HttpContractIntegrationTest#signUpRequiresAFullNameWithLettersOnly`; `E2E/01-login.cy.ts` ("requires a full name…") |
+| CA-01.11 | `E2E/01-login.cy.ts` ("shows a password strength meter", "requires the password confirmation to match") |
+| CA-01.12 | `E2E/01-login.cy.ts`; API real em `frontend/cypress/e2e-api/01-seed-and-reads.cy.ts` ("sign-up form lists the cost centers") |

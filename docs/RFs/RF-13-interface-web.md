@@ -26,6 +26,13 @@ SPA em React que conduz cada papel pelo fluxo **sem duplicar as regras do back-e
 - **RN-13.9 Mensagens:** `409` → "alguém agiu antes de você", e a tela recarrega; `422` → a mensagem do servidor,
   que explica o motivo; estados de carregando, vazio e erro.
 - **RN-13.10** Telas de administração são diferencial (não obrigatórias) e existem para `ADMIN`.
+- **RN-13.11 Tabelas antd:** filtros e ordenação nos cabeçalhos das colunas. Na listagem de solicitações eles vão
+  para o servidor e para a URL (status, categoria, centro, busca no título, faixa de total, período); nas demais
+  tabelas (caixa, orçamentos do dashboard, administração, itens) são feitos no cliente sobre a lista completa.
+- **RN-13.12 Formulários antd:** todo campo tem regra de validação do antd que espelha o back-end (nome completo,
+  senha, e-mail, datas futuras, valores maiores que zero, centro obrigatório fora do ADMIN); o back-end continua
+  sendo a fonte da verdade e seus `errors[]` são mapeados para os campos.
+- **RN-13.13 Logo:** `frontend/public/logo.svg` é o favicon e aparece na tela de login e na barra superior.
 
 ## Critérios de aceite
 
@@ -58,6 +65,9 @@ compose, `frontend/cypress/e2e-api/`, abreviado `E2E-API/`).
 | CA-13.4…CA-13.6 | `E2E/05-request-detail.cy.ts` |
 | CA-13.7 | `E2E/04-request-form.cy.ts` (validação no cliente) · ⚠ mapeamento de `errors[]` do servidor sem caso dedicado |
 | Navegação e guardas | `E2E/08-navigation.cy.ts`, `E2E/07-admin.cy.ts` |
+| RN-13.11 (tabelas) | `E2E/03-request-list.cy.ts` (filtros de coluna), `E2E/06-inbox.cy.ts`, `E2E/02-dashboard.cy.ts`, `E2E/07-admin.cy.ts` (ordenação e filtros) |
+| RN-13.12 (formulários) | `E2E/01-login.cy.ts`, `E2E/04-request-form.cy.ts`, `E2E/07-admin.cy.ts` |
+| RN-13.13 (logo) | `E2E/01-login.cy.ts` ("shows the company logo…") |
 | Contra a API real | `E2E-API/01-seed-and-reads.cy.ts` (sessão, dashboard, listagem, caixa, `404`), `E2E-API/02-approval-flow.cy.ts` (3 etapas, `SOFTWARE`, segregação, rejeição, `409`), `E2E-API/03-budget-and-versions.cy.ts` (`BUDGET_EXCEEDED`, v2) |
 
 ⚠ **Limitação:** telas de administração e alguns casos de borda só são testados contra o backend simulado.
