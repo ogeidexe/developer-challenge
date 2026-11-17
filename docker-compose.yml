@@ -117,8 +117,9 @@ services:
       context: ./frontend
       args:
         VITE_MOCK_BACKEND: "false"
-        # true shows the seed-user picker on the login screen (local demo convenience, SEC-F04)
-        VITE_DEMO_LOGIN: ${VITE_DEMO_LOGIN:-false}
+        # Demo stack: the login form comes pre-filled with the main seed user (admin1) and offers the seed-user
+        # picker. VITE_DEMO_LOGIN=false turns both off; production builds outside compose keep them off (SEC-F04).
+        VITE_DEMO_LOGIN: ${VITE_DEMO_LOGIN:-true}
     environment:
       BACKEND_URL: http://backend:3000 # used only when the image runs alone; in compose /api goes via the gateway
     # not published: served through the gateway

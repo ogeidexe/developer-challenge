@@ -51,8 +51,9 @@ back-end ──► PostgreSQL (dados) e Redis (sessões do JWT)
 - **`JWT_SECRET`:** nenhum segredo está commitado. Se o `.env` não definir um, o serviço `jwt-secret`
   gera um aleatório (48 bytes) na primeira subida e o guarda num volume, então os tokens continuam válidos
   depois de reiniciar. O back-end se recusa a subir com segredo curto ou com placeholder documentado.
-- **Seletor de usuários do seed na tela de login:** desligado no build de produção. Para a demonstração,
-  `VITE_DEMO_LOGIN=true docker compose up --build`.
+- **Login de demonstração:** no compose, a tela "Entrar" já vem preenchida com o usuário principal do seed
+  (`admin1@kingspan.test` / `Kingspan@123`) e oferece o seletor de usuários do seed. Para desligar:
+  `VITE_DEMO_LOGIN=false docker compose up --build`. Builds de produção fora do compose seguem sem isso (SEC-F04).
 - **Zerar tudo** (banco, seed e segredo): `docker compose down --volumes`.
 
 ### 1.2 Local, sem Docker para as aplicações

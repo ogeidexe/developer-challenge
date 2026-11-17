@@ -39,5 +39,6 @@ Security assessment and hardening of the purchase-request system, 2026-11-15.
 - `SEED_ENABLED=false`.
 - `DB_PASSWORD`: set explicitly.
 - `API_DOCS_ENABLED=false`, if the docs should not be public.
-- Front-end builds: leave `VITE_MOCK_BACKEND` and `VITE_DEMO_LOGIN` unset.
+- Front-end builds: leave `VITE_MOCK_BACKEND` and `VITE_DEMO_LOGIN` unset. The compose stack is a demo and turns
+  `VITE_DEMO_LOGIN` on by default (pre-filled seed admin); set `VITE_DEMO_LOGIN=false` for any non-demo deployment.
 - Run as a single instance, or move login throttling to a shared store.

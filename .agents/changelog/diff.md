@@ -1176,3 +1176,17 @@ One block per agent turn, one row per changed file:
 |---|---|---|---|
 | `frontend/src/features/auth/LoginPage.tsx` | modified | +23 | -2 |
 | `frontend/src/shared/api/client.ts` | modified | +5 | -1 |
+
+---
+### Turn 2026-11-17 13:19:28 +0000 · ClaudeCode
+- **Source**: command
+- **Session**: n/a
+- **Prompt**: n/a
+- **Summary**: Demo login on by default in docker compose (Entrar pre-filled with admin1 + seed picker); production builds unchanged; docs updated
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `.env.example` | modified | +2 | -1 |
+| `SOLUTION.md` | modified | +3 | -2 |
+| `docker-compose.yml` | modified | +3 | -2 |
+| `docs/security/README.md` | modified | +2 | -1 |
