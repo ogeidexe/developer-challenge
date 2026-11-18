@@ -1395,3 +1395,138 @@ One block per agent turn, one row per changed file:
 | File | Change | Additions | Removals |
 |---|---|---|---|
 | `driven-tests/assets/plan-delivery.js` | modified | +21 | -1 |
+
+---
+### Turn 2026-11-17 21:04:01 -0300 · ClaudeCode
+- **Source**: hook
+- **Session**: f6ac0fe3-d4ac-4f8b-8ac0-127cceecf1ed
+- **Prompt**: dado o JSON do m teste assistido implemente o que falta no cypres e pelo proprio gere um relatorio de importação para que os testes possao ser conferidos e carregados, antes de mais nada confira se o porjeto se encontra ativado e se todas as regras estao de acordo
+- **Summary**: n/a
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `.github/workflows/ci.yml` | modified | +20 | -1 |
+| `AI_USAGE.MD` | created | +27 | -0 |
+| `frontend/.gitignore` | modified | +2 | -0 |
+| `frontend/README.md` | modified | +30 | -0 |
+| `frontend/cypress/checklist-runner.mjs` | created | +329 | -0 |
+| `frontend/cypress/e2e-api/01-seed-and-reads.cy.ts` | modified | +7 | -7 |
+| `frontend/cypress/e2e-api/02-approval-flow.cy.ts` | modified | +5 | -5 |
+| `frontend/cypress/e2e-api/03-budget-and-versions.cy.ts` | modified | +2 | -2 |
+| `frontend/cypress/e2e-api/04-checklist.cy.ts` | created | +5 | -0 |
+| `frontend/cypress/e2e-runner.mjs` | modified | +3 | -0 |
+| `frontend/cypress/e2e/01-login.cy.ts` | modified | +3 | -3 |
+| `frontend/cypress/e2e/02-dashboard.cy.ts` | modified | +3 | -3 |
+| `frontend/cypress/e2e/03-request-list.cy.ts` | modified | +8 | -8 |
+| `frontend/cypress/e2e/04-request-form.cy.ts` | modified | +4 | -4 |
+| `frontend/cypress/e2e/05-request-detail.cy.ts` | modified | +8 | -8 |
+| `frontend/cypress/e2e/06-inbox.cy.ts` | modified | +4 | -4 |
+| `frontend/cypress/e2e/07-admin.cy.ts` | modified | +1 | -1 |
+| `frontend/cypress/e2e/08-navigation.cy.ts` | modified | +2 | -2 |
+| `frontend/cypress/e2e/10-checklist.cy.ts` | created | +5 | -0 |
+| `frontend/cypress/results.mjs` | created | +52 | -0 |
+| `frontend/cypress/shared/checklist.ts` | created | +1128 | -0 |
+| `frontend/cypress/support/commands.ts` | modified | +112 | -0 |
+| `frontend/package.json` | modified | +2 | -0 |
+| `frontend/src/shared/api/mock/backend.ts` | modified | +11 | -2 |
+| `frontend/src/shared/auth/AuthContext.tsx` | modified | +10 | -3 |
+
+---
+### Turn 2026-11-17 21:12:48 -0300 · ClaudeCode
+- **Source**: hook
+- **Session**: f6ac0fe3-d4ac-4f8b-8ac0-127cceecf1ed
+- **Prompt**: <task-noti***> <task-id>bht0i8e1j</task-id> <tool-use-id>toolu_01Hsowym5Sf9zazSGMfGxvz4</tool-use-id> <output-file>C:\Users\ogeid\AppData\Local\Temp\claude\8a9953aa4d98e451\f6ac0fe3-d4ac-4f8b-8ac0-127cceecf1ed\tasks\bht0i8e1j.output</output-file> <status>completed</status> <summary>Background command "Run full mock suite and checklist report in background" completed (exit code 0)</summary> </task-noti***>
+- **Summary**: n/a
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `frontend/src/features/requests/RequestFormPage.tsx` | modified | +3 | -0 |
+
+---
+### Turn 2026-11-17 21:21:09 -0300 · ClaudeCode
+- **Source**: command
+- **Session**: f6ac0fe3-d4ac-4f8b-8ac0-127cceecf1ed
+- **Prompt**: <task-noti***> <task-id>bdsfz0ew0</task-id> <tool-use-id>toolu_01VT5uCt8NoibVk789tYLdg3</tool-use-id> <output-file>C:\Users\ogeid\AppData\Local\Temp\claude\8a9953aa4d98e451\f6ac0fe3-d4ac-4f8b-8ac0-127cceecf1ed\tasks\bdsfz0ew0.output</output-file> <status>completed</status> <summary>Background command "Re-run full mock suite and checklist report in background" completed (exit code 0)</summary> </task-noti***>
+- **Summary**: Automated the driven-tests checklist in Cypress (41 catalog-tagged tests in both suites, 47 existing tests tagged), added a runner that writes a dt-pleno-v1 import session plus a Markdown report, fixed residual data after switching users (query cache) and the stale-lockVersion race after editing, aligned the fake backend (inbox filter, duplicate-approver message)
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `docs/RFs/RNF-06-testes.md` | modified | +1 | -1 |
+| `frontend/README.md` | modified | +6 | -3 |
+| `frontend/cypress/checklist-runner.mjs` | modified | +26 | -1 |
+
+---
+### Turn 2026-11-17 21:34:44 -0300 · ClaudeCode
+- **Source**: hook
+- **Session**: f6ac0fe3-d4ac-4f8b-8ac0-127cceecf1ed
+- **Prompt**: a pagina esta hospedada em http://prezados.com.br:8080/login?returnUrl=%2F refaca os teste com a pagina real
+- **Summary**: n/a
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `frontend/cypress/checklist-runner.mjs` | modified | +12 | -2 |
+| `frontend/cypress/shared/checklist.ts` | modified | +96 | -64 |
+
+---
+### Turn 2026-11-17 21:38:07 -0300 · ClaudeCode
+- **Source**: hook
+- **Session**: f6ac0fe3-d4ac-4f8b-8ac0-127cceecf1ed
+- **Prompt**: <task-noti***> <task-id>blmwx0no5</task-id> <tool-use-id>toolu_01E1298DzG1RULJmEYm6qtb2</tool-use-id> <output-file>C:\Users\ogeid\AppData\Local\Temp\claude\8a9953aa4d98e451\f6ac0fe3-d4ac-4f8b-8ac0-127cceecf1ed\tasks\blmwx0no5.output</output-file> <status>completed</status> <summary>Background command "Run the checklist suite against the hosted real stack" completed (exit code 0)</summary> </task-noti***>
+- **Summary**: n/a
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `frontend/cypress/support/commands.ts` | modified | +32 | -16 |
+
+---
+### Turn 2026-11-17 21:54:34 -0300 · ClaudeCode
+- **Source**: command
+- **Session**: f6ac0fe3-d4ac-4f8b-8ac0-127cceecf1ed
+- **Prompt**: <task-noti***> <task-id>bwpxb9kjg</task-id> <tool-use-id>toolu_01BS4awmMqCt4u5FHCFcR2j4</tool-use-id> <output-file>C:\Users\ogeid\AppData\Local\Temp\claude\8a9953aa4d98e451\f6ac0fe3-d4ac-4f8b-8ac0-127cceecf1ed\tasks\bwpxb9kjg.output</output-file> <status>completed</status> <summary>Background command "Back up API results and re-run the full mock suite" completed (exit code 0)</summary> </task-noti***>
+- **Summary**: Ran the checklist suite against the hosted stack (39/41; the two residual-data tests reproduce the bug on the deployed frontend), made seed-dependent checklist tests use the sandbox, reused one API token per user to respect the gateway login limit, recorded each suite's target in the import report
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `frontend/README.md` | modified | +6 | -1 |
+| `frontend/cypress/checklist-runner.mjs` | modified | +8 | -6 |
+| `frontend/cypress/e2e-runner.mjs` | modified | +1 | -1 |
+| `frontend/cypress/results.mjs` | modified | +3 | -2 |
+| `frontend/cypress/shared/checklist.ts` | modified | +22 | -14 |
+
+---
+### Turn 2026-11-17 22:23:28 -0300 · ClaudeCode
+- **Source**: hook
+- **Session**: f6ac0fe3-d4ac-4f8b-8ac0-127cceecf1ed
+- **Prompt**: <ide_opened_file>The user opened the file c:\Users\ogeid\Desktop\preno\AI_USAGE.MD in the IDE. This may or may not be related to the current task.</ide_opened_file> agora refatore os testes de /driven-tests em testes para serem feitos em tela como roterio para fucionamento adquequado e o uso da aplicacao
+- **Summary**: n/a
+- **Note**: previous turn ended without a record/Stop event (interrupted?); rows may include manual edits made before the next prompt
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `driven-tests/assets/app.js` | modified | +10 | -0 |
+| `driven-tests/assets/styles.css` | modified | +30 | -0 |
+| `driven-tests/check-plan.mjs` | modified | +9 | -1 |
+
+---
+### Turn 2026-11-17 22:27:48 -0300 · ClaudeCode
+- **Source**: hook
+- **Session**: f6ac0fe3-d4ac-4f8b-8ac0-127cceecf1ed
+- **Prompt**: <ide_opened_file>The user opened the file c:\Users\ogeid\Desktop\preno\driven-tests\check-plan.mjs in the IDE. This may or may not be related to the current task.</ide_opened_file> done?
+- **Summary**: n/a
+- **Note**: previous turn ended without a record/Stop event (interrupted?); rows may include manual edits made before the next prompt
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `driven-tests/assets/plan-functional.js` | modified | +398 | -186 |
+
+---
+### Turn 2026-11-17 22:30:41 -0300 · ClaudeCode
+- **Source**: command
+- **Session**: f6ac0fe3-d4ac-4f8b-8ac0-127cceecf1ed
+- **Prompt**: Continue from where you left off.
+- **Summary**: Rewrote the driven-tests catalog as an on-screen walkthrough: same 84 ids, areas in order of use, each test with screen and user, steps via UI, DevTools and a browser-console helper instead of curl, roteiro-owned requests so it works on a fresh or used database; renderer shows area intros and screen/user chips, validator checks the new fields
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `driven-tests/assets/plan-delivery.js` | modified | +240 | -125 |
+| `driven-tests/index.html` | modified | +4 | -3 |

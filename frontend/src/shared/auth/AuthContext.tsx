@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { api } from '../api/client'
 import { onAuthExpired } from '../api/errors'
 import type { UserDto } from '../api/types'
@@ -64,6 +65,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState | null>(loadSession)
   const navigate = useNavigate()
   const location = useLocation()
+  // Query keys (['dashboard'], ['requests', …]) do not carry the user, so the cache must not outlive a session:
+  // otherwise the next user briefly sees the previous user's dashboard and list (checklist DASH-01 / LIST-04).
+  const queryClient = useQueryClient()
   // keep the latest location without re-subscribing the listener on every navigation
   const locationRef = useRef(location)
   locationRef.current = location
@@ -73,7 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     api.logout().catch(() => undefined)
     saveSession(null)
     setState(null)
-  }, [])
+    queryClient.clear()
+  }, [queryClient])
 
   // README §2.7: 401 → login, then back to the original route
   useEffect(
@@ -81,15 +86,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       onAuthExpired(() => {
         saveSession(null)
         setState(null)
+        queryClient.clear()
         const { pathname, search } = locationRef.current
         const from = pathname.startsWith('/login') ? '/' : pathname + search
         navigate(`/login?returnUrl=${encodeURIComponent(from)}`, { replace: true })
       }),
-    [navigate],
+    [navigate, queryClient],
   )
 
   const value = useMemo<AuthCtx>(() => {
     const start = (token: string, user: UserDto) => {
+      queryClient.clear() // also covers a previous session that ended without logout (closed tab, expiry)
       const s = { token, user }
       saveSession(s)
       setState(s)
@@ -107,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         start(res.token, res.user)
       },
     }
-  }, [state, logout])
+  }, [state, logout, queryClient])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }
