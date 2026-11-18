@@ -513,8 +513,15 @@ function doDecide(
   const seg = segregationBlock(u, r, v)
   if (seg === 'SELF_APPROVAL_FORBIDDEN')
     fail(422, seg, 'Não é possível aprovar: você é o solicitante desta solicitação (segregação de funções).')
-  if (seg === 'DUPLICATE_APPROVER')
-    fail(422, seg, `Não é possível aprovar: você já aprovou uma etapa desta versão (segregação de funções).`)
+  if (seg === 'DUPLICATE_APPROVER') {
+    // same detail as the real API: name the step this person already approved (checklist SOD-02)
+    const decided = v.steps.find((s) => s.approverId === u.id)
+    fail(
+      422,
+      seg,
+      `Não é possível decidir: você já aprovou a etapa ${decided?.level ?? ''} desta versão (segregação de funções).`,
+    )
+  }
   const comment = typeof body?.comment === 'string' ? body.comment : null
   if (action !== 'APPROVE' && (!comment || comment.trim().length < 10)) {
     fail(
@@ -663,6 +670,8 @@ function listInbox(u: UserRec, q: URLSearchParams) {
     .filter((r) => r.ownerId !== u.id)
     .filter((r) => u.role === 'ADMIN' || r.costCenterId === u.costCenterId)
     .filter((r) => canActNow(u, r))
+    // same optional filter as the real API (GET /approvals/inbox?costCenterId=…)
+    .filter((r) => !q.get('costCenterId') || r.costCenterId === q.get('costCenterId'))
     .sort(sortBy(q))
   return page(
     list.map((r) => ({ ...summaryDto(r), currentStep: stepDto(currentStep(currentVersion(r))!) })),
