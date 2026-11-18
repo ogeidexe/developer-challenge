@@ -108,6 +108,9 @@ export function RequestFormPage() {
     },
     onSuccess: (saved) => {
       message.success(isEdit ? 'Solicitação atualizada.' : 'Rascunho criado.')
+      // The detail page renders from this cache entry at once: seed it with the saved request (new lockVersion),
+      // or it shows the pre-edit copy until the refetch lands — and an action clicked meanwhile gets a 409.
+      qc.setQueryData(['request', saved.id], saved)
       qc.invalidateQueries({ queryKey: ['requests'] })
       qc.invalidateQueries({ queryKey: ['request', saved.id] })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
