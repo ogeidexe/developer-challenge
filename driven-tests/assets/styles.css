@@ -541,3 +541,33 @@ select {
     padding: 0;
   }
 }
+
+/* ---------- walkthrough: area intro, screen and user chips ---------- */
+
+.area__intro {
+  margin: -0.2rem 0 0.7rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.test__where {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 0.35rem;
+}
+
+.chip {
+  display: inline-block;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.05rem 0.55rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  background: var(--surface);
+}
+
+.chip--screen {
+  border-color: var(--accent);
+  color: var(--accent);
+}

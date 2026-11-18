@@ -24,6 +24,14 @@
     return node
   }
 
+  /** "Tela" and "Usuário" chips: where the step happens and who does it (walkthrough). */
+  function where(test) {
+    const chips = []
+    if (test.screen) chips.push(`<span class="chip chip--screen">Tela: ${rich(test.screen)}</span>`)
+    if (test.user) chips.push(`<span class="chip chip--user">Usuário: ${rich(test.user)}</span>`)
+    return chips.length ? `<p class="test__where">${chips.join(' ')}</p>` : ''
+  }
+
   function renderTest(test) {
     const card = el('article', { class: 'test', id: `test-${test.id}`, 'data-test': test.id })
     card.innerHTML = `
@@ -32,6 +40,7 @@
         <h3 class="test__title">${rich(test.title)}</h3>
       </div>
       <p class="test__ref">${rich(test.ref || '')}</p>
+      ${where(test)}
       <ol>${test.steps.map((step) => `<li>${rich(step)}</li>`).join('')}</ol>
       <p class="test__expected"><strong>Esperado:</strong>${rich(test.expected)}</p>
       <div class="test__controls"></div>`
@@ -48,6 +57,7 @@
       const header = el('div', { class: 'area__header' })
       header.innerHTML = `<h2>${rich(area.title)}</h2><span class="muted">${rich(area.ref || '')}</span>`
       section.appendChild(header)
+      if (area.intro) section.appendChild(el('p', { class: 'area__intro' }, rich(area.intro)))
       area.tests.forEach((test) => section.appendChild(renderTest(test)))
       root.appendChild(section)
 
