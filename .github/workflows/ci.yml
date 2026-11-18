@@ -152,6 +152,17 @@ jobs:
         with:
           name: counts-e2e
           path: e2e-counts.json
+      # session file for the manual checklist (driven-tests/ → "Importar sessão") built from the [ID] tags
+      - name: Checklist import report (fake backend)
+        if: always()
+        run: node cypress/checklist-runner.mjs --from cypress/reports/results-mock.json
+      - name: Upload checklist report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checklist-mock
+          path: frontend/cypress/reports/
+          if-no-files-found: ignore
       - name: Upload screenshots
         if: failure()
         uses: actions/upload-artifact@v4
@@ -212,9 +223,17 @@ jobs:
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
+      # runs the real-API suite and writes the checklist import report (fails like the suite does)
       - name: E2E against the real API
         working-directory: frontend
-        run: npm run test:e2e:api
+        run: npm run checklist:api
+      - name: Upload checklist report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checklist-api
+          path: frontend/cypress/reports/
+          if-no-files-found: ignore
       - name: Upload screenshots
         if: failure()
         uses: actions/upload-artifact@v4
