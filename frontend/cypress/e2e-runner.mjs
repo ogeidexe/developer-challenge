@@ -3,6 +3,7 @@
 // on Windows (e.g. start-server-and-test → wmic.exe) break on recent Windows 11 builds where wmic is gone.
 import { createServer } from 'vite'
 import cypress from 'cypress'
+import { saveResults } from './results.mjs'
 
 // VS Code terminals export ELECTRON_RUN_AS_NODE=1, which stops the Cypress (Electron) binary from starting.
 delete process.env.ELECTRON_RUN_AS_NODE
@@ -24,6 +25,8 @@ console.log(`Vite ready on http://${HOST}:${PORT}`)
 let exitCode = 1
 try {
   const result = await cypress.run({ testingType: 'e2e', ...(process.argv[2] ? { spec: process.argv[2] } : {}) })
+  // raw results for the checklist report (node cypress/checklist-runner.mjs --from cypress/reports/results-mock.json)
+  console.log(`Results saved to ${saveResults('mock', result, `backend simulado (Vite em http://${HOST}:${PORT})`)}`)
   if (result.status === 'failed') {
     console.error(result.message)
   } else {

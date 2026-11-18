@@ -13,6 +13,8 @@
     "cy:run": "node cypress/run.mjs run --e2e",
     "test:e2e": "node cypress/e2e-runner.mjs",
     "test:e2e:api": "node cypress/run.mjs run --config-file cypress.api.config.ts",
+    "checklist": "node cypress/checklist-runner.mjs --run mock",
+    "checklist:api": "node cypress/checklist-runner.mjs --run api",
     "typecheck:e2e": "tsc --noEmit -p cypress",
     "lint": "eslint .",
     "format": "prettier --write .",
