@@ -81,7 +81,8 @@ npm run test:e2e:api                                                         # e
 Ela cobre sessão e `returnUrl`, números do dashboard, filtros da listagem, caixa de aprovação, `404` de
 visibilidade, o fluxo de 3 etapas pelo formulário, cadeia `SOFTWARE`, segregação de funções, rejeição, `409`,
 `BUDGET_EXCEEDED` e reenvio como v2, o "Entrar" pré-preenchido da demonstração, os centros de custo do cadastro
-e o uso em **HTTP sem TLS** (18 testes). O CI roda as duas suítes a cada push.
+e o uso em **HTTP sem TLS** (18 testes), mais os 41 itens do checklist (`04-checklist`, 59 no total). O CI roda as
+duas suítes a cada push.
 
 ### Suíte com o backend simulado
 
@@ -92,7 +93,7 @@ npm run dev:e2e    # alternativa interativa: em um terminal…
 npm run cy:open    # …e o runner do Cypress em outro
 ```
 
-Uma spec por tela, em `cypress/e2e/` (67 testes):
+Uma spec por tela, em `cypress/e2e/` (10 specs, 108 testes):
 
 | Spec | Tela | O que cobre |
 |---|---|---|
@@ -105,6 +106,7 @@ Uma spec por tela, em `cypress/e2e/` (67 testes):
 | `07-admin` | Administração | acesso só ADMIN, usuários, centros de custo, orçamento abaixo do consumido (422) |
 | `08-navigation` | Navegação | menu por papel, 404 de rota e de recurso fora da visibilidade (ADR-012), persistência e reinício dos dados |
 | `09-security` | Segurança | `returnUrl` hostil (outro domínio, `//`, `javascript:`…) ignorado; `returnUrl` interno preservado com a query string |
+| `10-checklist` | Checklist | um teste por item do catálogo de `driven-tests/` (veja abaixo) |
 
 Notas:
 - Cada teste começa do seed: o Cypress limpa `localStorage` (banco simulado) e `sessionStorage` (token) entre testes.
@@ -114,6 +116,42 @@ Notas:
 - Para provocar um **409**, a spec age como um segundo usuário pelo gancho `window.__mockBackend`, exposto só dentro do Cypress.
 - `cypress/e2e-runner.mjs` sobe o Vite e roda o Cypress pelas APIs JS (sem matar processos — ferramentas que usam `wmic.exe` quebram no Windows 11 recente). Ele e `cypress/run.mjs` removem `ELECTRON_RUN_AS_NODE` (exportado pelos terminais do VS Code), que impede o Cypress de abrir.
 - Se `npm install` não baixar o binário do Cypress (política de install scripts), rode `npx cypress install`.
+
+### Checklist do teste assistido (`driven-tests/`)
+
+Cada teste cujo título começa com o id de um item do catálogo (`[REQ-01] …`, pode haver mais de um) conta como
+evidência daquele item. Os testes de `cypress/shared/checklist.ts` rodam **nas duas suítes**
+(`e2e/10-checklist.cy.ts` e `e2e-api/04-checklist.cy.ts`), e as specs por tela também levam os ids que cobrem.
+
+```bash
+npm run checklist                                    # roda a suíte simulada e gera o relatório
+npm run checklist:api                                # idem contra a stack real (docker compose no ar)
+CYPRESS_BASE_URL=http://host:8080 node cypress/checklist-runner.mjs --run api \
+  --spec cypress/e2e-api/04-checklist.cy.ts           # só o checklist, contra outra stack (ex.: a implantada)
+node cypress/checklist-runner.mjs --from cypress/reports/results-mock.json --from cypress/reports/results-api.json   --base ../sessao-testes-pleno.json                 # junta resultados salvos com a sessão manual exportada
+```
+
+Saída em `cypress/reports/` (ignorada pelo git):
+
+| Arquivo | Uso |
+|---|---|
+| `checklist-import.json` | sessão no formato `dt-pleno-v1`: abra `driven-tests/index.html` → **Importar sessão** |
+| `checklist-report.md` | para conferir antes: execuções, resultado por item, falhas, mudanças em relação à sessão manual e itens que só se conferem à mão |
+| `results-<suíte>.json` | resultado bruto do Cypress, para gerar o relatório de novo sem rodar os testes |
+
+Regras: todas as execuções de um item passaram → **Good**; algumas falharam → **Need Work**; todas falharam →
+**Missing**; item sem teste → fica como estava na sessão base (`--base`). O backend simulado não envia cabeçalhos
+HTTP e processa chamadas "paralelas" em sequência, então `API-02`, `NFR-01` e `NFR-02` só viram **Good** com a
+suíte da API real; a nota de cada item diz de qual suíte veio a evidência. A importação substitui a sessão do
+navegador, então use `--base` para não perder resultados manuais; as notas manuais são preservadas. O CI publica
+os dois relatórios como artefatos (`checklist-mock` e `checklist-api`).
+
+Na stack real o banco não é zerado entre execuções: os testes do checklist que escrevem dados criam um centro de
+custo próprio (com solicitante, aprovadores e orçamento) e só leem o seed, então uma segunda execução também passa.
+As specs `01`–`03` da API real conferem números exatos do seed e pressupõem um banco novo, como no CI. Contra uma
+stack já usada (seed alterado por testes manuais), rode só o checklist (`--spec …04-checklist.cy.ts`). A suíte
+reaproveita um token por usuário: o gateway limita logins por endereço (`GATEWAY_LOGIN_RATE`, 30/min), e um
+login a cada chamada esbarraria nesse limite.
 
 ## Configuração
 

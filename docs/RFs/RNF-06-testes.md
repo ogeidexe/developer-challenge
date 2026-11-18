@@ -22,7 +22,7 @@ menos 3 testes de front-end. Cada lado roda com **um único comando**.
 | Integração: idempotência do `POST /requests` | `T/WorkflowIntegrationTest#idempotentCreateReplaysTheStoredResponse` | ✅ |
 | Concorrência: mesma etapa → exatamente uma sucede, outra `409` | `T/ConcurrencyIntegrationTest#twoApprovalsOfTheSameStepExactlyOneWinsTheOtherGets409` | ✅ |
 | Concorrência: solicitações diferentes, mesmo saldo → nunca negativo | `T/ConcurrencyIntegrationTest#finalApprovalsOfDifferentRequestsNeverOverdrawTheBudget` | ✅ |
-| Front-end: ≥ 3 testes significativos | `E2E/*.cy.ts` (9 specs, 67 testes, backend simulado) e `frontend/cypress/e2e-api/` (API real) | ✅ |
+| Front-end: ≥ 3 testes significativos | `E2E/*.cy.ts` (10 specs, 108 testes, backend simulado) e `frontend/cypress/e2e-api/` (API real, 59 testes); os itens do checklist `driven-tests/` rodam nas duas (`npm run checklist`) | ✅ |
 | Um comando por lado | `./mvnw verify` · `npm run test:e2e` | ✅ |
 
 ## Números (último CI verde)
