@@ -3,14 +3,14 @@ import { USERS } from '../support/commands'
 const rows = () => cy.get('.ant-table-tbody .ant-table-row')
 
 describe('Approval inbox screen', () => {
-  it('APROVADOR N1 sees only what they can approve now (level + cost center)', () => {
+  it('[INBOX-01] APROVADOR N1 sees only what they can approve now (level + cost center)', () => {
     cy.login(USERS.aprov1Ti)
     cy.get('.ant-menu').contains('Caixa de aprovação').click()
     cy.location('pathname').should('eq', '/approvals')
     rows().should('have.length', 1).first().should('contain', 'Kit periféricos estoque').and('contain', 'Nível 1')
   })
 
-  it('APROVADOR N2 also gets N1 steps of the own center', () => {
+  it('[INBOX-01] APROVADOR N2 also gets N1 steps of the own center', () => {
     cy.login(USERS.aprov2Ti)
     cy.visit('/approvals')
     rows().should('have.length', 2)
@@ -27,7 +27,7 @@ describe('Approval inbox screen', () => {
     cy.contains('button', 'Aprovar')
   })
 
-  it('segregation of duties: after approving a step, the same person no longer sees the request', () => {
+  it('[SOD-02] segregation of duties: after approving a step, the same person no longer sees the request', () => {
     cy.login(USERS.admin1)
     cy.visit('/approvals')
     rows().should('have.length', 4)
@@ -59,7 +59,7 @@ describe('Approval inbox screen', () => {
       .each((row) => cy.wrap(row).should('contain', 'CC-ADM-02'))
   })
 
-  it('SOLICITANTE has no inbox: no menu entry and a 403 page on direct access', () => {
+  it('[INBOX-02] SOLICITANTE has no inbox: no menu entry and a 403 page on direct access', () => {
     cy.login(USERS.solicTi)
     cy.get('.ant-menu').should('not.contain', 'Caixa de aprovação')
     cy.visit('/approvals')

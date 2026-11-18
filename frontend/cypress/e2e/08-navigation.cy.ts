@@ -18,7 +18,7 @@ describe('Navigation, guards and error pages', () => {
     cy.location('pathname').should('eq', '/')
   })
 
-  it("a request outside the user's visibility answers 404 — even for ADMIN on someone else's draft (ADR-012)", () => {
+  it("[LIST-04] a request outside the user's visibility answers 404 — even for ADMIN on someone else's draft (ADR-012)", () => {
     cy.requestIdByTitle(USERS.solicTi, 'Monitores para o time de suporte').then((id) => {
       cy.login(USERS.admin1)
       cy.visit(`/requests/${id}`)
@@ -26,7 +26,7 @@ describe('Navigation, guards and error pages', () => {
     })
   })
 
-  it('a request from another cost center is invisible to an APROVADOR', () => {
+  it('[LIST-05] a request from another cost center is invisible to an APROVADOR', () => {
     cy.requestIdByTitle(USERS.admin1, 'Notebooks para o time de TI').then((id) => {
       cy.login(USERS.aprov1Ti) // CC-TI-01; the request belongs to CC-ADM-02
       cy.visit(`/requests/${id}`)

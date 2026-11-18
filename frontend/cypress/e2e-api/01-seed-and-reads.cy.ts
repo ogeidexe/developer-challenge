@@ -35,7 +35,7 @@ describe('Real API — session, dashboard, list and inbox on the seed', () => {
       })
   })
 
-  it('sends an anonymous visitor to /login and back to the original route with its filter', () => {
+  it('[FE-01] sends an anonymous visitor to /login and back to the original route with its filter', () => {
     cy.visit('/requests?status=APPROVED')
     cy.location('pathname').should('eq', '/login')
     cy.get('#login_email').clear().type(USERS.admin1)
@@ -46,7 +46,7 @@ describe('Real API — session, dashboard, list and inbox on the seed', () => {
     rows().should('have.length', 2) // seed: "Servidor virtualização" and "Climatização sala de reunião"
   })
 
-  it('ADMIN dashboard: totals by status (no drafts) and current-month budgets from the backend', () => {
+  it('[DASH-01] ADMIN dashboard: totals by status (no drafts) and current-month budgets from the backend', () => {
     cy.login(USERS.admin1)
     stat('Rascunho').should('have.text', '0') // drafts are owner-only, ADMIN included (ADR-012)
     stat('Em aprovação').should('have.text', '4')
@@ -58,14 +58,14 @@ describe('Real API — session, dashboard, list and inbox on the seed', () => {
     budgetRow('CC-ADM-02').should('contain', '80.000,00').and('contain', '12.000,00').and('contain', '68.000,00')
   })
 
-  it('SOLICITANTE dashboard: own requests and own cost center only', () => {
+  it('[DASH-01] SOLICITANTE dashboard: own requests and own cost center only', () => {
     cy.login(USERS.solicTi)
     stat('Rascunho').should('have.text', '1') // "Monitores para o time de suporte", visible to its owner
     budgetRow('CC-TI-01').should('exist')
     cy.contains('.ant-table-row', 'CC-ADM-02').should('not.exist')
   })
 
-  it('list: server-side status filter in the URL, and search by title', () => {
+  it('[LIST-02] list: server-side status filter in the URL, and search by title', () => {
     cy.login(USERS.admin1)
     cy.visit('/requests?status=PENDING_APPROVAL')
     rows()
@@ -75,7 +75,7 @@ describe('Real API — session, dashboard, list and inbox on the seed', () => {
     rows().should('have.length', 1).first().should('contain', 'Notebooks para o time de TI')
   })
 
-  it('inbox: each approver sees only what they can approve now', () => {
+  it('[INBOX-01] inbox: each approver sees only what they can approve now', () => {
     cy.login(USERS.aprov1Ti)
     cy.visit('/approvals')
     rows().should('have.length', 1).first().should('contain', 'Kit periféricos estoque')
@@ -105,7 +105,7 @@ describe('Real API — session, dashboard, list and inbox on the seed', () => {
     })
   })
 
-  it('a request of another cost center is invisible to an APROVADOR (404 page)', () => {
+  it('[LIST-05] a request of another cost center is invisible to an APROVADOR (404 page)', () => {
     cy.requestIdByTitle(USERS.admin1, 'Notebooks para o time de TI').then((id) => {
       cy.login(USERS.aprov1Ti)
       cy.visit(`/requests/${id}`)
@@ -113,7 +113,7 @@ describe('Real API — session, dashboard, list and inbox on the seed', () => {
     })
   })
 
-  describe('on a plain-HTTP site (no crypto.randomUUID, as on http://host:8080)', () => {
+  describe('[FE-08] on a plain-HTTP site (no crypto.randomUUID, as on http://host:8080)', () => {
     it('signs in, lists the sign-up cost centers and creates a request', () => {
       cy.visitWithoutRandomUUID('/login')
       cy.contains('.ant-segmented-item', 'Criar conta').click()

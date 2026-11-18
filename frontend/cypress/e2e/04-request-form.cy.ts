@@ -5,7 +5,7 @@ const totalPreview = () => cy.contains('.ant-statistic', 'Total (prévia)')
 describe('Request form screen (create / edit)', () => {
   beforeEach(() => cy.login(USERS.solicTi))
 
-  it('validates required fields on the client', () => {
+  it('[REQ-02] validates required fields on the client', () => {
     cy.visit('/requests/new')
     cy.contains('button', 'Criar rascunho').click()
     cy.contains('.ant-form-item-explain-error', 'Informe o título')
@@ -24,7 +24,7 @@ describe('Request form screen (create / edit)', () => {
     cy.get('#request_items_0_unitPrice').should('have.value', '0,01')
   })
 
-  it("defaults the cost center to the requester's own", () => {
+  it("[REQ-03] defaults the cost center to the requester's own", () => {
     cy.visit('/requests/new')
     cy.get('#request_costCenterId').closest('.ant-select').should('contain', 'CC-TI-01')
   })
@@ -47,7 +47,7 @@ describe('Request form screen (create / edit)', () => {
     cy.get('button[aria-label="Remover item"]').first().should('be.disabled') // at least one item
   })
 
-  it('creates a DRAFT; the detail shows the server-computed total and the owner actions', () => {
+  it('[REQ-01] creates a DRAFT; the detail shows the server-computed total and the owner actions', () => {
     cy.visit('/requests/new')
     cy.get('#request_title').type('Notebooks E2E')
     cy.get('#request_description').type('Criado pelo teste end-to-end')
@@ -67,7 +67,7 @@ describe('Request form screen (create / edit)', () => {
     cy.contains('A cadeia é montada quando a solicitação é submetida.')
   })
 
-  it('edits a draft (form comes pre-filled) and saves it', () => {
+  it('[REQ-04] edits a draft (form comes pre-filled) and saves it', () => {
     cy.openRequest('Monitores para o time de suporte')
     cy.contains('button', 'Editar').click()
     cy.location('pathname').should('match', /\/edit$/)

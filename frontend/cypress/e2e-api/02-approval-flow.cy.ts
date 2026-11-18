@@ -26,7 +26,7 @@ const createSubmitted = (owner: string, title: string, unitPrice: string, catego
     })
 
 describe('Real API — approval workflow', () => {
-  it('video flow: > R$ 10.000 created in the form → N1 → N2 → ADMIN → APPROVED, budget consumed', () => {
+  it('[FLOW-01][BUDGET-02] video flow: > R$ 10.000 created in the form → N1 → N2 → ADMIN → APPROVED, budget consumed', () => {
     const title = `Servidor de arquivos ${RUN}`
     cy.login(USERS.solicAdm)
     cy.visit('/requests/new')
@@ -56,7 +56,7 @@ describe('Real API — approval workflow', () => {
     cy.get('.ant-timeline').should('contain', 'Aprovada')
   })
 
-  it('SOFTWARE under R$ 1.000 ends with an ADMIN step (chain built by the backend)', () => {
+  it('[CHAIN-02] SOFTWARE under R$ 1.000 ends with an ADMIN step (chain built by the backend)', () => {
     const title = `Licença editor ${RUN}`
     createSubmitted(USERS.solicTi, title, '500.00', 'SOFTWARE')
     cy.login(USERS.solicTi)
@@ -66,7 +66,7 @@ describe('Real API — approval workflow', () => {
     stepTitles().eq(1).should('have.text', 'Admin')
   })
 
-  it('segregation of duties: after approving NIVEL_1, the same NIVEL_2 approver gets no decision buttons', () => {
+  it('[SOD-02] segregation of duties: after approving NIVEL_1, the same NIVEL_2 approver gets no decision buttons', () => {
     const title = `Switch andar ${RUN}`
     createSubmitted(USERS.solicAdm, title, '5000.00') // → NIVEL_1, NIVEL_2
     cy.login(USERS.aprov2Adm)
@@ -78,7 +78,7 @@ describe('Real API — approval workflow', () => {
     cy.contains('button', 'Aprovar').should('not.exist')
   })
 
-  it('reject requires a 10+ character comment, then closes the chain', () => {
+  it('[FLOW-03][FE-05] reject requires a 10+ character comment, then closes the chain', () => {
     const title = `Cadeiras ${RUN}`
     createSubmitted(USERS.solicTi, title, '300.00')
     cy.login(USERS.aprov1Ti)
@@ -92,7 +92,7 @@ describe('Real API — approval workflow', () => {
     cy.get('.ant-timeline').should('contain', 'Fora do orçamento deste trimestre.')
   })
 
-  it('409: another approver acted first — the user is told and the screen refreshes', () => {
+  it('[FE-06] 409: another approver acted first — the user is told and the screen refreshes', () => {
     const title = `Mesa reunião ${RUN}`
     createSubmitted(USERS.solicAdm, title, '500.00').then((id) => {
       cy.login(USERS.aprov1Adm)

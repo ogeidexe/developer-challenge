@@ -19,6 +19,23 @@ export const USERS = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- deliberate: response shape varies per endpoint
 type ApiJson = any
 
+/** One API call with full control (checklist specs): own token or none, extra request headers. */
+export interface ApiRequest {
+  method: string
+  path: string
+  body?: unknown
+  /** Bearer token from `cy.apiToken`; omit for an anonymous call. */
+  token?: string
+  headers?: Record<string, string>
+}
+
+/** `headers` is null on the fake backend, which answers JSON only (no HTTP response headers). */
+export interface ApiResult {
+  status: number
+  json: ApiJson
+  headers: Record<string, string> | null
+}
+
 type MockHandle = (req: {
   method: string
   path: string
@@ -54,6 +71,12 @@ declare global {
        * Starts signed out. Navigate inside the SPA afterwards (a new cy.visit reloads the page and restores it).
        */
       visitWithoutRandomUUID(url: string): Chainable<void>
+      /** Signs in through the API (fake or real) and yields the token — e.g. to keep using an old token. */
+      apiToken(email: string, password?: string): Chainable<string>
+      /** One API call with an explicit token (or none) and extra headers; yields status, JSON and response headers. */
+      apiCall(req: ApiRequest): Chainable<ApiResult>
+      /** Fires the calls at the same time (Promise.all from the page) — concurrency checks. */
+      apiParallel(reqs: ApiRequest[]): Chainable<ApiResult[]>
       /** Opens the antd filter of a table column (by header text). */
       openColumnFilter(column: string): Chainable<JQuery<HTMLElement>>
       /** Picks options in an antd column filter (`filters`) and confirms with OK. */
@@ -119,20 +142,40 @@ Cypress.Commands.add('toast', (text: string | RegExp) => {
   cy.get('.ant-message').contains(text).should('be.visible')
 })
 
+// Real API: one token per user for the whole spec. The gateway limits logins per client address (Nginx
+// limit_req, 30/min + burst 20 — checklist EXTRA-03); logging in before every call would hit that limit and turn
+// the rest of the run into 429s. Each login is its own Redis session and a logout only closes its own session,
+// so reusing the token is safe; a token that stops working (401) is replaced by a new login.
+const TOKEN_MAX_AGE_MS = 10 * 60 * 1000 // the access token lives 15 min
+const realTokens = new Map<string, { token: string; at: number }>()
+
+function realLogin(email: string, password: string): Cypress.Chainable<string> {
+  return cy.request({ method: 'POST', url: '/api/auth/login', body: { email, password }, log: false }).then((res) => {
+    realTokens.set(email, { token: res.body.token, at: Date.now() })
+    return res.body.token as string
+  })
+}
+
+function realToken(email: string, password = PASSWORD): Cypress.Chainable<string> {
+  const cached = realTokens.get(email)
+  if (cached && Date.now() - cached.at < TOKEN_MAX_AGE_MS) return cy.wrap(cached.token, { log: false })
+  return realLogin(email, password)
+}
+
 Cypress.Commands.add('apiAs', (email: string, method: string, path: string, body?: unknown) => {
   // Real-API suite (cypress.api.config.ts sets REAL_API): plain HTTP through the frontend's /api proxy.
   if (Cypress.env('REAL_API')) {
-    return cy
-      .request({ method: 'POST', url: '/api/auth/login', body: { email, password: PASSWORD }, log: false })
-      .then((login) =>
-        cy.request({
-          method,
-          url: `/api${path}`,
-          body: body as Cypress.RequestBody,
-          headers: { Authorization: `Bearer ${login.body.token}` },
-          failOnStatusCode: false,
-        }),
-      )
+    const call = (token: string) =>
+      cy.request({
+        method,
+        url: `/api${path}`,
+        body: body as Cypress.RequestBody,
+        headers: { Authorization: `Bearer ${token}` },
+        failOnStatusCode: false,
+      })
+    return realToken(email)
+      .then((token) => call(token))
+      .then((res) => (res.status === 401 ? realLogin(email, PASSWORD).then(call) : cy.wrap(res, { log: false })))
       .then((res) => ({ status: res.status, json: res.body }))
   }
   // Fake-backend suite: the hook lives in the app page — load it first when the test has not visited anything yet
@@ -174,3 +217,88 @@ Cypress.Commands.add('openRequest', (title: string) => {
 })
 
 export {}
+
+// ---------- low-level API access (checklist specs) ----------
+
+/** The page that hosts the fake backend (or the /api proxy of the real stack) must be loaded first. */
+function appWindow() {
+  cy.window().then((win) => {
+    const onApp = win.location.origin === new URL(Cypress.config('baseUrl') ?? win.location.origin).origin
+    const hookReady = Cypress.env('REAL_API') || '__mockBackend' in win
+    if (!onApp || !hookReady) cy.visit('/login')
+  })
+  return cy.window()
+}
+
+function mockCall(win: Cypress.AUTWindow, req: ApiRequest) {
+  const handle = (win as unknown as { __mockBackend?: { handle: MockHandle } }).__mockBackend?.handle
+  if (!handle) throw new Error('mock backend hook not found — is VITE_MOCK_BACKEND enabled?')
+  const [pathname, qs = ''] = req.path.split('?')
+  return handle({
+    method: req.method,
+    path: pathname,
+    query: new win.URLSearchParams(qs),
+    body: req.body,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(req.token ? { Authorization: `Bearer ${req.token}` } : {}),
+      ...req.headers,
+    },
+  }).then((res): ApiResult => ({ status: res.status, json: res.json, headers: null }))
+}
+
+function realHeaders(req: ApiRequest): Record<string, string> {
+  return { ...(req.token ? { Authorization: `Bearer ${req.token}` } : {}), ...req.headers }
+}
+
+Cypress.Commands.add('apiToken', (email: string, password = PASSWORD) => {
+  if (Cypress.env('REAL_API')) return realToken(email, password)
+  return appWindow().then((win) =>
+    mockCall(win, { method: 'POST', path: '/auth/login', body: { email, password } }).then((res) => {
+      if (res.status !== 200) throw new Error(`login of ${email} failed: ${res.status}`)
+      return res.json.token as string
+    }),
+  )
+})
+
+Cypress.Commands.add('apiCall', (req: ApiRequest) => {
+  if (Cypress.env('REAL_API')) {
+    return cy
+      .request({
+        method: req.method,
+        url: `/api${req.path}`,
+        body: req.body as Cypress.RequestBody,
+        headers: realHeaders(req),
+        failOnStatusCode: false,
+      })
+      .then((res): ApiResult => ({
+        status: res.status,
+        json: res.body,
+        headers: Object.fromEntries(Object.entries(res.headers).map(([k, v]) => [k.toLowerCase(), String(v)])),
+      }))
+  }
+  return appWindow().then((win) => mockCall(win, req))
+})
+
+Cypress.Commands.add('apiParallel', (reqs: ApiRequest[]) => {
+  return appWindow().then((win) => {
+    if (!Cypress.env('REAL_API')) return Promise.all(reqs.map((req) => mockCall(win, req)))
+    // real stack: true concurrency — the browser sends every request before any answer arrives
+    return Promise.all(
+      reqs.map((req) =>
+        win
+          .fetch(`/api${req.path}`, {
+            method: req.method,
+            headers: { 'Content-Type': 'application/json', ...realHeaders(req) },
+            body: req.body === undefined ? undefined : JSON.stringify(req.body),
+          })
+          .then(async (res): Promise<ApiResult> => {
+            const text = await res.text()
+            const headers: Record<string, string> = {}
+            res.headers.forEach((value, key) => (headers[key.toLowerCase()] = value))
+            return { status: res.status, json: text ? JSON.parse(text) : {}, headers }
+          }),
+      ),
+    )
+  })
+})

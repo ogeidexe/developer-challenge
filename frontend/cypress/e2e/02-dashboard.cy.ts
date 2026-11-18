@@ -4,7 +4,7 @@ const stat = (title: string) => cy.contains('.ant-statistic', title).find('.ant-
 const budgetRow = (code: string) => cy.contains('.ant-table-row', code)
 
 describe('Dashboard screen', () => {
-  it('ADMIN: totals of every non-draft request and the budget of every cost center', () => {
+  it('[DASH-01][EXTRA-01] ADMIN: totals of every non-draft request and the budget of every cost center', () => {
     cy.login(USERS.admin1)
     stat('Rascunho').should('have.text', '0') // drafts are owner-only, ADMIN included (A-26)
     stat('Em aprovação').should('have.text', '4')
@@ -26,7 +26,7 @@ describe('Dashboard screen', () => {
     cy.get('.ant-table-tbody .ant-table-row').first().should('contain', 'CC-ADM-02') // R$ 68.000,00
   })
 
-  it('SOLICITANTE: only own requests and only own cost center budget', () => {
+  it('[DASH-01] SOLICITANTE: only own requests and only own cost center budget', () => {
     cy.login(USERS.solicTi)
     stat('Rascunho').should('have.text', '1')
     stat('Em aprovação').should('have.text', '2')
@@ -38,7 +38,7 @@ describe('Dashboard screen', () => {
     cy.get('.ant-table').should('not.contain', 'CC-ADM-02')
   })
 
-  it("APROVADOR: requests of the own cost center, without other people's drafts", () => {
+  it("[DASH-01] APROVADOR: requests of the own cost center, without other people's drafts", () => {
     cy.login(USERS.aprov1Adm)
     stat('Rascunho').should('have.text', '0')
     stat('Em aprovação').should('have.text', '2')

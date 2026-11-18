@@ -13,12 +13,12 @@ describe('Request list screen', () => {
     cy.contains('Notebooks para o time de TI')
   })
 
-  it("never lists another user's draft", () => {
+  it("[LIST-04] never lists another user's draft", () => {
     cy.visit('/requests')
     cy.get('.ant-table').should('not.contain', 'Monitores para o time de suporte')
   })
 
-  it('status column filter (antd) goes to the URL and survives a reload (shareable link)', () => {
+  it('[LIST-02] status column filter (antd) goes to the URL and survives a reload (shareable link)', () => {
     cy.visit('/requests')
     cy.tableFilter('Status', 'Em aprovação')
     cy.location('search').should('contain', 'status=PENDING_APPROVAL')
@@ -30,7 +30,7 @@ describe('Request list screen', () => {
     cy.contains('.ant-table-thead th', 'Status').find('.ant-table-filter-trigger').should('have.class', 'active')
   })
 
-  it('category and cost center column filters combine on the server', () => {
+  it('[LIST-02] category and cost center column filters combine on the server', () => {
     cy.visit('/requests')
     cy.tableFilter('Categoria', 'Software')
     cy.location('search').should('contain', 'category=SOFTWARE')
@@ -40,7 +40,7 @@ describe('Request list screen', () => {
     rows().should('have.length', 1).first().should('contain', 'Plataforma e-sign')
   })
 
-  it('total column filter: requests from R$ 10.000', () => {
+  it('[EXTRA-01] total column filter: requests from R$ 10.000', () => {
     cy.visit('/requests')
     cy.openColumnFilter('Total').within(() => {
       cy.get('input[placeholder="Valor mín. (R$)"]').type('10000')
@@ -51,21 +51,21 @@ describe('Request list screen', () => {
     cy.contains('.ant-table-row', 'Kit periféricos estoque').should('not.exist')
   })
 
-  it('opens directly from a shared URL with filters applied', () => {
+  it('[LIST-02] opens directly from a shared URL with filters applied', () => {
     cy.visit('/requests?category=SOFTWARE')
     rows().should('have.length', 2)
     cy.contains('.ant-table-row', 'Antivírus corporativo')
     cy.contains('.ant-table-row', 'Plataforma e-sign')
   })
 
-  it('searches by title in the column filter', () => {
+  it('[EXTRA-01] searches by title in the column filter', () => {
     cy.visit('/requests')
     cy.openColumnFilter('Título').within(() => cy.get('input[placeholder="Buscar no título"]').type('notebook{enter}'))
     cy.location('search').should('contain', 'q=notebook')
     rows().should('have.length', 1).first().should('contain', 'Notebooks para o time de TI')
   })
 
-  it('sorts by total on the server (asc, then desc) and reflects it in the URL', () => {
+  it('[LIST-01] sorts by total on the server (asc, then desc) and reflects it in the URL', () => {
     cy.visit('/requests')
     cy.contains('th', 'Total').click()
     cy.location('search').should('contain', 'sort=total%2Casc')
@@ -75,7 +75,7 @@ describe('Request list screen', () => {
     rows().first().should('contain', 'Servidor virtualização') // R$ 49.200,00
   })
 
-  it('shows an empty state for filters with no result and clears them', () => {
+  it('[FE-06] shows an empty state for filters with no result and clears them', () => {
     cy.visit('/requests?createdFrom=2000-01-01&createdTo=2000-01-31')
     cy.contains('Nenhuma solicitação encontrada com esses filtros')
     cy.contains('button', 'Limpar filtros').click()

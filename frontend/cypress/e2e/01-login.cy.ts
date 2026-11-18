@@ -48,7 +48,7 @@ describe('Login screen', () => {
     cy.get('.ant-menu').should('not.contain', 'Caixa de aprovação')
   })
 
-  it('sends an anonymous visitor to /login and back to the original route afterwards', () => {
+  it('[FE-01] sends an anonymous visitor to /login and back to the original route afterwards', () => {
     cy.visit('/requests?status=APPROVED')
     cy.location('pathname').should('eq', '/login')
     cy.location('search').should('contain', 'returnUrl=%2Frequests%3Fstatus%3DAPPROVED')
@@ -58,7 +58,7 @@ describe('Login screen', () => {
     cy.location('search').should('eq', '?status=APPROVED')
   })
 
-  it('handles an expired session (401): back to login, then back to where the user was', () => {
+  it('[FE-01] handles an expired session (401): back to login, then back to where the user was', () => {
     cy.login(USERS.admin1)
     // invalidate the token without reloading — the next API call gets 401
     cy.window().then((win) => {
@@ -141,7 +141,7 @@ describe('Login screen', () => {
     cy.get('.ant-layout-header img[src="/logo.svg"]').should('be.visible')
   })
 
-  describe('on a plain-HTTP site (no crypto.randomUUID, as on http://host:8080)', () => {
+  describe('[FE-08] on a plain-HTTP site (no crypto.randomUUID, as on http://host:8080)', () => {
     it('signs in, lists the sign-up cost centers and creates a request', () => {
       cy.visitWithoutRandomUUID('/login')
       cy.contains('.ant-segmented-item', 'Criar conta').click()

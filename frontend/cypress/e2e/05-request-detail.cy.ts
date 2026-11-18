@@ -8,7 +8,7 @@ const decide = (button: string, ok: string, comment?: string) => {
 }
 
 describe('Request detail screen — approval workflow', () => {
-  it('video flow: > R$ 10.000 → N1 → N2 → ADMIN → APPROVED and the budget is consumed', () => {
+  it('[FLOW-01][BUDGET-02] video flow: > R$ 10.000 → N1 → N2 → ADMIN → APPROVED and the budget is consumed', () => {
     // requester creates and submits
     cy.login(USERS.solicAdm)
     cy.visit('/requests/new')
@@ -43,7 +43,7 @@ describe('Request detail screen — approval workflow', () => {
     cy.contains('.ant-table-row', 'CC-ADM-02').should('contain', '24.000,00')
   })
 
-  it('builds the chain from value AND category: SOFTWARE under R$ 1.000 ends with ADMIN', () => {
+  it('[CHAIN-02] builds the chain from value AND category: SOFTWARE under R$ 1.000 ends with ADMIN', () => {
     cy.apiAs(USERS.solicTi, 'POST', '/requests', {
       title: 'Licença editor E2E',
       category: 'SOFTWARE',
@@ -58,7 +58,7 @@ describe('Request detail screen — approval workflow', () => {
     stepTitles().eq(1).should('have.text', 'Admin')
   })
 
-  it('renders actions only from allowedActions, per user', () => {
+  it('[FE-04] renders actions only from allowedActions, per user', () => {
     cy.login(USERS.solicTi) // owner of a pending request: can only cancel
     cy.openRequest('Kit periféricos estoque')
     cy.contains('button', 'Cancelar')
@@ -73,7 +73,7 @@ describe('Request detail screen — approval workflow', () => {
     cy.contains('button', 'Editar').should('not.exist')
   })
 
-  it('reject requires a comment of at least 10 characters, then closes the chain', () => {
+  it('[FLOW-03][FE-05] reject requires a comment of at least 10 characters, then closes the chain', () => {
     cy.login(USERS.aprov1Ti)
     cy.openRequest('Kit periféricos estoque')
     decide('Rejeitar', 'Rejeitar', 'curto')
@@ -87,7 +87,7 @@ describe('Request detail screen — approval workflow', () => {
     cy.get('.ant-timeline').should('contain', 'Rejeitada').and('contain', 'Fora do orçamento deste trimestre.')
   })
 
-  it('return → edit → resubmit creates v2; v1 stays immutable and viewable', () => {
+  it('[VER-01] return → edit → resubmit creates v2; v1 stays immutable and viewable', () => {
     cy.login(USERS.aprov2Ti)
     cy.openRequest('Switch rede predial')
     decide('Devolver p/ ajuste', 'Devolver', 'Detalhar a quantidade de portas necessárias.')
@@ -115,7 +115,7 @@ describe('Request detail screen — approval workflow', () => {
     cy.contains('.ant-table', 'Switch gerenciável 48 portas').should('contain', '5.000,00')
   })
 
-  it('BUDGET_EXCEEDED: explains the reason, keeps the request pending and audits the attempt', () => {
+  it('[BUDGET-01][FE-06] BUDGET_EXCEEDED: explains the reason, keeps the request pending and audits the attempt', () => {
     cy.login(USERS.aprov1Ti) // R$ 900,00 request, CC-TI-01 has only R$ 800,00 left
     cy.openRequest('Kit periféricos estoque')
     decide('Aprovar', 'Aprovar')
@@ -126,7 +126,7 @@ describe('Request detail screen — approval workflow', () => {
     cy.get('.ant-timeline').should('contain', 'Aprovação recusada — orçamento insuficiente')
   })
 
-  it('409: someone acted first — the user is told and the screen refreshes', () => {
+  it('[FE-06] 409: someone acted first — the user is told and the screen refreshes', () => {
     cy.login(USERS.admin1)
     cy.openRequest('Notebooks para o time de TI')
     cy.contains('button', 'Aprovar')
@@ -144,7 +144,7 @@ describe('Request detail screen — approval workflow', () => {
     cy.contains('button', 'Aprovar').should('not.exist')
   })
 
-  it('owner submits a draft and cancels another one', () => {
+  it('[FLOW-04] owner submits a draft and cancels another one', () => {
     cy.login(USERS.solicTi)
     cy.openRequest('Monitores para o time de suporte')
     cy.contains('button', 'Submeter').click()

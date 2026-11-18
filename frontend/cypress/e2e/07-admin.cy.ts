@@ -73,7 +73,7 @@ describe('Administration screen', () => {
       cy.get('.ant-message').should('contain', 'CC-TI-01')
     })
 
-    it('sets a monthly budget; below the consumed amount is refused by the backend (422)', () => {
+    it('[BUDGET-04] sets a monthly budget; below the consumed amount is refused by the backend (422)', () => {
       tab('Orçamentos')
       cy.antSelectByPlaceholder('Centro de custo', 'CC-TI-01')
       cy.contains('.ant-statistic', 'Consumido').contains(/49\.200,00/)

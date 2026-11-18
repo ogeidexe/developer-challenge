@@ -2,7 +2,7 @@
 import { USERS } from '../support/commands'
 
 describe('Real API — budget and versions', () => {
-  it('BUDGET_EXCEEDED: explains the reason, keeps the request pending and audits the attempt', () => {
+  it('[BUDGET-01][FE-06] BUDGET_EXCEEDED: explains the reason, keeps the request pending and audits the attempt', () => {
     cy.login(USERS.aprov1Ti) // "Kit periféricos estoque" costs R$ 900,00; CC-TI-01 has R$ 800,00 left
     cy.openRequest('Kit periféricos estoque')
     cy.contains('button', 'Aprovar').click()
@@ -15,7 +15,7 @@ describe('Real API — budget and versions', () => {
     cy.get('.ant-timeline').should('contain', 'orçamento insuficiente')
   })
 
-  it('resubmitting a returned request creates v2; v1 stays immutable and viewable', () => {
+  it('[VER-01] resubmitting a returned request creates v2; v1 stays immutable and viewable', () => {
     cy.login(USERS.solicTi) // "Antivírus corporativo": returned at N1, working copy already edited to 35 licenses
     cy.openRequest('Antivírus corporativo')
     cy.contains('.ant-tag', 'Devolvida p/ ajuste')
