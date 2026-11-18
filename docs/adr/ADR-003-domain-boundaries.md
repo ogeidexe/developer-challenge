@@ -1,6 +1,6 @@
 # ADR-003 — Domain Boundaries & Aggregates
 
-**Status:** Accepted
+**Status:** Accepted · reviewed 2026-11-18 against the implementation
 **Date:** 2026-11-15
 
 ## Context
@@ -31,6 +31,7 @@ touches request+version+steps+event+budget row; nothing else shares that tx boun
 ## Consequences
 - Clear single-writer ownership per table: `consumed_cents` is written only by `BudgetRepository.consume`,
   `lock_version` only by `PurchaseRequestRepository.claim`, steps only by `ApprovalStepRepository.decide/skipAfter`.
+  Since `V7` the database also refuses any change to a decided step (trigger `trg_approval_steps_guard`).
 - Cross-aggregate rules (eligibility needs user data) are read-only joins — safe outside the aggregate.
 
 ## Trade-offs
@@ -43,6 +44,11 @@ on its row (consumed ≤ amount), which is stronger for the actual hazard (overd
 `CostCenterEntity`. Foreign keys are plain UUID columns (no JPA associations), so bulk updates never
 leave stale collections behind. All mutations of the aggregate go through `application/TransitionService`
 and `PurchaseRequestService`.
+
+## Verification
+`SecurityIntegrationTest#terminalRequestsCannotBeChangedOrDecidedAgainAndBudgetIsConsumedOnce` and
+`#decidedApprovalStepsCannotBeRewrittenOrDeleted`; `WorkflowIntegrationTest#fullThreeStepFlowReachesApprovedAndConsumesTheBudget`.
+Cypress checklist items FLOW-01 and FLOW-04 (both suites).
 
 ## Related Specifications
 SPEC-006, SPEC-008, SPEC-011; ADR-008 (transactions).

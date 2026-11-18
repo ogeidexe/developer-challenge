@@ -1,6 +1,6 @@
 # ADR-010 — Idempotency Strategy: Stored-Response Keys Reserved in the Create Transaction
 
-**Status:** Accepted · revised 2026-11-15 to match the Java implementation
+**Status:** Accepted · revised 2026-11-18 to match the current implementation
 **Date:** 2026-11-15
 
 ## Context
@@ -46,6 +46,12 @@ the original 201 body.
 ## Trade-offs
 Storage grows with keys until purged; keys are user-scoped (the same key from two users is two records,
 matching "do mesmo usuário").
+
+## Verification
+`WorkflowIntegrationTest#idempotentCreateReplaysTheStoredResponse`, `RequestRulesIntegrationTest#anIdempotencyKeyBelongsToOneUser`
+and `#equivalentPayloadsReplayInsteadOfConflicting`. Cypress checklist NFR-03 (same key and body → the same request
+and `Idempotent-Replayed: true` on the real API; other body → `409 IDEMPOTENCY_PAYLOAD_MISMATCH`). The SPA keeps one
+key per form, so a retried "Criar rascunho" never creates a second request.
 
 ## Related
 ADR-008; `database/TRANSACTION-STRATEGY.md` §3.4; A-32.

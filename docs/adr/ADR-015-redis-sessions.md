@@ -1,6 +1,6 @@
 # ADR-015 — Server-Side Sessions in Redis for the JWT
 
-**Status:** Accepted
+**Status:** Accepted · reviewed 2026-11-18 against the implementation
 **Date:** 2026-11-16
 
 ## Context
@@ -45,3 +45,4 @@ Option 3.
 `HttpContractIntegrationTest#logoutEndsTheSessionImmediately`, `#eachLoginOpensARedisSessionWithTheTokenLifetime`
 (real HTTP + Redis Testcontainer); the real-API Cypress spec logs out through the UI and checks the old token is
 rejected; the CI compose smoke test checks `/health` has Redis `UP` and that logout turns the token into a `401`.
+Manual walkthrough item AUTH-06 repeats it on screen (the saved token answers `401` after "Sair").

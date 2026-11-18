@@ -1,6 +1,6 @@
 # ADR-002 — Technology Stack
 
-**Status:** Accepted — **supersedes the planned NestJS/TypeORM stack** (revised 2026-11-15)
+**Status:** Accepted — **supersedes the planned NestJS/TypeORM stack** · revised 2026-11-18 to match the current implementation
 **Date:** 2026-11-15
 
 ## Context
@@ -28,15 +28,20 @@ Option 2.
 | Back-end language | Java (records, sealed classes, pattern matching, virtual threads) | 25 |
 | Framework | Spring Boot (Spring Framework 7, Spring Security 7) | 4.1.2 |
 | Persistence | Spring Data JPA + Hibernate 7; `JdbcClient` for the idempotency SQL | Boot-managed |
-| Migrations | Flyway (`backend/src/main/resources/db/migration`, `V1`–`V6`) | Boot-managed |
-| Database | PostgreSQL | 16 |
+| Migrations | Flyway (`backend/src/main/resources/db/migration`, `V1`–`V7`) | Boot-managed |
+| Database | PostgreSQL (compose image `postgres:17-alpine`) | 17 |
+| Sessions | Redis, one session per issued JWT (ADR-015) | 7.4 |
 | Auth | OAuth2 Resource Server (Nimbus) with HS256 JWT; BCrypt | Boot-managed |
 | API docs | springdoc-openapi (Swagger UI at `/docs`) | 3.2.0 |
-| Ops | Actuator (`/health` incl. DB), ECS structured JSON logs | Boot-managed |
-| Back-end tests | JUnit 5, AssertJ, Testcontainers (PostgreSQL 16) | Boot-managed |
+| Ops | Actuator (`/health` incl. DB and Redis), ECS structured JSON logs | Boot-managed |
+| HTTP entry | Nginx gateway, the only published port (ADR-016) | `nginx-unprivileged` 1.27 |
+| Back-end tests | JUnit 5, AssertJ, Testcontainers (`postgres:16-alpine`, `redis:7-alpine`) | Boot-managed |
+| Back-end quality | Checkstyle (in `./mvnw verify`) | — |
 | Build | Maven Wrapper (`./mvnw`) | Maven 3.10 |
 | Front end | React 18 + Vite 5 + TypeScript 5, Ant Design 5, TanStack Query 5, React Router 6, dayjs | — |
-| Front-end tests | Cypress (end-to-end) | 13.17 |
+| Front-end tests | Cypress end-to-end, two suites: fake backend and real API | 13.17 |
+| Front-end quality | ESLint 9 + Prettier | — |
+| Delivery | Docker Compose; GitHub Actions `ci`, `security`, `release` (images on GHCR) | — |
 
 ## Rationale
 - **Spring** gives first-class declarative transactions (`@Transactional`, propagation `REQUIRES_NEW`
@@ -55,8 +60,11 @@ Option 2.
 - Two languages (Java back end, TypeScript front end); DTO shapes are kept aligned through `openapi.yaml`.
 - The planning artifacts written for agents (`docs/implementation/agents/`, parts of the specs) still
   mention NestJS/TypeORM; they are marked historical.
-- **The back end has not been compiled yet** (no JDK in the authoring environment). The riskiest Boot 4
-  APIs are listed in `backend/README.md`.
+- CI builds and tests the back end on every push (`./mvnw verify`: Checkstyle, unit, integration, HTTP and
+  concurrency tests with Testcontainers), and the compose job runs the whole stack.
+- **Version drift to fix:** the integration tests run on `postgres:16-alpine` while compose runs PostgreSQL 17
+  (`TestcontainersConfiguration`). Nothing used depends on the difference, but the test image should follow
+  the deployed one.
 
 ## Trade-offs
 JVM start-up and memory are heavier than Node (irrelevant at this scale); Hibernate's persistence context

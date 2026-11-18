@@ -1,6 +1,6 @@
 # ADR-009 — Concurrency Control: Hybrid Optimistic + Atomic Conditional Writes
 
-**Status:** Accepted (mandated by README §5.1: "Controle de concorrência otimista ou pessimista, à sua escolha, justificada em ADR")
+**Status:** Accepted (mandated by README §5.1: "Controle de concorrência otimista ou pessimista, à sua escolha, justificada em ADR") · reviewed 2026-11-18 against the implementation
 **Date:** 2026-11-15
 
 ## Context
@@ -60,9 +60,14 @@ one center — acceptable per challenge scale (and correct by design).
   `BudgetRepository.lockByCostCenterAndMonth` (`@Lock(PESSIMISTIC_WRITE)`).
 - Steps: `ApprovalStepRepository.decide` / `skipAfter` (status-guarded JPQL updates).
 - Rollback-then-audit: `TransitionFacade` + `AuditService.recordBudgetFailure` (`REQUIRES_NEW`).
-- Proof: `ConcurrencyIntegrationTest` (same step → one 200 + one 409; same final step with R$ 800 left →
-  409 not 422; five R$ 3.000 finals on R$ 10.000 → exactly three approved, balance never negative).
-  Written, not yet executed.
+- Proof: `ConcurrencyIntegrationTest` (same step → one 200 + one 409, repeated 5×; same final step with
+  R$ 800 left → 409 not 422, repeated 5×; five R$ 3.000 finals on R$ 10.000 → exactly three approved, balance
+  never negative), run by CI on every push.
+- End to end: the Cypress checklist items NFR-01 and NFR-02 fire the two approvals at the same time from the
+  browser (`Promise.all`) against the real stack — one `200` + one `409 CONCURRENCY_CONFLICT`; one `200` + one
+  `422 BUDGET_EXCEEDED` with the balance never negative. Both passed against a deployed compose stack on
+  2026-11-17.
+- Decided steps are also protected by the database since `V7` (trigger `trg_approval_steps_guard`).
 
 ## Related Specifications
 SPEC-008, SPEC-011, SPEC-013; ADR-004, ADR-008; TRANSACTION-STRATEGY.md §3.

@@ -1,6 +1,6 @@
 # ADR-001 — Architecture Style: Modular Monolith with a Pure Domain Layer
 
-**Status:** Accepted · revised 2026-11-15 to match the Java implementation
+**Status:** Accepted · revised 2026-11-18 to match the current implementation
 **Date:** 2026-11-15
 
 ## Context
@@ -26,8 +26,8 @@ Option 1. One Spring Boot application (`backend/`) with one package per layer:
 | `domain` | state machine, chain builder, approval/access policies, `Money`, `BusinessCalendar`, sealed `DomainException` — **plain Java, no Spring/JPA/HTTP imports** | nothing |
 | `persistence` | JPA entities and Spring Data repositories (incl. the concurrency SQL) | `domain` |
 | `application` | transactional use-case services, queries, idempotency, mapping to DTOs | `domain`, `persistence`, `api.dto` |
-| `security` | JWT issue/verify, filter chain, current-user resolution | `persistence`, `config` |
-| `api` | controllers, request/response records, exception handler, request-id filter | `application`, `security` |
+| `security` | JWT issue/verify, Redis session check (ADR-015), login throttling, filter chain, current-user resolution | `persistence`, `config` |
+| `api` | controllers, request/response records, exception handler, request-id and request-size filters | `application`, `security` |
 | `config` | typed properties, clock/calendar beans, demo seed | all |
 
 Ports-and-adapters is applied only where it pays: the domain receives plain values (`Actor`, `StepState`,
@@ -42,12 +42,20 @@ second adapter to justify it.
 
 ## Consequences
 - State machine, chain builder and policies are tested as plain JUnit tests (`src/test/java/.../domain`).
-- One deployable keeps `docker compose` trivial.
+- One back-end deployable. `docker compose up --build` runs it with PostgreSQL 17, Redis (sessions, ADR-015),
+  the front end and an Nginx gateway as the only published port (ADR-016) — infrastructure around the monolith,
+  not a second business service.
 - Layer discipline is by package convention and review; there is no ArchUnit rule yet (cheap to add).
 
 ## Trade-offs
 Less isolation than microservices (irrelevant here); services depend on Spring Data directly, so swapping
 the persistence technology would touch the services (accepted — not a requirement).
+
+## Verification
+The domain package is tested as plain JUnit, without Spring or a database: `RequestStateMachineTest`,
+`ApprovalChainBuilderTest`, `ApprovalPoliciesTest`, `AccessPolicyTest`, `MoneyAndCalendarTest`. CI runs them
+with every other back-end test in `./mvnw verify` (job "Backend (Java 25)", Checkstyle included). The layer
+rule itself is still checked by review only.
 
 ## Related
 ADR-002 (stack), ADR-003 (boundaries), ADR-008 (transactions); `architecture/OVERVIEW.md`.

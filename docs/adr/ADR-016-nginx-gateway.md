@@ -1,6 +1,6 @@
 # ADR-016 — Nginx Reverse Proxy as the Single HTTP Entry Point
 
-**Status:** Accepted
+**Status:** Accepted · reviewed 2026-11-18 against the implementation
 **Date:** 2026-11-16
 
 ## Context
@@ -39,6 +39,9 @@ Option 2: a `gateway` service (`nginxinc/nginx-unprivileged`, non-root) is the o
   request (`resolver ${NGINX_LOCAL_RESOLVERS}` + `proxy_pass $backend_upstream`, with
   `NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1` in the image). A literal upstream host made Nginx fail at startup with
   `host not found in upstream "backend"`, which left the container unhealthy and blocked the gateway.
+- The login limit applies to automated clients too: a test suite that logs in before every API call hits `429`
+  after about 50 logins from one address. The Cypress commands therefore reuse one token per user on the real
+  API (seen on 2026-11-17, when the first run against a deployed stack turned into `429`s).
 
 ## Verification
 CI compose job: smoke test only through the gateway (health with db and Redis `UP`, security headers, Swagger,

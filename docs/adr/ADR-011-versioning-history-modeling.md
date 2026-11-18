@@ -1,6 +1,6 @@
 # ADR-011 — Versioning & History Modeling: Working Copy + Frozen Snapshots + Append-Only Events
 
-**Status:** Accepted (mandated by README §5.5: versioning/history ADR)
+**Status:** Accepted (mandated by README §5.5: versioning/history ADR) · reviewed 2026-11-18 against the implementation
 **Date:** 2026-11-15
 
 ## Context
@@ -25,7 +25,7 @@ Option 2. The request row holds the editable working copy (title/description/cat
 and costCenterId); `submit` freezes an immutable snapshot (version n, competence month stamped at that
 instant, **frozen `cost_center_id`**, chain built for that version). Resubmission inserts n+1; prior rows
 are never updated — no update path in code, and a `BEFORE UPDATE OR DELETE` trigger on
-`request_versions`/`version_items`/`request_events` (migration 005) enforces it at the DB level even
+`request_versions`/`version_items`/`request_events` (migration `V5`) enforces it at the DB level even
 for the owning role. History is a separate append-only stream with redundant context (actor role,
 statuses, step, version) so the timeline stays meaningful without joining mutable reference data.
 Option 1 violates immutability-by-construction; option 3 is unjustified complexity for a 7-day scope.
@@ -58,9 +58,17 @@ the working copy — acceptable since after submit both are identical until a re
 ## Implementation
 `TransitionService.submit` freezes `RequestVersionEntity` + `VersionItemEntity` and builds the steps;
 the version entities and `RequestEventEntity` are Hibernate `@Immutable`, and Flyway `V5` adds the
-immutability triggers. `AuditService` writes every event (with `X-Request-Id` from the MDC).
+immutability triggers; `V7` extends the protection to decided approval steps (who, when, outcome, comment).
+`AuditService` writes every event (with `X-Request-Id` from the MDC).
 `RequestMapper.detail` shows the working copy while the request is editable and the frozen version
 otherwise; `GET /requests/{id}/versions[/{n}]` serve the snapshots.
+
+## Verification
+`WorkflowIntegrationTest#returnEditResubmitCreatesV2AndKeepsV1Immutable` and `#historyAndSnapshotsAreImmutableInTheDatabase`,
+`RequestRulesIntegrationTest#aResubmittedVersionGetsAChainBuiltFromItsOwnTotal` and
+`#historyListsEveryActionInOrderWithActorRoleStepVersionAndComment`,
+`HttpContractIntegrationTest#theRequestIdOfEachCallIsStoredOnItsHistoryEvent`. Cypress checklist VER-01, VER-02, VER-03,
+HIST-01 and HIST-02, in both suites.
 
 ## Related Specifications
 SPEC-006, SPEC-010, SPEC-012; BR-007/BR-010/BR-011; DATA-003/DATA-004.

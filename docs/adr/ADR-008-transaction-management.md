@@ -1,6 +1,6 @@
 # ADR-008 — Transaction Management: One `@Transactional` Service Method per Use Case
 
-**Status:** Accepted · revised 2026-11-15 to match the Spring implementation
+**Status:** Accepted · revised 2026-11-18 to match the current implementation
 **Date:** 2026-11-15
 
 ## Context
@@ -47,6 +47,12 @@ The facade makes the "rollback, then audit" order structural rather than a conve
 ## Trade-offs
 Transactions hold the request row lock until commit; operations are short, so contention is limited to
 true conflicts (which should get 409 anyway).
+
+## Verification
+`WorkflowIntegrationTest#budgetExceededKeepsTheRequestPendingAndOnlyAuditsTheAttempt` (rollback, then the
+`REQUIRES_NEW` event) and `#staleLockVersionIs409AndChangesNothing`; `ConcurrencyIntegrationTest` (one transaction per
+transition under real threads). Cypress checklist BUDGET-01 (the request stays pending and the attempt is in the
+history) and FLOW-01.
 
 ## Related
 ADR-009, ADR-010; `database/TRANSACTION-STRATEGY.md`.

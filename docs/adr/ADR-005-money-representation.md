@@ -1,6 +1,6 @@
 # ADR-005 — Money Representation: Integer Cents
 
-**Status:** Accepted
+**Status:** Accepted · reviewed 2026-11-18 against the implementation
 **Date:** 2026-11-15
 
 ## Context
@@ -29,9 +29,16 @@ work, but `BigDecimal` scale/equality pitfalls (`2.0` vs `2.00`) buy nothing at 
 ## Consequences
 - No rounding logic exists (inputs ≤ 2dp by validation; products of integers are exact).
 - All comparisons/filters (min/maxAmount) operate on cents — converted at the API boundary only.
+- The form only helps the user (the unit price input never keeps a zero, the live total is display only);
+  the server recomputes every total and ignores any `total` the client sends.
 
 ## Trade-offs
 Display formatting (pt-BR) is a front-end concern; 13-integer-digit bound caps amounts at ~R$9.9 trilhão — far beyond scope.
+
+## Verification
+`MoneyAndCalendarTest` (exact parsing, invalid amounts, exact totals), `SecurityIntegrationTest#theClientCannotChooseTheTotal`,
+`ApprovalChainBuilderTest` (cent boundaries of the chain). Cypress checklist REQ-01 (a client `total` is ignored; the
+server total is shown) and CHAIN-01 (R$ 1.000,00 / 1.000,01 / 10.000,01), in both suites.
 
 ## Related Specifications
 SPEC-007, SPEC-011, SPEC-014; DATA-005.

@@ -1530,3 +1530,29 @@ One block per agent turn, one row per changed file:
 |---|---|---|---|
 | `driven-tests/assets/plan-delivery.js` | modified | +240 | -125 |
 | `driven-tests/index.html` | modified | +4 | -3 |
+
+---
+### Turn 2026-11-18 14:58:45 -0300 · ClaudeCode
+- **Source**: command
+- **Session**: f6ac0fe3-d4ac-4f8b-8ac0-127cceecf1ed
+- **Prompt**: atualise todos os ADRs e faa commit
+- **Summary**: Updated all 16 ADRs to the current implementation: Redis sessions, Nginx gateway, security hardening (V7, throttling, aud), CI, two Cypress suites and the checklist bridge, frontend changes; added a Verification section with the real tests to each; noted the Testcontainers PostgreSQL 16 vs compose 17 drift
+
+| File | Change | Additions | Removals |
+|---|---|---|---|
+| `docs/adr/ADR-001-architecture-style.md` | modified | +12 | -4 |
+| `docs/adr/ADR-002-technology-stack.md` | modified | +16 | -8 |
+| `docs/adr/ADR-003-domain-boundaries.md` | modified | +7 | -1 |
+| `docs/adr/ADR-004-database-modeling.md` | modified | +13 | -2 |
+| `docs/adr/ADR-005-money-representation.md` | modified | +8 | -1 |
+| `docs/adr/ADR-006-authentication-strategy.md` | modified | +34 | -14 |
+| `docs/adr/ADR-007-authorization-strategy.md` | modified | +13 | -3 |
+| `docs/adr/ADR-008-transaction-management.md` | modified | +7 | -1 |
+| `docs/adr/ADR-009-concurrency-control.md` | modified | +9 | -4 |
+| `docs/adr/ADR-010-idempotency-strategy.md` | modified | +7 | -1 |
+| `docs/adr/ADR-011-versioning-history-modeling.md` | modified | +11 | -3 |
+| `docs/adr/ADR-012-403-vs-404.md` | modified | +5 | -2 |
+| `docs/adr/ADR-013-frontend-architecture.md` | modified | +29 | -11 |
+| `docs/adr/ADR-014-testing-architecture.md` | modified | +37 | -14 |
+| `docs/adr/ADR-015-redis-sessions.md` | modified | +2 | -1 |
+| `docs/adr/ADR-016-nginx-gateway.md` | modified | +4 | -1 |

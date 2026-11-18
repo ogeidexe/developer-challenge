@@ -1,6 +1,6 @@
 # ADR-007 — Authorization Strategy: Authentication in the Filter Chain, Rules in the Services
 
-**Status:** Accepted · revised 2026-11-15 to match the Spring implementation
+**Status:** Accepted · revised 2026-11-18 to match the current implementation
 **Date:** 2026-11-15
 
 ## Context
@@ -20,8 +20,9 @@ endpoint, and is unit-testable.
 ## Decision
 Option 2.
 - `SecurityConfig`: public routes (`POST /auth/register`, `POST /auth/login`, `GET /health`,
-  `GET /cost-centers`, `/docs`, `/v3/api-docs`); **everything else just requires a valid JWT**. 401/403
-  from the filter chain are written as `problem+json` by `ProblemResponses`.
+  `GET /cost-centers`, `/docs`, `/swagger-ui/**`, `/v3/api-docs`); **everything else just requires a valid
+  JWT with a live session** (ADR-006, ADR-015). 401/403 from the filter chain are written as `problem+json`
+  by `ProblemResponses`. The Nginx gateway (ADR-016) routes and rate-limits; it makes no authorization decision.
 - Services evaluate, in order:
   1. **404** — `RequestAccess.loadVisible` applies `AccessPolicy.canSee` (ADR-012);
   2. **403** — `RequestAccess.requireApproverRole` (`SOLICITANTE` never decides), `requireOwner`
@@ -40,10 +41,19 @@ unit-testable without Spring Security, and every service path enforces them.
 ## Consequences
 - `GlobalExceptionHandler` maps the sealed `DomainException` subtypes to 400/403/404/409/422.
 - Admin checks live in services, not annotations — they are visible in the code paths they guard.
+- The front end's route guards and menus are UX only: the role shown comes from the login response, so after
+  a role change the menu updates at the next login while the API already applies the new role.
 
 ## Trade-offs
 Role checks are not declared at the controller, so a reviewer must read the service (mitigated: every
 service method starts with its access checks, in order).
+
+## Verification
+`HttpContractIntegrationTest#authenticationRoleAndVisibilityFailuresUseTheirStatusAndCode`, `AccessPolicyTest`,
+`AdminServicesIntegrationTest#onlyAdminManagesUsersCostCentersAndBudgets`, and in `SecurityIntegrationTest`:
+`aSolicitanteCannotDecideEvenARequestTheyCanSee`, `anApproverOfAnotherCostCenterSeesNothingAndCannotDecide`,
+`anotherRequesterCannotReadEditSubmitOrCancelSomeoneElsesRequest`, `anApproverWhoCanSeeARequestStillCannotEditIt`.
+Cypress checklist FLOW-02, FLOW-05 (401 → 404 → 403 → 409 → 422), LIST-03 and FE-04 (buttons = `allowedActions`).
 
 ## Related
 ADR-006, ADR-009, ADR-012; `api/ERROR-CATALOG.md` §3.
